@@ -1,20 +1,23 @@
 import { useState } from 'react';
-import type { KidData, RoutineType } from '../types';
+import type { KidData, Reward } from '../types';
 import { TaskList } from './TaskList';
 import { ConfettiOverlay } from './ConfettiOverlay';
+import { RewardsShop } from './RewardsShop';
 
 interface KidCardProps {
   kid: KidData;
+  rewards: Reward[];
   onToggleDone: (kidId: string, taskId: string) => void;
   onAddStar: (kidId: string, taskId: string) => void;
+  onRedeemReward: (kidId: string, rewardId: string) => void;
   isUnlocked: boolean;
 }
 
-export function KidCard({ kid, onToggleDone, onAddStar, isUnlocked }: KidCardProps) {
-  const [activeTab, setActiveTab] = useState<RoutineType>('morning');
+export function KidCard({ kid, rewards, onToggleDone, onAddStar, onRedeemReward, isUnlocked }: KidCardProps) {
+  const [activeTab, setActiveTab] = useState<'morning' | 'evening' | 'rewards'>('morning');
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const tasks = activeTab === 'morning' ? kid.morning : kid.evening;
+  const tasks = activeTab === 'morning' ? kid.morning : activeTab === 'evening' ? kid.evening : [];
   const taskIds = tasks.map((t) => t.id);
   const relevantStatuses = kid.status.filter((s) => taskIds.includes(s.taskId));
 
@@ -89,18 +92,36 @@ export function KidCard({ kid, onToggleDone, onAddStar, isUnlocked }: KidCardPro
             >
               🌙 Evening
             </button>
+            <button
+              onClick={() => setActiveTab('rewards')}
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
+                activeTab === 'rewards'
+                  ? 'bg-pink-500 text-white shadow-md'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              🎁 Rewards
+            </button>
           </div>
         </div>
 
-        {/* Task list */}
+        {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <TaskList
-            tasks={tasks}
-            statuses={relevantStatuses}
-            onToggleDone={handleToggleDone}
-            onAddStar={(taskId) => onAddStar(kid.id, taskId)}
-            isUnlocked={isUnlocked}
-          />
+          {activeTab === 'rewards' ? (
+            <RewardsShop
+              rewards={rewards}
+              starBank={kid.starBank}
+              onRedeemReward={(rewardId) => onRedeemReward(kid.id, rewardId)}
+            />
+          ) : (
+            <TaskList
+              tasks={tasks}
+              statuses={relevantStatuses}
+              onToggleDone={handleToggleDone}
+              onAddStar={(taskId) => onAddStar(kid.id, taskId)}
+              isUnlocked={isUnlocked}
+            />
+          )}
         </div>
       </div>
 

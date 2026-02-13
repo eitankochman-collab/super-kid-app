@@ -203,8 +203,10 @@ function App() {
             <KidCard
               key={kid.id}
               kid={kid}
+              rewards={state.rewards}
               onToggleDone={handleToggleDone}
               onAddStar={handleAddStar}
+              onRedeemReward={handleRedeemReward}
               isUnlocked={isUnlocked}
             />
           ))}

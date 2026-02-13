@@ -76,13 +76,12 @@ export function TaskItem({ task, status, onToggleDone, onAddStar, isUnlocked }: 
           {isDone && (
             <button
               onClick={onAddStar}
-              disabled={!isUnlocked}
               className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 ${
                 isUnlocked
                   ? 'bg-yellow-400 text-yellow-900 hover:bg-yellow-500 shadow-md'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-yellow-300 text-yellow-800 hover:bg-yellow-400 shadow-md'
               }`}
-              title={isUnlocked ? 'Award star' : 'Unlock with PIN first'}
+              title={isUnlocked ? 'Award star' : 'Click to unlock with PIN'}
             >
               ⭐ +1 {stars > 0 && `(${stars})`}
             </button>

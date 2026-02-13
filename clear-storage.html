@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Storage</title>
+</head>
+<body>
+    <h1>Clear Super Kid App Storage</h1>
+    <button onclick="localStorage.removeItem('super-kid-app-state'); alert('Storage cleared! Refresh the app.');">Clear Storage</button>
+    <script>
+        console.log('Current storage:', localStorage.getItem('super-kid-app-state'));
+    </script>
+</body>
+</html>
