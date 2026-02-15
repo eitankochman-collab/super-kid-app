@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { KidData, Reward } from '../types';
 import { BONUS_LOG_KEY } from '../constants';
+import { loadDailyLog } from '../storage';
+import type { DailyRecord } from '../storage';
 
 interface BonusEntry {
   date: string; // YYYY-MM-DD
@@ -61,6 +63,9 @@ export function AdminPanel({
   const [bonusText, setBonusText] = useState('');
   const [bonusLog, setBonusLog] = useState<BonusEntry[]>(loadBonusLog);
   const [showFloat, setShowFloat] = useState(false);
+  const [weeklyKidId, setWeeklyKidId] = useState(kids[0]?.id || '');
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [dailyLog] = useState<DailyRecord[]>(loadDailyLog);
 
   const today = getTodayKey();
   const bonusKid = kids.find((k) => k.id === bonusKidId);
@@ -145,6 +150,166 @@ export function AdminPanel({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Weekly View */}
+        <div className="mb-8">
+          <h3 className="text-xl font-bold text-gray-700 mb-4">📅 תצוגה שבועית</h3>
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-2xl border-2 border-blue-200">
+            {/* Kid selector */}
+            <div className="flex gap-3 mb-4 justify-center">
+              {kids.map((kid) => (
+                <button
+                  key={kid.id}
+                  onClick={() => setWeeklyKidId(kid.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all ${
+                    weeklyKidId === kid.id
+                      ? `bg-gradient-to-r ${kid.color} text-white shadow-md`
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <img src={kid.avatar} alt={kid.name} className="w-7 h-7 rounded-full object-cover" />
+                  {kid.hebrewName}
+                </button>
+              ))}
+            </div>
+
+            {/* Week navigation */}
+            {(() => {
+              const HEBREW_DAY_SHORT = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+
+              // Calculate the Sunday of the target week
+              const now = new Date();
+              const currentDay = now.getDay(); // 0=Sun
+              const sunday = new Date(now);
+              sunday.setDate(now.getDate() - currentDay + weekOffset * 7);
+
+              // Build 7 days Sun-Sat
+              const weekDays = Array.from({ length: 7 }, (_, i) => {
+                const d = new Date(sunday);
+                d.setDate(sunday.getDate() + i);
+                return {
+                  dayIndex: i,
+                  label: HEBREW_DAY_SHORT[i],
+                  dateKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
+                  dayNum: d.getDate(),
+                  isToday: d.toDateString() === now.toDateString(),
+                  isFuture: d > now,
+                };
+              });
+
+              // Format week range for display
+              const sunDate = new Date(sunday);
+              const satDate = new Date(sunday);
+              satDate.setDate(sunday.getDate() + 6);
+              const rangeLabel = `${sunDate.getDate()}/${sunDate.getMonth() + 1} - ${satDate.getDate()}/${satDate.getMonth() + 1}`;
+
+              // Get records for this kid this week
+              const weekRecords = weekDays.map((day) => {
+                const record = dailyLog.find((r) => r.date === day.dateKey && r.kidId === weeklyKidId);
+                return { ...day, record };
+              });
+
+              // Count amazing days (all done)
+              const amazingDays = weekRecords.filter((d) => d.record && d.record.done > 0 && d.record.done === d.record.total).length;
+              const totalStars = weekRecords.reduce((sum, d) => sum + (d.record?.done || 0), 0);
+
+              // Detect streaks for flame display
+              const weeklyKid = kids.find((k) => k.id === weeklyKidId);
+              const streakLastDate = weeklyKid?.streak.lastCompletionDate;
+              const streakCurrent = weeklyKid?.streak.current || 0;
+
+              // Build streak dates going backwards from lastCompletionDate
+              const streakDates = new Set<string>();
+              if (streakLastDate && streakCurrent > 0) {
+                const lastDate = new Date(streakLastDate + 'T00:00:00');
+                for (let i = 0; i < streakCurrent; i++) {
+                  const d = new Date(lastDate);
+                  d.setDate(lastDate.getDate() - i);
+                  streakDates.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+                }
+              }
+
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <button
+                      onClick={() => setWeekOffset((p) => p - 1)}
+                      className="w-9 h-9 rounded-full bg-white text-gray-600 font-bold text-lg flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 shadow-sm"
+                    >
+                      ‹
+                    </button>
+                    <span className="text-sm font-bold text-gray-600">{rangeLabel}</span>
+                    <button
+                      onClick={() => setWeekOffset((p) => Math.min(0, p + 1))}
+                      disabled={weekOffset >= 0}
+                      className="w-9 h-9 rounded-full bg-white text-gray-600 font-bold text-lg flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      ›
+                    </button>
+                  </div>
+
+                  {/* Day grid */}
+                  <div className="grid grid-cols-7 gap-2 mb-4">
+                    {weekRecords.map((day) => {
+                      const allDone = day.record && day.record.done > 0 && day.record.done === day.record.total;
+                      const someDone = day.record && day.record.done > 0 && !allDone;
+                      const isStreak = streakDates.has(day.dateKey);
+
+                      let bgClass = 'bg-gray-100 border-gray-200';
+                      let dotColor = 'bg-gray-300';
+                      if (day.isFuture) {
+                        bgClass = 'bg-gray-50 border-gray-100';
+                        dotColor = 'bg-gray-200';
+                      } else if (allDone) {
+                        bgClass = 'bg-green-100 border-green-300';
+                        dotColor = 'bg-green-500';
+                      } else if (someDone) {
+                        bgClass = 'bg-orange-50 border-orange-200';
+                        dotColor = 'bg-orange-400';
+                      }
+
+                      return (
+                        <div
+                          key={day.dateKey}
+                          className={`flex flex-col items-center p-2 rounded-xl border-2 ${bgClass} ${day.isToday ? 'ring-2 ring-blue-400' : ''}`}
+                        >
+                          <span className="text-xs font-bold text-gray-500">{day.label}</span>
+                          <span className="text-xs text-gray-400">{day.dayNum}</span>
+                          <div className={`w-6 h-6 rounded-full ${dotColor} mt-1 flex items-center justify-center`}>
+                            {allDone && <span className="text-white text-xs">✓</span>}
+                          </div>
+                          {isStreak && !day.isFuture && <span className="text-xs mt-0.5">🔥</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Positive summary */}
+                  <div className="text-center" dir="rtl">
+                    {amazingDays > 0 ? (
+                      <p className="text-base font-bold text-green-700">
+                        🌟 {amazingDays} ימים מדהימים השבוע!
+                      </p>
+                    ) : weekOffset === 0 ? (
+                      <p className="text-base font-bold text-blue-600">
+                        💪 שבוע חדש, הזדמנות חדשה!
+                      </p>
+                    ) : (
+                      <p className="text-base font-bold text-blue-600">
+                        ✨ כל שבוע הוא הזדמנות חדשה!
+                      </p>
+                    )}
+                    {totalStars > 0 && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        ⭐ {totalStars} משימות הושלמו
+                      </p>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
 

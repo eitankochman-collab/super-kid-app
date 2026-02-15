@@ -1,6 +1,6 @@
 import type { AppState } from './types';
 import { initialKids, defaultRewards } from './data';
-import { DATE_KEY, YESTERDAY_KEY } from './constants';
+import { DATE_KEY, YESTERDAY_KEY, DAILY_LOG_KEY } from './constants';
 
 const STORAGE_KEY = 'super-kid-app-state';
 
@@ -140,4 +140,50 @@ export function resetTaskStatus(state: AppState): AppState {
       status: kid.status.map(s => ({ ...s, done: false })),
     })),
   };
+}
+
+/** Daily completion record for weekly view */
+export interface DailyRecord {
+  date: string; // YYYY-MM-DD
+  kidId: string;
+  done: number;
+  total: number;
+}
+
+/** Save a daily record (upserts for the given date+kid) */
+export function saveDailyRecord(record: DailyRecord): void {
+  try {
+    const log = loadDailyLog();
+    const idx = log.findIndex((r) => r.date === record.date && r.kidId === record.kidId);
+    if (idx >= 0) {
+      log[idx] = record;
+    } else {
+      log.push(record);
+    }
+    // Keep only last 30 days
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const cutoffKey = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`;
+    const trimmed = log.filter((r) => r.date >= cutoffKey);
+    localStorage.setItem(DAILY_LOG_KEY, JSON.stringify(trimmed));
+  } catch { /* ignore */ }
+}
+
+/** Load all daily records */
+export function loadDailyLog(): DailyRecord[] {
+  try {
+    const stored = localStorage.getItem(DAILY_LOG_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch { /* ignore */ }
+  return [];
+}
+
+/** Save today's completion snapshot for all kids */
+export function saveTodaySnapshot(state: AppState): void {
+  const today = getTodayKey();
+  for (const kid of state.kids) {
+    const allTaskIds = [...kid.morning, ...kid.afternoon, ...kid.evening].map((t) => t.id);
+    const doneCount = kid.status.filter((s) => allTaskIds.includes(s.taskId) && s.done).length;
+    saveDailyRecord({ date: today, kidId: kid.id, done: doneCount, total: allTaskIds.length });
+  }
 }

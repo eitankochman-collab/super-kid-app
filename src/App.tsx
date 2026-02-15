@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { AppState, RoutineType } from './types';
-import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isWeekendDay, isYesterday } from './storage';
+import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isWeekendDay, isYesterday, saveTodaySnapshot, saveDailyRecord } from './storage';
 import type { YesterdaySummary } from './storage';
 import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES } from './constants';
 import { ProgressRing } from './components/ProgressRing';
@@ -45,6 +45,13 @@ function App() {
       };
       saveYesterdaySummary(summary);
 
+      // Save daily records for the previous day before resetting
+      for (const kid of state.kids) {
+        const allTaskIds = [...kid.morning, ...kid.afternoon, ...kid.evening].map((t) => t.id);
+        const doneCount = kid.status.filter((s) => allTaskIds.includes(s.taskId) && s.done).length;
+        saveDailyRecord({ date: storedDate, kidId: kid.id, done: doneCount, total: allTaskIds.length });
+      }
+
       // Reset task completions + update streaks (stars stay in bank)
       setState((prev) => ({
         ...resetTaskStatus(prev),
@@ -78,6 +85,7 @@ function App() {
   // Save state whenever it changes
   useEffect(() => {
     saveState(state);
+    saveTodaySnapshot(state);
   }, [state]);
 
   // Update time remaining display
