@@ -39,6 +39,27 @@ export const CELEBRATION_NOTES = {
 /** localStorage key for app state */
 export const STORAGE_KEY = 'super-kid-app-state';
 
+/** localStorage key for the last-opened date (YYYY-MM-DD) */
+export const DATE_KEY = 'super-kid-app-date';
+
+/** localStorage key for yesterday's summary data */
+export const YESTERDAY_KEY = 'super-kid-app-yesterday';
+
+/** Morning task IDs to remove on weekends (school-specific) */
+export const WEEKEND_EXCLUDED_MORNING = ['m5', 'm6', 'm7'];
+
+/** Hebrew day names (Sunday=0 … Saturday=6) */
+export const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'] as const;
+
+/** Hebrew month names (0-indexed) */
+export const HEBREW_MONTHS = [
+  'בינואר', 'בפברואר', 'במרץ', 'באפריל', 'במאי', 'ביוני',
+  'ביולי', 'באוגוסט', 'בספטמבר', 'באוקטובר', 'בנובמבר', 'בדצמבר',
+] as const;
+
+/** Duration in ms for yesterday summary display */
+export const YESTERDAY_SUMMARY_MS = 3000;
+
 /** Tab configuration for routine/rewards navigation */
 export type TabId = 'morning' | 'afternoon' | 'evening' | 'rewards';
 

@@ -49,6 +49,15 @@ body {
   animation: bounce-in 0.5s ease-out;
 }
 
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.animate-fade-out {
+  animation: fade-out;
+}
+
 /* Modal backdrop */
 .modal-backdrop {
   position: fixed;

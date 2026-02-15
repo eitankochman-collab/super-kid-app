@@ -1,7 +1,54 @@
 import type { AppState } from './types';
 import { initialKids, defaultRewards } from './data';
+import { DATE_KEY, YESTERDAY_KEY } from './constants';
 
 const STORAGE_KEY = 'super-kid-app-state';
+
+export interface YesterdaySummary {
+  kids: { hebrewName: string; avatar: string; done: number; total: number }[];
+}
+
+/** Get today's date as YYYY-MM-DD string */
+export function getTodayKey(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Get the last stored date */
+export function getStoredDate(): string | null {
+  return localStorage.getItem(DATE_KEY);
+}
+
+/** Save today's date */
+export function saveDate(dateKey: string): void {
+  localStorage.setItem(DATE_KEY, dateKey);
+}
+
+/** Save yesterday's summary for display on next open */
+export function saveYesterdaySummary(summary: YesterdaySummary): void {
+  localStorage.setItem(YESTERDAY_KEY, JSON.stringify(summary));
+}
+
+/** Load and clear yesterday's summary (one-time read) */
+export function loadYesterdaySummary(): YesterdaySummary | null {
+  try {
+    const stored = localStorage.getItem(YESTERDAY_KEY);
+    if (stored) {
+      localStorage.removeItem(YESTERDAY_KEY);
+      return JSON.parse(stored);
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
+/** Check if the current time is Israeli weekend (Friday after 4pm, or Saturday) */
+export function isIsraeliWeekend(): boolean {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 5=Fri, 6=Sat
+  if (day === 6) return true; // Saturday
+  if (day === 5 && now.getHours() >= 16) return true; // Friday after 4pm
+  return false;
+}
 
 /** Migrate old state format (no afternoon, old task IDs) to new format */
 function migrateState(stored: Record<string, unknown>): AppState {

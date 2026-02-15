@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { AppState, RoutineType } from './types';
-import { loadState, saveState, resetTaskStatus } from './storage';
-import { TABS, type TabId } from './constants';
+import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isIsraeliWeekend } from './storage';
+import type { YesterdaySummary } from './storage';
+import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS } from './constants';
 import { ProgressRing } from './components/ProgressRing';
 import { TaskList } from './components/TaskList';
 import { RewardsShop } from './components/RewardsShop';
@@ -18,9 +19,44 @@ function App() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [yesterdaySummary, setYesterdaySummary] = useState<YesterdaySummary | null>(null);
+  const [isWeekend, setIsWeekend] = useState(isIsraeliWeekend);
 
   const isUnlocked = state.pinUnlockedUntil !== null && Date.now() < state.pinUnlockedUntil;
   const selectedKid = state.kids[selectedKidIndex];
+
+  // Daily reset: check on mount if the day has changed
+  useEffect(() => {
+    const today = getTodayKey();
+    const storedDate = getStoredDate();
+
+    if (storedDate && storedDate !== today) {
+      // Save yesterday's summary before resetting
+      const summary: YesterdaySummary = {
+        kids: state.kids.map((kid) => {
+          const allTaskIds = [...kid.morning, ...kid.afternoon, ...kid.evening].map((t) => t.id);
+          const doneCount = kid.status.filter((s) => allTaskIds.includes(s.taskId) && s.done).length;
+          return { hebrewName: kid.hebrewName, avatar: kid.avatar, done: doneCount, total: allTaskIds.length };
+        }),
+      };
+      saveYesterdaySummary(summary);
+
+      // Reset task completions (stars stay in bank)
+      setState((prev) => resetTaskStatus(prev));
+
+      // Show yesterday summary overlay
+      const loaded = loadYesterdaySummary();
+      if (loaded) {
+        setYesterdaySummary(loaded);
+        setTimeout(() => setYesterdaySummary(null), YESTERDAY_SUMMARY_MS);
+      }
+    }
+
+    // Save today's date and update weekend status
+    saveDate(today);
+    setIsWeekend(isIsraeliWeekend());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Save state whenever it changes
   useEffect(() => {
@@ -46,13 +82,23 @@ function App() {
     return () => clearInterval(interval);
   }, [isUnlocked, state.pinUnlockedUntil]);
 
-  // Get tasks for current routine tab
+  // Get tasks for current routine tab (filtered for weekends)
   const getTasksForTab = (tab: TabId) => {
     if (tab === 'rewards') return [];
-    return selectedKid[tab as RoutineType] || [];
+    if (tab === 'afternoon' && isWeekend) return [];
+    const tasks = selectedKid[tab as RoutineType] || [];
+    if (tab === 'morning' && isWeekend) {
+      return tasks.filter((t) => !WEEKEND_EXCLUDED_MORNING.includes(t.id));
+    }
+    return tasks;
   };
 
-  const currentTasks = getTasksForTab(activeTab);
+  // Filter tabs for weekends (hide afternoon)
+  const visibleTabs = isWeekend ? TABS.filter((t) => t.id !== 'afternoon') : TABS;
+
+  // If on a hidden tab (afternoon on weekend), redirect to morning
+  const effectiveTab = (isWeekend && activeTab === 'afternoon') ? 'morning' : activeTab;
+  const currentTasks = getTasksForTab(effectiveTab);
   const currentTaskIds = currentTasks.map((t) => t.id);
   const currentStatuses = selectedKid.status.filter((s) => currentTaskIds.includes(s.taskId));
   const doneTasks = currentStatuses.filter((s) => s.done).length;
@@ -184,6 +230,14 @@ function App() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatHebrewDate = () => {
+    const now = new Date();
+    const dayName = HEBREW_DAYS[now.getDay()];
+    const dayNum = now.getDate();
+    const month = HEBREW_MONTHS[now.getMonth()];
+    return `יום ${dayName}, ${dayNum} ${month}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
@@ -218,6 +272,18 @@ function App() {
               👨‍👩‍👧‍👦 הורים
             </button>
           </div>
+        </div>
+
+        {/* Date Display */}
+        <div className="text-center mb-4" dir="rtl">
+          <span className="text-sm font-medium text-gray-500">
+            {formatHebrewDate()}
+          </span>
+          {isWeekend && (
+            <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">
+              🌴 סוף שבוע
+            </span>
+          )}
         </div>
 
         {/* Kid Selector */}
@@ -272,7 +338,7 @@ function App() {
 
           {/* Tabs */}
           <div className="flex gap-2 overflow-x-auto">
-            {TABS.map((tab) => {
+            {visibleTabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
@@ -324,6 +390,24 @@ function App() {
           )}
         </div>
       </div>
+
+      {/* Yesterday Summary Overlay */}
+      {yesterdaySummary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-fade-out" style={{ animationDelay: '2s', animationDuration: '1s', animationFillMode: 'forwards' }}>
+          <div className="bg-white rounded-3xl shadow-xl p-6 mx-4 max-w-sm w-full text-center" dir="rtl">
+            <div className="text-2xl mb-3">📊</div>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">סיכום אתמול</h2>
+            {yesterdaySummary.kids.map((kid) => (
+              <div key={kid.hebrewName} className="flex items-center justify-center gap-3 mb-2">
+                <img src={kid.avatar} alt={kid.hebrewName} className="w-10 h-10 rounded-full object-cover" />
+                <span className="font-semibold text-gray-700">
+                  {kid.hebrewName}: {kid.done} מתוך {kid.total} משימות!
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Confetti Overlay */}
       {showConfetti && (

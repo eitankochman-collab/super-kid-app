@@ -1,6 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
+// Mock isIsraeliWeekend to return false by default (weekday mode)
+vi.mock('../storage', async () => {
+  const actual = await vi.importActual('../storage');
+  return {
+    ...actual,
+    isIsraeliWeekend: vi.fn(() => false),
+  };
+});
+
 import App from '../App';
 
 describe('App', () => {
@@ -151,5 +161,10 @@ describe('App', () => {
       const state = JSON.parse(stored!);
       expect(state.kids[0].status.some((s: { done: boolean }) => s.done)).toBe(true);
     });
+  });
+
+  it('shows Hebrew date', () => {
+    render(<App />);
+    expect(screen.getByText(/יום/)).toBeInTheDocument();
   });
 });
