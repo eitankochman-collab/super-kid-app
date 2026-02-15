@@ -30,13 +30,13 @@ function getTimeBackground(): string {
   }
 }
 
-/** Time-based greeting with Luna — bilingual */
-function getGreeting(): { text: string; textEn: string; emoji: string; luna: string; lunaEn: string } {
+/** Time-based greeting — bilingual */
+function getGreeting(): { text: string; textEn: string; emoji: string } {
   const hour = new Date().getHours();
-  if (hour >= 6 && hour < 12) return { text: 'בוקר טוב', textEn: 'Good morning', emoji: '☀️🐕', luna: 'לונה מחכה לך!', lunaEn: 'Luna is waiting for you!' };
-  if (hour >= 12 && hour < 17) return { text: 'צהריים טובים', textEn: 'Good afternoon', emoji: '🌤🐕', luna: 'לונה גאה בך!', lunaEn: 'Luna is proud of you!' };
-  if (hour >= 17 && hour < 21) return { text: 'ערב טוב', textEn: 'Good evening', emoji: '🌙🐕', luna: 'לונה אומרת לילה טוב!', lunaEn: 'Luna says good night!' };
-  return { text: 'לילה טוב', textEn: 'Good night', emoji: '🌟🐕', luna: 'לונה אומרת לילה טוב!', lunaEn: 'Luna says good night!' };
+  if (hour >= 6 && hour < 12) return { text: 'בוקר טוב', textEn: 'Good morning', emoji: '☀️🐕' };
+  if (hour >= 12 && hour < 17) return { text: 'צהריים טובים', textEn: 'Good afternoon', emoji: '🌤🐕' };
+  if (hour >= 17 && hour < 21) return { text: 'ערב טוב', textEn: 'Good evening', emoji: '🌙🐕' };
+  return { text: 'לילה טוב', textEn: 'Good night', emoji: '🌟🐕' };
 }
 
 /** English day names */
@@ -569,8 +569,6 @@ function App() {
           <div className="text-sm font-semibold text-gray-400">
             {greeting.textEn}, {selectedKid.name}!
           </div>
-          <div className="text-sm font-bold text-purple-600 mt-0.5" dir="rtl">{greeting.luna}</div>
-          <div className="text-xs font-semibold text-purple-400">{greeting.lunaEn}</div>
         </div>
 
         {/* Kid Selector */}
