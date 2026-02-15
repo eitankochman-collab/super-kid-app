@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { AppState, RoutineType } from './types';
-import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isIsraeliWeekend } from './storage';
+import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isWeekendDay } from './storage';
 import type { YesterdaySummary } from './storage';
 import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS } from './constants';
 import { ProgressRing } from './components/ProgressRing';
@@ -20,7 +20,7 @@ function App() {
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [yesterdaySummary, setYesterdaySummary] = useState<YesterdaySummary | null>(null);
-  const [isWeekend, setIsWeekend] = useState(isIsraeliWeekend);
+  const [isWeekend, setIsWeekend] = useState(isWeekendDay);
 
   const isUnlocked = state.pinUnlockedUntil !== null && Date.now() < state.pinUnlockedUntil;
   const selectedKid = state.kids[selectedKidIndex];
@@ -54,7 +54,7 @@ function App() {
 
     // Save today's date and update weekend status
     saveDate(today);
-    setIsWeekend(isIsraeliWeekend());
+    setIsWeekend(isWeekendDay());
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

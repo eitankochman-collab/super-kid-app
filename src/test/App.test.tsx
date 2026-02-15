@@ -2,12 +2,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-// Mock isIsraeliWeekend to return false by default (weekday mode)
+// Mock isWeekendDay to return false by default (weekday mode)
 vi.mock('../storage', async () => {
   const actual = await vi.importActual('../storage');
   return {
     ...actual,
-    isIsraeliWeekend: vi.fn(() => false),
+    isWeekendDay: vi.fn(() => false),
   };
 });
 

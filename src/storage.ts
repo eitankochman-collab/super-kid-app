@@ -41,13 +41,10 @@ export function loadYesterdaySummary(): YesterdaySummary | null {
   return null;
 }
 
-/** Check if the current time is Israeli weekend (Friday after 4pm, or Saturday) */
-export function isIsraeliWeekend(): boolean {
-  const now = new Date();
-  const day = now.getDay(); // 0=Sun, 5=Fri, 6=Sat
-  if (day === 6) return true; // Saturday
-  if (day === 5 && now.getHours() >= 16) return true; // Friday after 4pm
-  return false;
+/** Check if today is a weekend day (Saturday=6 or Sunday=0) */
+export function isWeekendDay(): boolean {
+  const day = new Date().getDay();
+  return day === 0 || day === 6;
 }
 
 /** Migrate old state format (no afternoon, old task IDs) to new format */
