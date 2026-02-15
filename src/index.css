@@ -178,3 +178,14 @@ body {
 .star-glow {
   animation: star-glow 2s ease-in-out infinite;
 }
+
+/* Lunchbox slot pop animation */
+@keyframes slot-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.slot-pop {
+  animation: slot-pop 0.3s ease-out;
+}

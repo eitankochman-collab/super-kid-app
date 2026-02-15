@@ -1,4 +1,4 @@
-import type { Task, KidData, Reward } from './types';
+import type { Task, KidData, Reward, FoodItem } from './types';
 
 const morningTasks: Task[] = [
   { id: 'm1', hebrew: 'קמים מהמיטה', english: 'Wake up', emoji: '🌅' },
@@ -79,6 +79,21 @@ export const initialKids: KidData[] = [
     starBank: 0,
     streak: { current: 0, best: 0, lastCompletionDate: null },
   },
+];
+
+export const defaultFoodItems: FoodItem[] = [
+  { id: 'f1',  hebrew: 'כריך',    english: 'Sandwich',   emoji: '🥪', available: true, isCustom: false },
+  { id: 'f2',  hebrew: 'גבינה',   english: 'Cheese',     emoji: '🧀', available: true, isCustom: false },
+  { id: 'f3',  hebrew: 'גזר',     english: 'Carrot',     emoji: '🥕', available: true, isCustom: false },
+  { id: 'f4',  hebrew: 'תפוח',    english: 'Apple',      emoji: '🍎', available: true, isCustom: false },
+  { id: 'f5',  hebrew: 'מלפפון',   english: 'Cucumber',   emoji: '🥒', available: true, isCustom: false },
+  { id: 'f6',  hebrew: 'ענבים',    english: 'Grapes',     emoji: '🍇', available: true, isCustom: false },
+  { id: 'f7',  hebrew: 'ביצה',    english: 'Egg',        emoji: '🥚', available: true, isCustom: false },
+  { id: 'f8',  hebrew: 'פיתה',    english: 'Pita',       emoji: '🫓', available: true, isCustom: false },
+  { id: 'f9',  hebrew: 'עוגיה',   english: 'Cookie',     emoji: '🍪', available: true, isCustom: false },
+  { id: 'f10', hebrew: 'מיץ',     english: 'Juice box',  emoji: '🧃', available: true, isCustom: false },
+  { id: 'f11', hebrew: 'בננה',    english: 'Banana',     emoji: '🍌', available: true, isCustom: false },
+  { id: 'f12', hebrew: 'בוטנים',   english: 'Peanuts',    emoji: '🥜', available: true, isCustom: false },
 ];
 
 export const DEFAULT_PIN = '1234';

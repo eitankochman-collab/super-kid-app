@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import type { KidData, Reward, RewardTier } from '../types';
+import type { KidData, Reward, RewardTier, FoodItem } from '../types';
 import { BONUS_LOG_KEY, PICKUP_KEY } from '../constants';
 import { loadDailyLog } from '../storage';
 import type { DailyRecord } from '../storage';
+import { LunchboxAdmin } from './LunchboxAdmin';
 
 interface BonusEntry {
   date: string; // YYYY-MM-DD
@@ -85,6 +86,8 @@ interface AdminPanelProps {
   onAddReward: (reward: Omit<Reward, 'id'>) => void;
   onEditReward: (rewardId: string, updates: Partial<Omit<Reward, 'id'>>) => void;
   onDeleteReward: (rewardId: string) => void;
+  foodCatalog: FoodItem[];
+  onUpdateFoodCatalog: (items: FoodItem[]) => void;
 }
 
 export function AdminPanel({
@@ -101,6 +104,8 @@ export function AdminPanel({
   onAddReward,
   onEditReward,
   onDeleteReward,
+  foodCatalog,
+  onUpdateFoodCatalog,
 }: AdminPanelProps) {
   const [bonusKidId, setBonusKidId] = useState(kids[0]?.id || '');
   const [bonusText, setBonusText] = useState('');
@@ -700,6 +705,13 @@ export function AdminPanel({
             </div>
           </div>
         </div>
+
+        {/* Lunchbox Management */}
+        <LunchboxAdmin
+          kids={kids}
+          foodItems={foodCatalog}
+          onUpdateFoodItems={onUpdateFoodCatalog}
+        />
 
         {/* Reset button */}
         <div className="mb-6 p-4 bg-red-50 rounded-2xl border-2 border-red-200">

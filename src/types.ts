@@ -46,6 +46,22 @@ export interface Reward {
   tier: RewardTier;
 }
 
+export interface FoodItem {
+  id: string;
+  hebrew: string;
+  english: string;
+  emoji: string;
+  available: boolean;
+  isCustom: boolean;
+}
+
+export interface LunchboxSelection {
+  kidId: string;
+  date: string;       // YYYY-MM-DD (tomorrow)
+  items: string[];     // FoodItem IDs (max 5)
+  savedAt: number;     // Date.now()
+}
+
 export interface AppState {
   kids: KidData[];
   rewards: Reward[];

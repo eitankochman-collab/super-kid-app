@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import type { AppState, RoutineType, Reward } from './types';
+import type { AppState, RoutineType, Reward, FoodItem } from './types';
 import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isWeekendDay, isYesterday, saveTodaySnapshot, saveDailyRecord } from './storage';
 import type { YesterdaySummary } from './storage';
 import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES, PICKUP_KEY } from './constants';
+import { loadFoodCatalog, saveFoodCatalog } from './lunchboxStorage';
 import { ProgressRing } from './components/ProgressRing';
 import { TaskList } from './components/TaskList';
 import { RewardsShop } from './components/RewardsShop';
+import { LunchboxBuilder } from './components/LunchboxBuilder';
 import { ConfettiOverlay } from './components/ConfettiOverlay';
 import { MiniCelebration } from './components/MiniCelebration';
 import { PinModal } from './components/PinModal';
@@ -24,6 +26,7 @@ function App() {
   const [yesterdaySummary, setYesterdaySummary] = useState<YesterdaySummary | null>(null);
   const [isWeekendAuto, setIsWeekendAuto] = useState(isWeekendDay);
   const [weekendOverride, setWeekendOverride] = useState<boolean | null>(null);
+  const [foodCatalog, setFoodCatalog] = useState<FoodItem[]>(loadFoodCatalog);
   const isWeekend = weekendOverride !== null ? weekendOverride : isWeekendAuto;
 
   const isUnlocked = state.pinUnlockedUntil !== null && Date.now() < state.pinUnlockedUntil;
@@ -88,6 +91,11 @@ function App() {
     saveTodaySnapshot(state);
   }, [state]);
 
+  // Persist food catalog whenever it changes
+  useEffect(() => {
+    saveFoodCatalog(foodCatalog);
+  }, [foodCatalog]);
+
   // Update time remaining display
   useEffect(() => {
     if (!isUnlocked) {
@@ -109,7 +117,7 @@ function App() {
 
   // Get tasks for current routine tab (filtered for weekends)
   const getTasksForTab = (tab: TabId) => {
-    if (tab === 'rewards') return [];
+    if (tab === 'rewards' || tab === 'lunchbox') return [];
     if (tab === 'afternoon' && isWeekend) return [];
     const tasks = selectedKid[tab as RoutineType] || [];
     if (tab === 'morning' && isWeekend) {
@@ -498,7 +506,7 @@ function App() {
         {/* Progress + Tabs Card */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-md p-5 mb-5 border border-white/50">
           {/* Progress section */}
-          {activeTab !== 'rewards' && (
+          {activeTab !== 'rewards' && activeTab !== 'lunchbox' && (
             <div className="flex items-center gap-5 mb-4">
               <ProgressRing percent={progress} color={selectedKid.accent} size={80} />
               <div>
@@ -536,7 +544,7 @@ function App() {
           </div>
 
           {/* Per-tab progress bar */}
-          {activeTab !== 'rewards' && (
+          {activeTab !== 'rewards' && activeTab !== 'lunchbox' && (
             <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div
                 className={`h-full bg-gradient-to-r ${selectedKid.color} transition-all duration-500 ease-out rounded-full`}
@@ -553,6 +561,14 @@ function App() {
               rewards={state.rewards}
               starBank={selectedKid.starBank}
               onRedeemReward={(rewardId) => handleRedeemReward(selectedKid.id, rewardId)}
+            />
+          ) : activeTab === 'lunchbox' ? (
+            <LunchboxBuilder
+              key={selectedKid.id}
+              kidId={selectedKid.id}
+              kidHebrewName={selectedKid.hebrewName}
+              kidColor={selectedKid.color}
+              foodItems={foodCatalog.filter((f) => f.available)}
             />
           ) : (
             <TaskList
@@ -629,6 +645,8 @@ function App() {
           onAddReward={handleAddReward}
           onEditReward={handleEditReward}
           onDeleteReward={handleDeleteReward}
+          foodCatalog={foodCatalog}
+          onUpdateFoodCatalog={setFoodCatalog}
         />
       )}
     </div>

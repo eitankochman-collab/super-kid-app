@@ -46,15 +46,16 @@ describe('constants', () => {
   });
 
   describe('TABS', () => {
-    it('has 4 tabs', () => {
-      expect(TABS).toHaveLength(4);
+    it('has 5 tabs', () => {
+      expect(TABS).toHaveLength(5);
     });
 
-    it('includes morning, afternoon, evening, and rewards', () => {
+    it('includes morning, afternoon, evening, lunchbox, and rewards', () => {
       const ids = TABS.map((t) => t.id);
       expect(ids).toContain('morning');
       expect(ids).toContain('afternoon');
       expect(ids).toContain('evening');
+      expect(ids).toContain('lunchbox');
       expect(ids).toContain('rewards');
     });
 

@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AdminPanel } from '../components/AdminPanel';
 import type { KidData, Reward } from '../types';
+import { defaultFoodItems } from '../data';
 
 const mockKids: KidData[] = [
   {
@@ -59,6 +60,8 @@ describe('AdminPanel', () => {
         onAddReward={vi.fn()}
         onEditReward={vi.fn()}
         onDeleteReward={vi.fn()}
+        foodCatalog={defaultFoodItems}
+        onUpdateFoodCatalog={vi.fn()}
       />
     );
 
@@ -81,6 +84,8 @@ describe('AdminPanel', () => {
         onAddReward={vi.fn()}
         onEditReward={vi.fn()}
         onDeleteReward={vi.fn()}
+        foodCatalog={defaultFoodItems}
+        onUpdateFoodCatalog={vi.fn()}
       />
     );
 
@@ -106,6 +111,8 @@ describe('AdminPanel', () => {
         onAddReward={vi.fn()}
         onEditReward={vi.fn()}
         onDeleteReward={vi.fn()}
+        foodCatalog={defaultFoodItems}
+        onUpdateFoodCatalog={vi.fn()}
       />
     );
 
@@ -132,6 +139,8 @@ describe('AdminPanel', () => {
         onAddReward={vi.fn()}
         onEditReward={vi.fn()}
         onDeleteReward={vi.fn()}
+        foodCatalog={defaultFoodItems}
+        onUpdateFoodCatalog={vi.fn()}
       />
     );
 
@@ -155,6 +164,8 @@ describe('AdminPanel', () => {
         onAddReward={vi.fn()}
         onEditReward={vi.fn()}
         onDeleteReward={vi.fn()}
+        foodCatalog={defaultFoodItems}
+        onUpdateFoodCatalog={vi.fn()}
       />
     );
 
@@ -182,6 +193,8 @@ describe('AdminPanel', () => {
         onAddReward={vi.fn()}
         onEditReward={vi.fn()}
         onDeleteReward={vi.fn()}
+        foodCatalog={defaultFoodItems}
+        onUpdateFoodCatalog={vi.fn()}
       />
     );
 
@@ -212,6 +225,8 @@ describe('AdminPanel', () => {
         onAddReward={vi.fn()}
         onEditReward={vi.fn()}
         onDeleteReward={vi.fn()}
+        foodCatalog={defaultFoodItems}
+        onUpdateFoodCatalog={vi.fn()}
       />
     );
 
@@ -240,6 +255,8 @@ describe('AdminPanel', () => {
         onAddReward={vi.fn()}
         onEditReward={vi.fn()}
         onDeleteReward={vi.fn()}
+        foodCatalog={defaultFoodItems}
+        onUpdateFoodCatalog={vi.fn()}
       />
     );
 

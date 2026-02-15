@@ -76,12 +76,22 @@ export const DAILY_LOG_KEY = 'super-kid-app-daily-log';
 /** localStorage key for pickup schedule (Mon-Fri → אבא/אמא) */
 export const PICKUP_KEY = 'super-kid-app-pickup';
 
+/** localStorage key for lunchbox food catalog */
+export const LUNCHBOX_CATALOG_KEY = 'super-kid-app-lunchbox-catalog';
+
+/** localStorage key for lunchbox selections */
+export const LUNCHBOX_SELECTIONS_KEY = 'super-kid-app-lunchbox-selections';
+
+/** Maximum number of items in a lunchbox */
+export const LUNCHBOX_MAX_SLOTS = 5;
+
 /** Tab configuration for routine/rewards navigation */
-export type TabId = 'morning' | 'afternoon' | 'evening' | 'rewards';
+export type TabId = 'morning' | 'afternoon' | 'evening' | 'lunchbox' | 'rewards';
 
 export const TABS: { id: TabId; label: string; labelEn: string; emoji: string }[] = [
   { id: 'morning', label: 'בוקר', labelEn: 'Morning', emoji: '🌅' },
   { id: 'afternoon', label: 'אחרי ביה״ס', labelEn: 'After School', emoji: '🎒' },
   { id: 'evening', label: 'ערב', labelEn: 'Evening', emoji: '🌙' },
+  { id: 'lunchbox', label: 'קופסה', labelEn: 'Lunchbox', emoji: '🍱' },
   { id: 'rewards', label: 'פרסים', labelEn: 'Rewards', emoji: '🎁' },
 ];
