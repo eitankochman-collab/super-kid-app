@@ -231,3 +231,23 @@ body {
 .slot-bounce-out {
   animation: slot-bounce-out 0.25s ease-in forwards;
 }
+
+/* Progress ring golden glow at high completion */
+@keyframes progress-ring-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.3)); }
+  50% { filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.6)); }
+}
+
+.progress-ring-glow {
+  animation: progress-ring-glow 1.5s ease-in-out infinite;
+}
+
+/* Long-press fill animation for undo button */
+@keyframes long-press-fill-anim {
+  0% { box-shadow: inset 0 0 0 0 rgba(156, 163, 175, 0.4); }
+  100% { box-shadow: inset 0 0 0 20px rgba(156, 163, 175, 0.4); }
+}
+
+.long-press-fill {
+  animation: long-press-fill-anim 0.5s linear forwards;
+}

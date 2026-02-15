@@ -1,5 +1,5 @@
 import type { Task, TaskStatus } from '../types';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const EMOJI_COLORS: Record<string, string> = {
   '🌅': 'from-orange-100 to-yellow-100',
@@ -30,6 +30,8 @@ interface TaskItemProps {
 
 export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked, kidColor }: TaskItemProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [pressing, setPressing] = useState(false);
+  const pressTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const isDone = status?.done || false;
   const emojiColor = EMOJI_COLORS[task.emoji] || 'from-yellow-100 to-orange-100';
 
@@ -46,31 +48,82 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
     }
   };
 
+  const startPress = () => {
+    setPressing(true);
+    pressTimer.current = setTimeout(() => {
+      setPressing(false);
+      onToggleDone();
+    }, 500);
+  };
+
+  const cancelPress = () => {
+    setPressing(false);
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
+
+  if (isDone) {
+    return (
+      <div className="p-2 rounded-2xl bg-green-200 border-2 border-green-400 relative">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-green-400 flex items-center justify-center text-2xl flex-shrink-0">
+            ✅
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-base font-bold text-green-700 line-through" dir="rtl">
+              {task.hebrew}
+            </div>
+            <span className="text-xs text-green-500">{task.english}</span>
+          </div>
+        </div>
+        {/* Tiny undo button — requires 500ms long-press */}
+        <button
+          onPointerDown={startPress}
+          onPointerUp={cancelPress}
+          onPointerLeave={cancelPress}
+          onPointerCancel={cancelPress}
+          className={`absolute bottom-2 right-2 w-8 h-8 rounded-full bg-gray-200 text-gray-400 text-xs flex items-center justify-center transition-transform ${
+            pressing ? 'long-press-fill scale-110' : ''
+          }`}
+          title="ביטול"
+        >
+          ↩️
+        </button>
+        {/* Remove star — parent-only, small */}
+        {isUnlocked && (
+          <button
+            onClick={onRemoveStar}
+            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-400 text-[10px] flex items-center justify-center hover:bg-red-200 transition-colors"
+            title="הסר ⭐"
+          >
+            ⭐
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`p-3 rounded-2xl transition-all duration-200 ${
-        isDone
-          ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-300 scale-[0.97]'
-          : 'bg-white hover:shadow-md border border-gray-100'
-      }`}
-    >
+    <div className="p-3 rounded-2xl bg-white hover:shadow-md border border-gray-100 transition-all duration-200">
       <div className="flex items-center gap-3">
         {/* Emoji in colored circle */}
         <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${emojiColor} flex items-center justify-center text-4xl flex-shrink-0 shadow-md`}>
-          {isDone ? '✅' : task.emoji}
+          {task.emoji}
         </div>
 
         {/* Text content */}
         <div className="flex-1 min-w-0">
-          <div className={`text-xl font-black ${isDone ? 'text-green-700' : 'text-gray-800'}`} dir="rtl">
+          <div className="text-xl font-black text-gray-800" dir="rtl">
             {task.hebrew}
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-xs ${isDone ? 'text-green-500' : 'text-gray-400'}`}>{task.english}</span>
+            <span className="text-xs text-gray-400">{task.english}</span>
             {'speechSynthesis' in window && (
               <button
                 onClick={speak}
-                className={`w-7 h-7 rounded-full bg-blue-50 text-sm flex items-center justify-center hover:bg-blue-100 transition-colors ${
+                className={`w-12 h-12 rounded-full bg-blue-100 text-lg flex items-center justify-center hover:bg-blue-200 transition-colors active:scale-95 ${
                   isSpeaking ? 'animate-pulse' : ''
                 }`}
                 title="Listen"
@@ -81,28 +134,16 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex flex-col gap-1 flex-shrink-0 w-28">
+        {/* Done button — big emoji-first */}
+        <div className="flex-shrink-0">
           <button
             onClick={onToggleDone}
-            className={`w-full rounded-2xl font-bold text-lg transition-all active:scale-95 ${
-              isDone
-                ? 'py-3 bg-gray-200 text-gray-600 hover:bg-gray-300'
-                : `py-3.5 bg-gradient-to-r ${kidColor} text-white shadow-lg hover:shadow-xl btn-invite-pulse`
-            }`}
+            className={`w-full rounded-2xl font-bold transition-all active:scale-95 py-3 px-5 bg-gradient-to-r ${kidColor} text-white shadow-lg hover:shadow-xl btn-invite-pulse flex flex-col items-center gap-0.5`}
             style={{ minHeight: '64px' }}
           >
-            {isDone ? 'ביטול ↩️' : '✅ סיימתי'}
+            <span className="text-3xl">✅</span>
+            <span className="text-xs font-bold">סיימתי</span>
           </button>
-          {isDone && isUnlocked && (
-            <button
-              onClick={onRemoveStar}
-              className="w-full py-1.5 rounded-xl bg-red-50 text-red-600 font-semibold text-xs hover:bg-red-100 transition-all active:scale-95"
-              title="Remove star"
-            >
-              הסר ⭐
-            </button>
-          )}
         </div>
       </div>
     </div>

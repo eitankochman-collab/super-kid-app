@@ -65,6 +65,9 @@ export const STREAK_MILESTONES: { days: number; message: string; bonus: number }
   { days: 3, message: '!3 ימים ברצף 🔥', bonus: 2 },
   { days: 5, message: '!5 ימים ברצף 🔥🔥', bonus: 3 },
   { days: 7, message: '!שבוע מושלם 🏆', bonus: 5 },
+  { days: 14, message: '!שבועיים ברצף 🏅', bonus: 10 },
+  { days: 21, message: '!3 שבועות 💎', bonus: 15 },
+  { days: 30, message: '!חודש מושלם 👑', bonus: 25 },
 ];
 
 /** localStorage key for bonus star log */
@@ -92,6 +95,6 @@ export const TABS: { id: TabId; label: string; labelEn: string; emoji: string }[
   { id: 'morning', label: 'בוקר', labelEn: 'Morning', emoji: '🌅' },
   { id: 'afternoon', label: 'אחרי ביה״ס', labelEn: 'After School', emoji: '🎒' },
   { id: 'evening', label: 'ערב', labelEn: 'Evening', emoji: '🌙' },
-  { id: 'lunchbox', label: 'קופסה', labelEn: 'Lunchbox', emoji: '🍱' },
   { id: 'rewards', label: 'פרסים', labelEn: 'Rewards', emoji: '🎁' },
+  { id: 'lunchbox', label: 'קופסה', labelEn: 'Lunchbox', emoji: '🍱' },
 ];

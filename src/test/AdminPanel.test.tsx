@@ -43,51 +43,39 @@ const mockRewards: Reward[] = [
   { id: 'r2', title: 'Extra screen time', hebrew: 'זמן מסך נוסף', emoji: '📱', starCost: 5, tier: 'quick' },
 ];
 
+const renderAdmin = (overrides = {}) => {
+  const defaults = {
+    kids: mockKids,
+    rewards: mockRewards,
+    onRedeemReward: vi.fn(),
+    onAdjustStars: vi.fn(),
+    onClose: vi.fn(),
+    isUnlocked: true,
+    onRequestPin: vi.fn(),
+    onResetDone: vi.fn(),
+    weekendOverride: null as boolean | null,
+    onToggleWeekend: vi.fn(),
+    onAddReward: vi.fn(),
+    onEditReward: vi.fn(),
+    onDeleteReward: vi.fn(),
+    foodCatalog: defaultFoodItems,
+    onUpdateFoodCatalog: vi.fn(),
+  };
+  return render(<AdminPanel {...defaults} {...overrides} />);
+};
+
 describe('AdminPanel', () => {
   it('renders the admin panel title', () => {
-    render(
-      <AdminPanel
-        kids={mockKids}
-        rewards={mockRewards}
-        onRedeemReward={vi.fn()}
-        onAdjustStars={vi.fn()}
-        onClose={vi.fn()}
-        isUnlocked={true}
-        onRequestPin={vi.fn()}
-        onResetDone={vi.fn()}
-        weekendOverride={null}
-        onToggleWeekend={vi.fn()}
-        onAddReward={vi.fn()}
-        onEditReward={vi.fn()}
-        onDeleteReward={vi.fn()}
-        foodCatalog={defaultFoodItems}
-        onUpdateFoodCatalog={vi.fn()}
-      />
-    );
-
+    renderAdmin();
     expect(screen.getByText(/ניהול הורים/)).toBeInTheDocument();
   });
 
-  it('displays star banks for all kids with Hebrew names and avatars', () => {
-    render(
-      <AdminPanel
-        kids={mockKids}
-        rewards={mockRewards}
-        onRedeemReward={vi.fn()}
-        onAdjustStars={vi.fn()}
-        onClose={vi.fn()}
-        isUnlocked={true}
-        onRequestPin={vi.fn()}
-        onResetDone={vi.fn()}
-        weekendOverride={null}
-        onToggleWeekend={vi.fn()}
-        onAddReward={vi.fn()}
-        onEditReward={vi.fn()}
-        onDeleteReward={vi.fn()}
-        foodCatalog={defaultFoodItems}
-        onUpdateFoodCatalog={vi.fn()}
-      />
-    );
+  it('displays star banks for all kids with Hebrew names and avatars', async () => {
+    const user = userEvent.setup();
+    renderAdmin();
+
+    // Open stars section (accordion is collapsed by default)
+    await user.click(screen.getByText('⭐ ניהול כוכבים'));
 
     expect(screen.getAllByText('ליאור').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('רוני').length).toBeGreaterThanOrEqual(1);
@@ -95,26 +83,12 @@ describe('AdminPanel', () => {
     expect(screen.getAllByAltText('Roni').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('displays all rewards with Hebrew names', () => {
-    render(
-      <AdminPanel
-        kids={mockKids}
-        rewards={mockRewards}
-        onRedeemReward={vi.fn()}
-        onAdjustStars={vi.fn()}
-        onClose={vi.fn()}
-        isUnlocked={true}
-        onRequestPin={vi.fn()}
-        onResetDone={vi.fn()}
-        weekendOverride={null}
-        onToggleWeekend={vi.fn()}
-        onAddReward={vi.fn()}
-        onEditReward={vi.fn()}
-        onDeleteReward={vi.fn()}
-        foodCatalog={defaultFoodItems}
-        onUpdateFoodCatalog={vi.fn()}
-      />
-    );
+  it('displays all rewards with Hebrew names', async () => {
+    const user = userEvent.setup();
+    renderAdmin();
+
+    // Open rewards section
+    await user.click(screen.getByText('🎁 ניהול פרסים'));
 
     expect(screen.getByText('סרט ערב')).toBeInTheDocument();
     expect(screen.getByText('זמן מסך נוסף')).toBeInTheDocument();
@@ -123,51 +97,18 @@ describe('AdminPanel', () => {
   it('calls onClose when close button is clicked', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
-
-    render(
-      <AdminPanel
-        kids={mockKids}
-        rewards={mockRewards}
-        onRedeemReward={vi.fn()}
-        onAdjustStars={vi.fn()}
-        onClose={onClose}
-        isUnlocked={true}
-        onRequestPin={vi.fn()}
-        onResetDone={vi.fn()}
-        weekendOverride={null}
-        onToggleWeekend={vi.fn()}
-        onAddReward={vi.fn()}
-        onEditReward={vi.fn()}
-        onDeleteReward={vi.fn()}
-        foodCatalog={defaultFoodItems}
-        onUpdateFoodCatalog={vi.fn()}
-      />
-    );
+    renderAdmin({ onClose });
 
     await user.click(screen.getByText('סגירה'));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('disables redeem button when kid cannot afford reward', () => {
-    render(
-      <AdminPanel
-        kids={mockKids}
-        rewards={mockRewards}
-        onRedeemReward={vi.fn()}
-        onAdjustStars={vi.fn()}
-        onClose={vi.fn()}
-        isUnlocked={true}
-        onRequestPin={vi.fn()}
-        onResetDone={vi.fn()}
-        weekendOverride={null}
-        onToggleWeekend={vi.fn()}
-        onAddReward={vi.fn()}
-        onEditReward={vi.fn()}
-        onDeleteReward={vi.fn()}
-        foodCatalog={defaultFoodItems}
-        onUpdateFoodCatalog={vi.fn()}
-      />
-    );
+  it('disables redeem button when kid cannot afford reward', async () => {
+    const user = userEvent.setup();
+    renderAdmin();
+
+    // Open rewards section
+    await user.click(screen.getByText('🎁 ניהול פרסים'));
 
     // Roni has 3 stars, Movie night costs 10 - button should be disabled
     const roniMovieButton = screen.getAllByTitle('Redeem for Roni')[0];
@@ -177,26 +118,10 @@ describe('AdminPanel', () => {
   it('calls onRedeemReward when unlocked and redeem is clicked', async () => {
     const user = userEvent.setup();
     const onRedeemReward = vi.fn();
+    renderAdmin({ onRedeemReward });
 
-    render(
-      <AdminPanel
-        kids={mockKids}
-        rewards={mockRewards}
-        onRedeemReward={onRedeemReward}
-        onAdjustStars={vi.fn()}
-        onClose={vi.fn()}
-        isUnlocked={true}
-        onRequestPin={vi.fn()}
-        onResetDone={vi.fn()}
-        weekendOverride={null}
-        onToggleWeekend={vi.fn()}
-        onAddReward={vi.fn()}
-        onEditReward={vi.fn()}
-        onDeleteReward={vi.fn()}
-        foodCatalog={defaultFoodItems}
-        onUpdateFoodCatalog={vi.fn()}
-      />
-    );
+    // Open rewards section
+    await user.click(screen.getByText('🎁 ניהול פרסים'));
 
     // Lior has 12 stars, can afford Movie night (10) - find the button for r1
     // Rewards are grouped by tier: quick (r2) appears before weekly (r1)
@@ -209,26 +134,10 @@ describe('AdminPanel', () => {
   it('calls onRequestPin when locked and redeem is clicked', async () => {
     const user = userEvent.setup();
     const onRequestPin = vi.fn();
+    renderAdmin({ isUnlocked: false, onRequestPin });
 
-    render(
-      <AdminPanel
-        kids={mockKids}
-        rewards={mockRewards}
-        onRedeemReward={vi.fn()}
-        onAdjustStars={vi.fn()}
-        onClose={vi.fn()}
-        isUnlocked={false}
-        onRequestPin={onRequestPin}
-        onResetDone={vi.fn()}
-        weekendOverride={null}
-        onToggleWeekend={vi.fn()}
-        onAddReward={vi.fn()}
-        onEditReward={vi.fn()}
-        onDeleteReward={vi.fn()}
-        foodCatalog={defaultFoodItems}
-        onUpdateFoodCatalog={vi.fn()}
-      />
-    );
+    // Open rewards section
+    await user.click(screen.getByText('🎁 ניהול פרסים'));
 
     // Lior has 12 stars, can afford Movie night (10)
     const liorButtons = screen.getAllByTitle('Redeem for Lior');
@@ -239,26 +148,10 @@ describe('AdminPanel', () => {
   it('has a reset button that calls onResetDone', async () => {
     const user = userEvent.setup();
     const onResetDone = vi.fn();
+    renderAdmin({ onResetDone });
 
-    render(
-      <AdminPanel
-        kids={mockKids}
-        rewards={mockRewards}
-        onRedeemReward={vi.fn()}
-        onAdjustStars={vi.fn()}
-        onClose={vi.fn()}
-        isUnlocked={true}
-        onRequestPin={vi.fn()}
-        onResetDone={onResetDone}
-        weekendOverride={null}
-        onToggleWeekend={vi.fn()}
-        onAddReward={vi.fn()}
-        onEditReward={vi.fn()}
-        onDeleteReward={vi.fn()}
-        foodCatalog={defaultFoodItems}
-        onUpdateFoodCatalog={vi.fn()}
-      />
-    );
+    // Open reset section
+    await user.click(screen.getByText('🔄 איפוס משימות'));
 
     await user.click(screen.getByText(/איפוס$/));
     expect(onResetDone).toHaveBeenCalledOnce();

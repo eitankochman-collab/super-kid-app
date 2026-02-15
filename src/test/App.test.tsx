@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Mock isWeekendDay to return false by default (weekday mode)
@@ -66,7 +66,8 @@ describe('App', () => {
     const doneButtons = screen.getAllByText(/סיימתי/);
     await user.click(doneButtons[0]);
 
-    expect(screen.getAllByText(/ביטול/).length).toBeGreaterThanOrEqual(1);
+    // Undo button is now a small button with title="ביטול"
+    expect(screen.getAllByTitle('ביטול').length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows progress display', () => {
@@ -130,22 +131,26 @@ describe('App', () => {
   });
 
   it('removes 1 star when undoing a task', async () => {
-    const user = userEvent.setup();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<App />);
 
     // Complete a task (+1 star)
     const doneButtons = screen.getAllByText(/סיימתי/);
     await user.click(doneButtons[0]);
 
-    // Undo it (-1 star)
-    const undoButton = screen.getAllByText(/ביטול/)[0];
-    await user.click(undoButton);
+    // Undo requires long-press (500ms) via pointerDown
+    const undoButton = screen.getAllByTitle('ביטול')[0];
+    fireEvent.pointerDown(undoButton);
+    act(() => { vi.advanceTimersByTime(600); });
 
     await waitFor(() => {
       const stored = localStorage.getItem('super-kid-app-state');
       const state = JSON.parse(stored!);
       expect(state.kids[0].starBank).toBe(0);
     });
+
+    vi.useRealTimers();
   });
 
   it('persists state to localStorage', async () => {

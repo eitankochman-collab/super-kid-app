@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { KidData, Reward, RewardTier, FoodItem } from '../types';
 import { BONUS_LOG_KEY, PICKUP_KEY } from '../constants';
 import { loadDailyLog } from '../storage';
@@ -90,6 +90,18 @@ interface AdminPanelProps {
   onUpdateFoodCatalog: (items: FoodItem[]) => void;
 }
 
+function SectionHeader({ id, title, isOpen, onToggle }: { id: string; title: string; isOpen: boolean; onToggle: (id: string) => void }) {
+  return (
+    <button
+      onClick={() => onToggle(id)}
+      className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl mb-2 hover:bg-gray-100 transition-colors"
+    >
+      <h3 className="text-xl font-bold text-gray-700">{title}</h3>
+      <span className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+    </button>
+  );
+}
+
 export function AdminPanel({
   kids,
   rewards,
@@ -121,6 +133,24 @@ export function AdminPanel({
     } catch { /* ignore */ }
     return { '1': 'אבא', '2': 'אמא', '3': 'אבא', '4': 'אמא', '5': 'אבא' };
   });
+
+  // Accordion state — all collapsed by default
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const toggleSection = (id: string) => setOpenSections(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  // Debug triple-tap state
+  const [debugTaps, setDebugTaps] = useState(0);
+  const debugTimer = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const handleTitleTap = () => {
+    setDebugTaps(p => p + 1);
+    if (debugTimer.current) clearTimeout(debugTimer.current);
+    debugTimer.current = setTimeout(() => setDebugTaps(0), 1500);
+  };
 
   // Reward CRUD state
   const [showRewardForm, setShowRewardForm] = useState(false);
@@ -207,7 +237,9 @@ export function AdminPanel({
     <div className="fixed inset-0 bg-black/70 flex items-start justify-center z-40 p-4 pt-4 overflow-y-auto">
       <div className="bg-white rounded-3xl p-8 max-w-4xl w-full shadow-2xl mb-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">👨‍👩‍👧‍👦 ניהול הורים</h2>
+          <h2 className="text-3xl font-bold text-gray-800 cursor-default select-none" onClick={handleTitleTap}>
+            👨‍👩‍👧‍👦 ניהול הורים
+          </h2>
           <button
             onClick={onClose}
             className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 text-xl font-bold transition-colors"
@@ -217,547 +249,566 @@ export function AdminPanel({
         </div>
 
         {/* Star Banks */}
-        <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-700 mb-4">⭐ ניהול כוכבים</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {kids.map((kid) => (
-              <div
-                key={kid.id}
-                className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-2xl border-2 border-yellow-200"
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <img src={kid.avatar} alt={kid.name} className="w-10 h-10 rounded-full object-cover border-2 border-white/50 shadow-sm" />
-                    <div>
-                      <h4 className="text-xl font-bold text-gray-800" dir="rtl">{kid.hebrewName}</h4>
-                      <p className="text-sm text-gray-500">{kid.name}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => onAdjustStars(kid.id, -1)}
-                      disabled={kid.starBank <= 0}
-                      className="w-10 h-10 rounded-full bg-red-100 text-red-600 font-bold text-xl flex items-center justify-center hover:bg-red-200 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      -
-                    </button>
-                    <div className="text-2xl font-bold text-yellow-600 min-w-[4rem] text-center">
-                      {kid.starBank} ⭐
-                    </div>
-                    <button
-                      onClick={() => onAdjustStars(kid.id, 1)}
-                      className="w-10 h-10 rounded-full bg-green-100 text-green-600 font-bold text-xl flex items-center justify-center hover:bg-green-200 transition-colors active:scale-95"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                {kid.pinnedRewardId && (() => {
-                  const pinnedReward = rewards.find((r) => r.id === kid.pinnedRewardId);
-                  if (!pinnedReward) return null;
-                  return (
-                    <div className="mt-3 pt-3 border-t border-yellow-200 flex items-center gap-2 text-sm" dir="rtl">
-                      <span>📌</span>
-                      <span className="font-bold text-yellow-700">
-                        {pinnedReward.emoji} {pinnedReward.hebrew} — {pinnedReward.starCost} ⭐
-                      </span>
-                      {kid.starBank >= pinnedReward.starCost && (
-                        <span className="text-green-600 font-bold text-xs">✅ אפשר לקנות!</span>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Weekly View */}
-        <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-700 mb-4">📅 תצוגה שבועית</h3>
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-2xl border-2 border-blue-200">
-            {/* Kid selector */}
-            <div className="flex gap-3 mb-4 justify-center">
+        <SectionHeader id="stars" title="⭐ ניהול כוכבים" isOpen={openSections.has('stars')} onToggle={toggleSection} />
+        {openSections.has('stars') && (
+          <div className="mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {kids.map((kid) => (
-                <button
+                <div
                   key={kid.id}
-                  onClick={() => setWeeklyKidId(kid.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all ${
-                    weeklyKidId === kid.id
-                      ? `bg-gradient-to-r ${kid.color} text-white shadow-md`
-                      : 'bg-white text-gray-600 hover:bg-gray-100'
-                  }`}
+                  className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-2xl border-2 border-yellow-200"
                 >
-                  <img src={kid.avatar} alt={kid.name} className="w-7 h-7 rounded-full object-cover" />
-                  {kid.hebrewName}
-                </button>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <img src={kid.avatar} alt={kid.name} className="w-10 h-10 rounded-full object-cover border-2 border-white/50 shadow-sm" />
+                      <div>
+                        <h4 className="text-xl font-bold text-gray-800" dir="rtl">{kid.hebrewName}</h4>
+                        <p className="text-sm text-gray-500">{kid.name}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => onAdjustStars(kid.id, -1)}
+                        disabled={kid.starBank <= 0}
+                        className="w-10 h-10 rounded-full bg-red-100 text-red-600 font-bold text-xl flex items-center justify-center hover:bg-red-200 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        -
+                      </button>
+                      <div className="text-2xl font-bold text-yellow-600 min-w-[4rem] text-center">
+                        {kid.starBank} ⭐
+                      </div>
+                      <button
+                        onClick={() => onAdjustStars(kid.id, 1)}
+                        className="w-10 h-10 rounded-full bg-green-100 text-green-600 font-bold text-xl flex items-center justify-center hover:bg-green-200 transition-colors active:scale-95"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  {kid.pinnedRewardId && (() => {
+                    const pinnedReward = rewards.find((r) => r.id === kid.pinnedRewardId);
+                    if (!pinnedReward) return null;
+                    return (
+                      <div className="mt-3 pt-3 border-t border-yellow-200 flex items-center gap-2 text-sm" dir="rtl">
+                        <span>📌</span>
+                        <span className="font-bold text-yellow-700">
+                          {pinnedReward.emoji} {pinnedReward.hebrew} — {pinnedReward.starCost} ⭐
+                        </span>
+                        {kid.starBank >= pinnedReward.starCost && (
+                          <span className="text-green-600 font-bold text-xs">✅ אפשר לקנות!</span>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
               ))}
             </div>
+          </div>
+        )}
 
-            {/* Week navigation */}
-            {(() => {
-              const HEBREW_DAY_SHORT = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+        {/* Weekly View */}
+        <SectionHeader id="weekly" title="📅 תצוגה שבועית" isOpen={openSections.has('weekly')} onToggle={toggleSection} />
+        {openSections.has('weekly') && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-2xl border-2 border-blue-200">
+              {/* Kid selector */}
+              <div className="flex gap-3 mb-4 justify-center">
+                {kids.map((kid) => (
+                  <button
+                    key={kid.id}
+                    onClick={() => setWeeklyKidId(kid.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all ${
+                      weeklyKidId === kid.id
+                        ? `bg-gradient-to-r ${kid.color} text-white shadow-md`
+                        : 'bg-white text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    <img src={kid.avatar} alt={kid.name} className="w-7 h-7 rounded-full object-cover" />
+                    {kid.hebrewName}
+                  </button>
+                ))}
+              </div>
 
-              const now = new Date();
-              const currentDay = now.getDay();
-              const sunday = new Date(now);
-              sunday.setDate(now.getDate() - currentDay + weekOffset * 7);
+              {/* Week navigation */}
+              {(() => {
+                const HEBREW_DAY_SHORT = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
 
-              const weekDays = Array.from({ length: 7 }, (_, i) => {
-                const d = new Date(sunday);
-                d.setDate(sunday.getDate() + i);
-                return {
-                  dayIndex: i,
-                  label: HEBREW_DAY_SHORT[i],
-                  dateKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
-                  dayNum: d.getDate(),
-                  isToday: d.toDateString() === now.toDateString(),
-                  isFuture: d > now,
-                };
-              });
+                const now = new Date();
+                const currentDay = now.getDay();
+                const sunday = new Date(now);
+                sunday.setDate(now.getDate() - currentDay + weekOffset * 7);
 
-              const sunDate = new Date(sunday);
-              const satDate = new Date(sunday);
-              satDate.setDate(sunday.getDate() + 6);
-              const rangeLabel = `${sunDate.getDate()}/${sunDate.getMonth() + 1} - ${satDate.getDate()}/${satDate.getMonth() + 1}`;
+                const weekDays = Array.from({ length: 7 }, (_, i) => {
+                  const d = new Date(sunday);
+                  d.setDate(sunday.getDate() + i);
+                  return {
+                    dayIndex: i,
+                    label: HEBREW_DAY_SHORT[i],
+                    dateKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
+                    dayNum: d.getDate(),
+                    isToday: d.toDateString() === now.toDateString(),
+                    isFuture: d > now,
+                  };
+                });
 
-              const weekRecords = weekDays.map((day) => {
-                const record = dailyLog.find((r) => r.date === day.dateKey && r.kidId === weeklyKidId);
-                return { ...day, record };
-              });
+                const sunDate = new Date(sunday);
+                const satDate = new Date(sunday);
+                satDate.setDate(sunday.getDate() + 6);
+                const rangeLabel = `${sunDate.getDate()}/${sunDate.getMonth() + 1} - ${satDate.getDate()}/${satDate.getMonth() + 1}`;
 
-              const amazingDays = weekRecords.filter((d) => d.record && d.record.done > 0 && d.record.done === d.record.total).length;
-              const totalStars = weekRecords.reduce((sum, d) => sum + (d.record?.done || 0), 0);
+                const weekRecords = weekDays.map((day) => {
+                  const record = dailyLog.find((r) => r.date === day.dateKey && r.kidId === weeklyKidId);
+                  return { ...day, record };
+                });
 
-              const weeklyKid = kids.find((k) => k.id === weeklyKidId);
-              const streakLastDate = weeklyKid?.streak.lastCompletionDate;
-              const streakCurrent = weeklyKid?.streak.current || 0;
+                const amazingDays = weekRecords.filter((d) => d.record && d.record.done > 0 && d.record.done === d.record.total).length;
+                const totalStars = weekRecords.reduce((sum, d) => sum + (d.record?.done || 0), 0);
 
-              const streakDates = new Set<string>();
-              if (streakLastDate && streakCurrent > 0) {
-                const lastDate = new Date(streakLastDate + 'T00:00:00');
-                for (let i = 0; i < streakCurrent; i++) {
-                  const d = new Date(lastDate);
-                  d.setDate(lastDate.getDate() - i);
-                  streakDates.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+                const weeklyKid = kids.find((k) => k.id === weeklyKidId);
+                const streakLastDate = weeklyKid?.streak.lastCompletionDate;
+                const streakCurrent = weeklyKid?.streak.current || 0;
+
+                const streakDates = new Set<string>();
+                if (streakLastDate && streakCurrent > 0) {
+                  const lastDate = new Date(streakLastDate + 'T00:00:00');
+                  for (let i = 0; i < streakCurrent; i++) {
+                    const d = new Date(lastDate);
+                    d.setDate(lastDate.getDate() - i);
+                    streakDates.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+                  }
                 }
-              }
 
-              return (
-                <>
-                  <div className="flex items-center justify-between mb-3">
-                    <button
-                      onClick={() => setWeekOffset((p) => p - 1)}
-                      className="w-9 h-9 rounded-full bg-white text-gray-600 font-bold text-lg flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 shadow-sm"
-                    >
-                      ‹
-                    </button>
-                    <span className="text-sm font-bold text-gray-600">{rangeLabel}</span>
-                    <button
-                      onClick={() => setWeekOffset((p) => Math.min(0, p + 1))}
-                      disabled={weekOffset >= 0}
-                      className="w-9 h-9 rounded-full bg-white text-gray-600 font-bold text-lg flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      ›
-                    </button>
-                  </div>
+                return (
+                  <>
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        onClick={() => setWeekOffset((p) => p - 1)}
+                        className="w-9 h-9 rounded-full bg-white text-gray-600 font-bold text-lg flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 shadow-sm"
+                      >
+                        ‹
+                      </button>
+                      <span className="text-sm font-bold text-gray-600">{rangeLabel}</span>
+                      <button
+                        onClick={() => setWeekOffset((p) => Math.min(0, p + 1))}
+                        disabled={weekOffset >= 0}
+                        className="w-9 h-9 rounded-full bg-white text-gray-600 font-bold text-lg flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        ›
+                      </button>
+                    </div>
 
-                  <div className="grid grid-cols-7 gap-2 mb-4">
-                    {weekRecords.map((day) => {
-                      const allDone = day.record && day.record.done > 0 && day.record.done === day.record.total;
-                      const someDone = day.record && day.record.done > 0 && !allDone;
-                      const isStreak = streakDates.has(day.dateKey);
+                    <div className="grid grid-cols-7 gap-2 mb-4">
+                      {weekRecords.map((day) => {
+                        const allDone = day.record && day.record.done > 0 && day.record.done === day.record.total;
+                        const someDone = day.record && day.record.done > 0 && !allDone;
+                        const isStreak = streakDates.has(day.dateKey);
 
-                      let bgClass = 'bg-gray-100 border-gray-200';
-                      let dotColor = 'bg-gray-300';
-                      if (day.isFuture) {
-                        bgClass = 'bg-gray-50 border-gray-100';
-                        dotColor = 'bg-gray-200';
-                      } else if (allDone) {
-                        bgClass = 'bg-green-100 border-green-300';
-                        dotColor = 'bg-green-500';
-                      } else if (someDone) {
-                        bgClass = 'bg-orange-50 border-orange-200';
-                        dotColor = 'bg-orange-400';
-                      }
+                        let bgClass = 'bg-gray-100 border-gray-200';
+                        let dotColor = 'bg-gray-300';
+                        if (day.isFuture) {
+                          bgClass = 'bg-gray-50 border-gray-100';
+                          dotColor = 'bg-gray-200';
+                        } else if (allDone) {
+                          bgClass = 'bg-green-100 border-green-300';
+                          dotColor = 'bg-green-500';
+                        } else if (someDone) {
+                          bgClass = 'bg-orange-50 border-orange-200';
+                          dotColor = 'bg-orange-400';
+                        }
 
-                      return (
-                        <div
-                          key={day.dateKey}
-                          className={`flex flex-col items-center p-2 rounded-xl border-2 ${bgClass} ${day.isToday ? 'ring-2 ring-blue-400' : ''}`}
-                        >
-                          <span className="text-xs font-bold text-gray-500">{day.label}</span>
-                          <span className="text-xs text-gray-400">{day.dayNum}</span>
-                          <div className={`w-6 h-6 rounded-full ${dotColor} mt-1 flex items-center justify-center`}>
-                            {allDone && <span className="text-white text-xs">✓</span>}
+                        return (
+                          <div
+                            key={day.dateKey}
+                            className={`flex flex-col items-center p-2 rounded-xl border-2 ${bgClass} ${day.isToday ? 'ring-2 ring-blue-400' : ''}`}
+                          >
+                            <span className="text-xs font-bold text-gray-500">{day.label}</span>
+                            <span className="text-xs text-gray-400">{day.dayNum}</span>
+                            <div className={`w-6 h-6 rounded-full ${dotColor} mt-1 flex items-center justify-center`}>
+                              {allDone && <span className="text-white text-xs">✓</span>}
+                            </div>
+                            {isStreak && !day.isFuture && <span className="text-xs mt-0.5">🔥</span>}
                           </div>
-                          {isStreak && !day.isFuture && <span className="text-xs mt-0.5">🔥</span>}
+                        );
+                      })}
+                    </div>
+
+                    <div className="text-center" dir="rtl">
+                      {amazingDays > 0 ? (
+                        <p className="text-base font-bold text-green-700">
+                          🌟 {amazingDays} ימים מדהימים השבוע!
+                        </p>
+                      ) : weekOffset === 0 ? (
+                        <p className="text-base font-bold text-blue-600">
+                          💪 שבוע חדש, הזדמנות חדשה!
+                        </p>
+                      ) : (
+                        <p className="text-base font-bold text-blue-600">
+                          ✨ כל שבוע הוא הזדמנות חדשה!
+                        </p>
+                      )}
+                      {totalStars > 0 && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          ⭐ {totalStars} משימות הושלמו
+                        </p>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+
+        {/* Behavior Bonus */}
+        <SectionHeader id="bonus" title="כוכב בונוס ⭐" isOpen={openSections.has('bonus')} onToggle={toggleSection} />
+        {openSections.has('bonus') && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-5 rounded-2xl border-2 border-amber-200">
+              <div className="flex gap-3 mb-4 justify-center">
+                {kids.map((kid) => (
+                  <button
+                    key={kid.id}
+                    onClick={() => setBonusKidId(kid.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all ${
+                      bonusKidId === kid.id
+                        ? `bg-gradient-to-r ${kid.color} text-white shadow-md`
+                        : 'bg-white text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    <img src={kid.avatar} alt={kid.name} className="w-7 h-7 rounded-full object-cover" />
+                    {kid.hebrewName}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-2 items-center" dir="rtl">
+                <input
+                  type="text"
+                  value={bonusText}
+                  onChange={(e) => setBonusText(e.target.value)}
+                  placeholder={`?מה עשתה ${bonusKid?.hebrewName || ''}`}
+                  disabled={alreadyGotBonus}
+                  className="flex-1 px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:border-amber-400 disabled:bg-gray-100 disabled:text-gray-400"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAwardBonus(); }}
+                />
+                <div className="relative">
+                  <button
+                    onClick={handleAwardBonus}
+                    disabled={alreadyGotBonus || !bonusText.trim()}
+                    className={`px-5 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 whitespace-nowrap ${
+                      alreadyGotBonus
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : !bonusText.trim()
+                          ? 'bg-amber-200 text-amber-500 cursor-not-allowed'
+                          : 'bg-amber-500 text-white hover:bg-amber-600 shadow-md'
+                    }`}
+                  >
+                    {alreadyGotBonus ? bonusGivenText : '⭐ תן כוכב'}
+                  </button>
+                  {showFloat && (
+                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-lg font-bold text-amber-500 bonus-float">
+                      +1 ⭐
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {recentBonuses.length > 0 && (
+                <div className="mt-4 pt-3 border-t border-amber-200">
+                  <p className="text-xs font-semibold text-gray-400 mb-2" dir="rtl">7 ימים אחרונים:</p>
+                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                    {recentBonuses.map((entry, i) => {
+                      const kid = kids.find((k) => k.id === entry.kidId);
+                      return (
+                        <div key={i} className="flex items-center gap-2 text-sm" dir="rtl">
+                          {kid && <img src={kid.avatar} alt={kid.name} className="w-5 h-5 rounded-full object-cover" />}
+                          <span className="text-gray-500 text-xs">{entry.date.slice(5)}</span>
+                          <span className="text-gray-700 font-medium">{entry.description}</span>
                         </div>
                       );
                     })}
                   </div>
-
-                  <div className="text-center" dir="rtl">
-                    {amazingDays > 0 ? (
-                      <p className="text-base font-bold text-green-700">
-                        🌟 {amazingDays} ימים מדהימים השבוע!
-                      </p>
-                    ) : weekOffset === 0 ? (
-                      <p className="text-base font-bold text-blue-600">
-                        💪 שבוע חדש, הזדמנות חדשה!
-                      </p>
-                    ) : (
-                      <p className="text-base font-bold text-blue-600">
-                        ✨ כל שבוע הוא הזדמנות חדשה!
-                      </p>
-                    )}
-                    {totalStars > 0 && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        ⭐ {totalStars} משימות הושלמו
-                      </p>
-                    )}
-                  </div>
-                </>
-              );
-            })()}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Behavior Bonus */}
-        <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-700 mb-4">כוכב בונוס ⭐</h3>
-          <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-5 rounded-2xl border-2 border-amber-200">
-            <div className="flex gap-3 mb-4 justify-center">
-              {kids.map((kid) => (
-                <button
-                  key={kid.id}
-                  onClick={() => setBonusKidId(kid.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all ${
-                    bonusKidId === kid.id
-                      ? `bg-gradient-to-r ${kid.color} text-white shadow-md`
-                      : 'bg-white text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <img src={kid.avatar} alt={kid.name} className="w-7 h-7 rounded-full object-cover" />
-                  {kid.hebrewName}
-                </button>
-              ))}
+        {/* Rewards Management */}
+        <SectionHeader id="rewards" title="🎁 ניהול פרסים" isOpen={openSections.has('rewards')} onToggle={toggleSection} />
+        {openSections.has('rewards') && (
+          <div className="mb-8">
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={handleOpenAddForm}
+                className="px-4 py-2 bg-purple-500 text-white rounded-xl font-bold text-sm hover:bg-purple-600 transition-colors active:scale-95 shadow-md"
+              >
+                + הוסף פרס
+              </button>
             </div>
 
-            <div className="flex gap-2 items-center" dir="rtl">
-              <input
-                type="text"
-                value={bonusText}
-                onChange={(e) => setBonusText(e.target.value)}
-                placeholder={`?מה עשתה ${bonusKid?.hebrewName || ''}`}
-                disabled={alreadyGotBonus}
-                className="flex-1 px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:border-amber-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onKeyDown={(e) => { if (e.key === 'Enter') handleAwardBonus(); }}
-              />
-              <div className="relative">
-                <button
-                  onClick={handleAwardBonus}
-                  disabled={alreadyGotBonus || !bonusText.trim()}
-                  className={`px-5 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 whitespace-nowrap ${
-                    alreadyGotBonus
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : !bonusText.trim()
-                        ? 'bg-amber-200 text-amber-500 cursor-not-allowed'
-                        : 'bg-amber-500 text-white hover:bg-amber-600 shadow-md'
-                  }`}
-                >
-                  {alreadyGotBonus ? bonusGivenText : '⭐ תן כוכב'}
-                </button>
-                {showFloat && (
-                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-lg font-bold text-amber-500 bonus-float">
-                    +1 ⭐
-                  </span>
-                )}
-              </div>
-            </div>
+            {/* Reward form (add/edit) */}
+            {showRewardForm && (
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-2xl border-2 border-purple-200 mb-4">
+                <h4 className="text-lg font-bold text-gray-800 mb-4" dir="rtl">
+                  {editingRewardId ? '✏️ עריכת פרס' : '➕ פרס חדש'}
+                </h4>
 
-            {recentBonuses.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-amber-200">
-                <p className="text-xs font-semibold text-gray-400 mb-2" dir="rtl">7 ימים אחרונים:</p>
-                <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                  {recentBonuses.map((entry, i) => {
-                    const kid = kids.find((k) => k.id === entry.kidId);
-                    return (
-                      <div key={i} className="flex items-center gap-2 text-sm" dir="rtl">
-                        {kid && <img src={kid.avatar} alt={kid.name} className="w-5 h-5 rounded-full object-cover" />}
-                        <span className="text-gray-500 text-xs">{entry.date.slice(5)}</span>
-                        <span className="text-gray-700 font-medium">{entry.description}</span>
-                      </div>
-                    );
-                  })}
+                <div className="space-y-3">
+                  {/* Emoji picker */}
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">אימוג׳י</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className="w-14 h-14 rounded-xl bg-white border-2 border-purple-200 text-3xl flex items-center justify-center hover:border-purple-400 transition-colors"
+                      >
+                        {rewardForm.emoji}
+                      </button>
+                      {showEmojiPicker && (
+                        <div className="flex flex-wrap gap-1.5 bg-white p-2 rounded-xl border-2 border-purple-200 max-w-xs">
+                          {EMOJI_PICKER.map((emoji) => (
+                            <button
+                              key={emoji}
+                              onClick={() => { setRewardForm((f) => ({ ...f, emoji })); setShowEmojiPicker(false); }}
+                              className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center hover:bg-purple-100 transition-colors ${
+                                rewardForm.emoji === emoji ? 'bg-purple-200 ring-2 ring-purple-400' : ''
+                              }`}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Hebrew name */}
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">שם בעברית</label>
+                    <input
+                      type="text"
+                      value={rewardForm.hebrew}
+                      onChange={(e) => setRewardForm((f) => ({ ...f, hebrew: e.target.value }))}
+                      placeholder="סרט ערב"
+                      dir="rtl"
+                      className="w-full px-4 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:border-purple-400"
+                    />
+                  </div>
+
+                  {/* English name */}
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 block mb-1">English name</label>
+                    <input
+                      type="text"
+                      value={rewardForm.title}
+                      onChange={(e) => setRewardForm((f) => ({ ...f, title: e.target.value }))}
+                      placeholder="Movie night"
+                      className="w-full px-4 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:border-purple-400"
+                    />
+                  </div>
+
+                  {/* Star cost */}
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">מחיר (כוכבים)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={rewardForm.starCost}
+                      onChange={(e) => setRewardForm((f) => ({ ...f, starCost: Math.max(1, parseInt(e.target.value) || 1) }))}
+                      className="w-32 px-4 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-gray-800 font-bold text-center focus:outline-none focus:border-purple-400"
+                    />
+                  </div>
+
+                  {/* Tier selector */}
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">דרגה</label>
+                    <div className="flex gap-2">
+                      {TIER_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setRewardForm((f) => ({ ...f, tier: opt.value }))}
+                          className={`px-4 py-2 rounded-xl font-bold text-sm border-2 transition-all active:scale-95 ${
+                            rewardForm.tier === opt.value
+                              ? `${opt.bg} ring-2 ring-offset-1 ring-purple-400`
+                              : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Save / Cancel */}
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={handleSaveReward}
+                      disabled={!rewardForm.hebrew.trim() || !rewardForm.title.trim()}
+                      className="px-6 py-2.5 bg-green-500 text-white rounded-xl font-bold text-sm hover:bg-green-600 transition-colors active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      💾 שמירה
+                    </button>
+                    <button
+                      onClick={() => { setShowRewardForm(false); setEditingRewardId(null); }}
+                      className="px-6 py-2.5 bg-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-300 transition-colors active:scale-95"
+                    >
+                      ביטול
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
-          </div>
-        </div>
 
-        {/* Rewards Management */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-700">🎁 ניהול פרסים</h3>
-            <button
-              onClick={handleOpenAddForm}
-              className="px-4 py-2 bg-purple-500 text-white rounded-xl font-bold text-sm hover:bg-purple-600 transition-colors active:scale-95 shadow-md"
-            >
-              + הוסף פרס
-            </button>
-          </div>
-
-          {/* Reward form (add/edit) */}
-          {showRewardForm && (
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-2xl border-2 border-purple-200 mb-4">
-              <h4 className="text-lg font-bold text-gray-800 mb-4" dir="rtl">
-                {editingRewardId ? '✏️ עריכת פרס' : '➕ פרס חדש'}
-              </h4>
-
-              <div className="space-y-3">
-                {/* Emoji picker */}
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">אימוג׳י</label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      className="w-14 h-14 rounded-xl bg-white border-2 border-purple-200 text-3xl flex items-center justify-center hover:border-purple-400 transition-colors"
-                    >
-                      {rewardForm.emoji}
-                    </button>
-                    {showEmojiPicker && (
-                      <div className="flex flex-wrap gap-1.5 bg-white p-2 rounded-xl border-2 border-purple-200 max-w-xs">
-                        {EMOJI_PICKER.map((emoji) => (
-                          <button
-                            key={emoji}
-                            onClick={() => { setRewardForm((f) => ({ ...f, emoji })); setShowEmojiPicker(false); }}
-                            className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center hover:bg-purple-100 transition-colors ${
-                              rewardForm.emoji === emoji ? 'bg-purple-200 ring-2 ring-purple-400' : ''
-                            }`}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Hebrew name */}
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">שם בעברית</label>
-                  <input
-                    type="text"
-                    value={rewardForm.hebrew}
-                    onChange={(e) => setRewardForm((f) => ({ ...f, hebrew: e.target.value }))}
-                    placeholder="סרט ערב"
-                    dir="rtl"
-                    className="w-full px-4 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:border-purple-400"
-                  />
-                </div>
-
-                {/* English name */}
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 block mb-1">English name</label>
-                  <input
-                    type="text"
-                    value={rewardForm.title}
-                    onChange={(e) => setRewardForm((f) => ({ ...f, title: e.target.value }))}
-                    placeholder="Movie night"
-                    className="w-full px-4 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:border-purple-400"
-                  />
-                </div>
-
-                {/* Star cost */}
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">מחיר (כוכבים)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={rewardForm.starCost}
-                    onChange={(e) => setRewardForm((f) => ({ ...f, starCost: Math.max(1, parseInt(e.target.value) || 1) }))}
-                    className="w-32 px-4 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-gray-800 font-bold text-center focus:outline-none focus:border-purple-400"
-                  />
-                </div>
-
-                {/* Tier selector */}
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">דרגה</label>
-                  <div className="flex gap-2">
-                    {TIER_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.value}
-                        onClick={() => setRewardForm((f) => ({ ...f, tier: opt.value }))}
-                        className={`px-4 py-2 rounded-xl font-bold text-sm border-2 transition-all active:scale-95 ${
-                          rewardForm.tier === opt.value
-                            ? `${opt.bg} ring-2 ring-offset-1 ring-purple-400`
-                            : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
-                        }`}
+            {/* Rewards list grouped by tier */}
+            <div className="space-y-4">
+              {groupedRewards.map(({ tier, rewards: tierRewards }) => (
+                <div key={tier}>
+                  <div className="text-sm font-bold text-gray-500 mb-2" dir="rtl">{TIER_HEADERS[tier]}</div>
+                  <div className="space-y-2">
+                    {tierRewards.map((reward) => (
+                      <div
+                        key={reward.id}
+                        className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-2xl border-2 border-purple-200"
                       >
-                        {opt.label}
-                      </button>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{reward.emoji}</span>
+                            <div>
+                              <h4 className="text-base font-bold text-gray-800" dir="rtl">{reward.hebrew}</h4>
+                              <p className="text-sm text-gray-500">{reward.title}</p>
+                            </div>
+                            <span className="text-purple-600 font-semibold text-sm">
+                              {reward.starCost} ⭐
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${TIER_BADGE[reward.tier].className}`}>
+                              {TIER_BADGE[reward.tier].label}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleOpenEditForm(reward)}
+                              className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors active:scale-95"
+                              title="ערוך"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleDeleteReward(reward.id)}
+                              className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-colors active:scale-95"
+                              title="מחק"
+                            >
+                              🗑️
+                            </button>
+                            <div className="flex gap-1 ml-2">
+                              {kids.map((kid) => {
+                                const canAfford = kid.starBank >= reward.starCost;
+                                return (
+                                  <button
+                                    key={kid.id}
+                                    onClick={() => handleRedeem(kid.id, reward.id)}
+                                    disabled={!canAfford}
+                                    className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 ${
+                                      canAfford
+                                        ? 'bg-green-500 text-white hover:bg-green-600 shadow-md'
+                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                    title={`Redeem for ${kid.name}`}
+                                  >
+                                    <img src={kid.avatar} alt={kid.name} className="w-5 h-5 rounded-full object-cover inline-block mr-1" /> {kid.hebrewName}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
-
-                {/* Save / Cancel */}
-                <div className="flex gap-2 pt-2">
-                  <button
-                    onClick={handleSaveReward}
-                    disabled={!rewardForm.hebrew.trim() || !rewardForm.title.trim()}
-                    className="px-6 py-2.5 bg-green-500 text-white rounded-xl font-bold text-sm hover:bg-green-600 transition-colors active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    💾 שמירה
-                  </button>
-                  <button
-                    onClick={() => { setShowRewardForm(false); setEditingRewardId(null); }}
-                    className="px-6 py-2.5 bg-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-300 transition-colors active:scale-95"
-                  >
-                    ביטול
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
-          )}
-
-          {/* Rewards list grouped by tier */}
-          <div className="space-y-4">
-            {groupedRewards.map(({ tier, rewards: tierRewards }) => (
-              <div key={tier}>
-                <div className="text-sm font-bold text-gray-500 mb-2" dir="rtl">{TIER_HEADERS[tier]}</div>
-                <div className="space-y-2">
-                  {tierRewards.map((reward) => (
-                    <div
-                      key={reward.id}
-                      className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-2xl border-2 border-purple-200"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{reward.emoji}</span>
-                          <div>
-                            <h4 className="text-base font-bold text-gray-800" dir="rtl">{reward.hebrew}</h4>
-                            <p className="text-sm text-gray-500">{reward.title}</p>
-                          </div>
-                          <span className="text-purple-600 font-semibold text-sm">
-                            {reward.starCost} ⭐
-                          </span>
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${TIER_BADGE[reward.tier].className}`}>
-                            {TIER_BADGE[reward.tier].label}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleOpenEditForm(reward)}
-                            className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors active:scale-95"
-                            title="ערוך"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            onClick={() => handleDeleteReward(reward.id)}
-                            className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-colors active:scale-95"
-                            title="מחק"
-                          >
-                            🗑️
-                          </button>
-                          <div className="flex gap-1 ml-2">
-                            {kids.map((kid) => {
-                              const canAfford = kid.starBank >= reward.starCost;
-                              return (
-                                <button
-                                  key={kid.id}
-                                  onClick={() => handleRedeem(kid.id, reward.id)}
-                                  disabled={!canAfford}
-                                  className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 ${
-                                    canAfford
-                                      ? 'bg-green-500 text-white hover:bg-green-600 shadow-md'
-                                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                  }`}
-                                  title={`Redeem for ${kid.name}`}
-                                >
-                                  <img src={kid.avatar} alt={kid.name} className="w-5 h-5 rounded-full object-cover inline-block mr-1" /> {kid.hebrewName}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
           </div>
-        </div>
+        )}
 
         {/* Pickup Schedule */}
-        <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-700 mb-4">🚗 מי אוסף/ת</h3>
-          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-2xl border-2 border-teal-200">
-            <div className="grid grid-cols-5 gap-2">
-              {(['1', '2', '3', '4', '5'] as const).map((day) => {
-                const labels: Record<string, string> = { '1': 'ב׳', '2': 'ג׳', '3': 'ד׳', '4': 'ה׳', '5': 'ו׳' };
-                const isAbba = pickupSchedule[day] === 'אבא';
-                return (
-                  <button
-                    key={day}
-                    onClick={() => {
-                      const updated = { ...pickupSchedule, [day]: isAbba ? 'אמא' : 'אבא' };
-                      setPickupSchedule(updated);
-                      localStorage.setItem(PICKUP_KEY, JSON.stringify(updated));
-                    }}
-                    className={`flex flex-col items-center p-2 rounded-xl border-2 transition-all active:scale-95 ${
-                      isAbba ? 'bg-blue-100 border-blue-300' : 'bg-pink-100 border-pink-300'
-                    }`}
-                  >
-                    <span className="text-xs font-bold text-gray-600">{labels[day]}</span>
-                    <span className="text-lg">{isAbba ? '👨' : '👩'}</span>
-                    <span className="text-xs font-semibold text-gray-700">{pickupSchedule[day]}</span>
-                  </button>
-                );
-              })}
+        <SectionHeader id="pickup" title="🚗 מי אוסף/ת" isOpen={openSections.has('pickup')} onToggle={toggleSection} />
+        {openSections.has('pickup') && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-2xl border-2 border-teal-200">
+              <div className="grid grid-cols-5 gap-2">
+                {(['1', '2', '3', '4', '5'] as const).map((day) => {
+                  const labels: Record<string, string> = { '1': 'ב׳', '2': 'ג׳', '3': 'ד׳', '4': 'ה׳', '5': 'ו׳' };
+                  const isAbba = pickupSchedule[day] === 'אבא';
+                  return (
+                    <button
+                      key={day}
+                      onClick={() => {
+                        const updated = { ...pickupSchedule, [day]: isAbba ? 'אמא' : 'אבא' };
+                        setPickupSchedule(updated);
+                        localStorage.setItem(PICKUP_KEY, JSON.stringify(updated));
+                      }}
+                      className={`flex flex-col items-center p-2 rounded-xl border-2 transition-all active:scale-95 ${
+                        isAbba ? 'bg-blue-100 border-blue-300' : 'bg-pink-100 border-pink-300'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-gray-600">{labels[day]}</span>
+                      <span className="text-lg">{isAbba ? '👨' : '👩'}</span>
+                      <span className="text-xs font-semibold text-gray-700">{pickupSchedule[day]}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Lunchbox Management */}
-        <LunchboxAdmin
-          kids={kids}
-          foodItems={foodCatalog}
-          onUpdateFoodItems={onUpdateFoodCatalog}
-        />
+        <SectionHeader id="lunchbox" title="🍱 ניהול קופסת אוכל" isOpen={openSections.has('lunchbox')} onToggle={toggleSection} />
+        {openSections.has('lunchbox') && (
+          <div className="mb-8">
+            <LunchboxAdmin
+              kids={kids}
+              foodItems={foodCatalog}
+              onUpdateFoodItems={onUpdateFoodCatalog}
+            />
+          </div>
+        )}
 
         {/* Reset button */}
-        <div className="mb-6 p-4 bg-red-50 rounded-2xl border-2 border-red-200">
-          <div className="flex justify-between items-center">
-            <div>
-              <h4 className="font-bold text-gray-800">🔄 איפוס משימות</h4>
-              <p className="text-sm text-gray-500">איפוס כל המשימות ליום חדש</p>
+        <SectionHeader id="reset" title="🔄 איפוס משימות" isOpen={openSections.has('reset')} onToggle={toggleSection} />
+        {openSections.has('reset') && (
+          <div className="mb-6 p-4 bg-red-50 rounded-2xl border-2 border-red-200">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-500">איפוס כל המשימות ליום חדש</p>
+              </div>
+              <button
+                onClick={onResetDone}
+                className="px-5 py-2.5 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors active:scale-95 shadow-md"
+              >
+                🔄 איפוס
+              </button>
             </div>
+          </div>
+        )}
+
+        {/* Debug: Weekend mode toggle — hidden until triple-tap on title */}
+        {debugTaps >= 3 && (
+          <div className="mb-6 p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-300 flex items-center justify-between">
+            <span className="text-xs text-gray-400">🛠 Debug</span>
             <button
-              onClick={onResetDone}
-              className="px-5 py-2.5 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors active:scale-95 shadow-md"
+              onClick={onToggleWeekend}
+              className="px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 bg-gray-200 text-gray-700 hover:bg-gray-300"
             >
-              🔄 איפוס
+              {weekendOverride === null
+                ? '🔄 מצב: אוטומטי'
+                : weekendOverride
+                  ? '🌴 מצב: סוף שבוע'
+                  : '🏫 מצב: יום רגיל'}
             </button>
           </div>
-        </div>
-
-        {/* Debug: Weekend mode toggle */}
-        <div className="mb-6 p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-300 flex items-center justify-between">
-          <span className="text-xs text-gray-400">🛠 Debug</span>
-          <button
-            onClick={onToggleWeekend}
-            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 bg-gray-200 text-gray-700 hover:bg-gray-300"
-          >
-            {weekendOverride === null
-              ? '🔄 מצב: אוטומטי'
-              : weekendOverride
-                ? '🌴 מצב: סוף שבוע'
-                : '🏫 מצב: יום רגיל'}
-          </button>
-        </div>
+        )}
 
         <div className="text-center">
           <button

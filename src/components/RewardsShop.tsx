@@ -55,6 +55,22 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
         </span>
       </div>
 
+      {/* Encouragement for low stars */}
+      {rewards.length > 0 && (() => {
+        const cheapestReward = [...rewards].sort((a, b) => a.starCost - b.starCost)[0];
+        if (starBank >= cheapestReward.starCost) return null;
+        return (
+          <div className="mb-4 p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-2xl text-center" dir="rtl">
+            <p className="text-sm font-bold text-amber-700">
+              💪 השלימו את שגרת הבוקר כדי לצבור ⭐ — אתם בדרך לפרס הראשון!
+            </p>
+            <p className="text-xs text-amber-500 mt-1">
+              👇 הפרס הקרוב: {cheapestReward.emoji} {cheapestReward.hebrew} — {cheapestReward.starCost} ⭐
+            </p>
+          </div>
+        );
+      })()}
+
       {rewards.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <p className="text-xl">🎁</p>

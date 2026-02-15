@@ -32,6 +32,15 @@ function getTimeBackground(): string {
   }
 }
 
+/** Time-based greeting */
+function getGreeting(): { text: string; emoji: string } {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 12) return { text: 'בוקר טוב', emoji: '☀️' };
+  if (hour >= 12 && hour < 17) return { text: 'צהריים טובים', emoji: '🌤' };
+  if (hour >= 17 && hour < 21) return { text: 'ערב טוב', emoji: '🌙' };
+  return { text: 'לילה טוב', emoji: '🌟' };
+}
+
 /** Auto-select the matching routine tab based on current time */
 function getInitialTab(): TabId {
   const hour = new Date().getHours();
@@ -531,10 +540,20 @@ function App() {
           } catch { return null; }
         })()}
 
+        {/* Greeting */}
+        <div className="text-center mb-3" dir="rtl">
+          <span className="text-lg font-bold text-gray-700">
+            {getGreeting().emoji} {getGreeting().text}, {selectedKid.hebrewName}!
+          </span>
+        </div>
+
         {/* Kid Selector */}
         <div className="grid grid-cols-2 gap-3 mb-5">
           {state.kids.map((kid, index) => {
             const isSelected = index === selectedKidIndex;
+            const allTaskIds = [...kid.morning, ...kid.afternoon, ...kid.evening].map(t => t.id);
+            const doneToday = kid.status.filter(s => allTaskIds.includes(s.taskId) && s.done).length;
+            const totalToday = allTaskIds.length;
             return (
               <button
                 key={kid.id}
@@ -568,6 +587,9 @@ function App() {
                         )}
                         <span key={kid.starBank} className={`star-count-bump font-black ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'} ${kid.starBank === 0 ? 'text-base' : 'text-2xl'}`}>
                           {kid.starBank === 0 ? '✨ !מתחילים' : `${kid.starBank} ⭐`}
+                        </span>
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-white/30 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                          {doneToday}/{totalToday} ✓
                         </span>
                       </div>
                     )}
@@ -610,7 +632,7 @@ function App() {
           {/* Progress section */}
           {activeTab !== 'rewards' && activeTab !== 'lunchbox' && (
             <div className="flex items-center gap-5 mb-4">
-              <ProgressRing percent={progress} color={selectedKid.accent} size={80} />
+              <ProgressRing percent={progress} color={selectedKid.accent} size={120} glow={progress >= 75} />
               <div>
                 <div className="text-2xl font-bold text-gray-800" dir="rtl">
                   {doneTasks} מתוך {totalTasks} משימות

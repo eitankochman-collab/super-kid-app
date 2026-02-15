@@ -46,7 +46,7 @@ describe('TaskItem', () => {
     expect(screen.getByText(/סיימתי/)).toBeInTheDocument();
   });
 
-  it('shows "ביטול" button when task is done', () => {
+  it('shows undo button when task is done', () => {
     const status: TaskStatus = { taskId: 'm1', done: true, stars: 0 };
     render(
       <TaskItem
@@ -59,7 +59,7 @@ describe('TaskItem', () => {
       />
     );
 
-    expect(screen.getByText(/ביטול/)).toBeInTheDocument();
+    expect(screen.getByTitle('ביטול')).toBeInTheDocument();
   });
 
   it('calls onToggleDone when done button is clicked', async () => {
@@ -93,7 +93,7 @@ describe('TaskItem', () => {
       />
     );
 
-    expect(screen.queryByText(/הסר/)).not.toBeInTheDocument();
+    expect(screen.queryByTitle('הסר ⭐')).not.toBeInTheDocument();
 
     const doneStatus: TaskStatus = { taskId: 'm1', done: true, stars: 0 };
     rerender(
@@ -107,7 +107,7 @@ describe('TaskItem', () => {
       />
     );
 
-    expect(screen.getByText(/הסר/)).toBeInTheDocument();
+    expect(screen.getByTitle('הסר ⭐')).toBeInTheDocument();
   });
 
   it('calls onRemoveStar when remove star button is clicked', async () => {
@@ -126,7 +126,7 @@ describe('TaskItem', () => {
       />
     );
 
-    await user.click(screen.getByText(/הסר/));
+    await user.click(screen.getByTitle('הסר ⭐'));
     expect(onRemoveStar).toHaveBeenCalledOnce();
   });
 
@@ -144,6 +144,6 @@ describe('TaskItem', () => {
     );
 
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain('from-green-50');
+    expect(wrapper.className).toContain('bg-green-200');
   });
 });

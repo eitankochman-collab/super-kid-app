@@ -46,8 +46,8 @@ describe('TaskList', () => {
       />
     );
 
-    // m1 and m3 done, m2 not done
-    const undoButtons = screen.getAllByText(/ביטול/);
+    // m1 and m3 done (have undo buttons via title), m2 not done (has סיימתי text)
+    const undoButtons = screen.getAllByTitle('ביטול');
     const doneButtons = screen.getAllByText(/סיימתי/);
     expect(undoButtons).toHaveLength(2);
     expect(doneButtons).toHaveLength(1);
