@@ -18,6 +18,7 @@ const mockKids: KidData[] = [
     evening: [],
     status: [],
     starBank: 12,
+    streak: { current: 0, best: 0, lastCompletionDate: null },
   },
   {
     id: 'roni',
@@ -32,6 +33,7 @@ const mockKids: KidData[] = [
     evening: [],
     status: [],
     starBank: 3,
+    streak: { current: 0, best: 0, lastCompletionDate: null },
   },
 ];
 

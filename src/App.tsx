@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { AppState, RoutineType } from './types';
-import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isWeekendDay } from './storage';
+import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isWeekendDay, isYesterday } from './storage';
 import type { YesterdaySummary } from './storage';
-import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS } from './constants';
+import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES } from './constants';
 import { ProgressRing } from './components/ProgressRing';
 import { TaskList } from './components/TaskList';
 import { RewardsShop } from './components/RewardsShop';
@@ -43,8 +43,21 @@ function App() {
       };
       saveYesterdaySummary(summary);
 
-      // Reset task completions (stars stay in bank)
-      setState((prev) => resetTaskStatus(prev));
+      // Reset task completions + update streaks (stars stay in bank)
+      setState((prev) => ({
+        ...resetTaskStatus(prev),
+        kids: resetTaskStatus(prev).kids.map((kid) => {
+          // If lastCompletionDate was yesterday, streak continues; otherwise reset
+          const streakContinues = kid.streak.lastCompletionDate && isYesterday(kid.streak.lastCompletionDate);
+          return {
+            ...kid,
+            streak: {
+              ...kid.streak,
+              current: streakContinues ? kid.streak.current : 0,
+            },
+          };
+        }),
+      }));
 
       // Show yesterday summary overlay
       const loaded = loadYesterdaySummary();
@@ -172,13 +185,47 @@ function App() {
       const afternoonDone = isRoutineComplete(afternoonIds, newStatuses);
       const eveningDone = isRoutineComplete(eveningIds, newStatuses);
 
-      // Check if ALL routines are now complete → full Super-Kid
+      // Check if ALL routines are now complete → full Super-Kid + streak
       if (morningDone && afternoonDone && eveningDone) {
         // Only trigger if this task was the final one across all routines
         const oldMorningDone = isRoutineComplete(morningIds, kid.status);
         const oldAfternoonDone = isRoutineComplete(afternoonIds, kid.status);
         const oldEveningDone = isRoutineComplete(eveningIds, kid.status);
         if (!(oldMorningDone && oldAfternoonDone && oldEveningDone)) {
+          // Update streak for this kid
+          const todayKey = getTodayKey();
+          setState((prev) => ({
+            ...prev,
+            kids: prev.kids.map((k) => {
+              if (k.id !== kidId) return k;
+              // Don't double-count same day
+              if (k.streak.lastCompletionDate === todayKey) return k;
+              const newCurrent = k.streak.current + 1;
+              const newBest = Math.max(k.streak.best, newCurrent);
+              // Check for milestone bonus stars
+              const milestone = STREAK_MILESTONES.find((m) => m.days === newCurrent);
+              const bonus = milestone ? milestone.bonus : 0;
+              return {
+                ...k,
+                starBank: k.starBank + bonus,
+                streak: { current: newCurrent, best: newBest, lastCompletionDate: todayKey },
+              };
+            }),
+          }));
+
+          // Check if this triggers a streak milestone celebration
+          const newStreak = kid.streak.lastCompletionDate === getTodayKey()
+            ? kid.streak.current
+            : kid.streak.current + 1;
+          const milestone = STREAK_MILESTONES.find((m) => m.days === newStreak);
+          if (milestone) {
+            // Show streak celebration after a short delay (after Super-Kid closes)
+            setTimeout(() => {
+              setMiniCelebration({ message: milestone.message });
+              setTimeout(() => setMiniCelebration(null), 2000);
+            }, 3200);
+          }
+
           setShowSuperKid(true);
           return;
         }
@@ -370,8 +417,15 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <div className={`mt-2 text-right text-lg font-bold ${isSelected ? 'text-white/90' : 'text-yellow-600'}`}>
-                  {kid.starBank} ⭐
+                <div className={`mt-2 flex items-center justify-end gap-2`}>
+                  {kid.streak.current >= 2 && (
+                    <span className={`text-sm font-bold ${isSelected ? 'text-white/90' : 'text-orange-500'}`}>
+                      🔥 {kid.streak.current}
+                    </span>
+                  )}
+                  <span className={`text-lg font-bold ${isSelected ? 'text-white/90' : 'text-yellow-600'}`}>
+                    {kid.starBank} ⭐
+                  </span>
                 </div>
               </button>
             );

@@ -51,6 +51,7 @@ export const initialKids: KidData[] = [
     evening: eveningTasks,
     status: [],
     starBank: 0,
+    streak: { current: 0, best: 0, lastCompletionDate: null },
   },
   {
     id: 'roni',
@@ -65,6 +66,7 @@ export const initialKids: KidData[] = [
     evening: roniEveningTasks,
     status: [],
     starBank: 0,
+    streak: { current: 0, best: 0, lastCompletionDate: null },
   },
 ];
 

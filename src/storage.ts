@@ -41,6 +41,14 @@ export function loadYesterdaySummary(): YesterdaySummary | null {
   return null;
 }
 
+/** Check if a date string (YYYY-MM-DD) is exactly yesterday */
+export function isYesterday(dateStr: string): boolean {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+  return dateStr === yKey;
+}
+
 /** Check if today is a weekend day (Saturday=6 or Sunday=0) */
 export function isWeekendDay(): boolean {
   const day = new Date().getDay();
@@ -53,7 +61,7 @@ function migrateState(stored: Record<string, unknown>): AppState {
 
   // Check if migration is needed (missing fields or stale avatar)
   const needsMigration = state.kids?.some(
-    (kid, index) => !('afternoon' in kid) || !('hebrewName' in kid) || kid.avatar !== initialKids[index]?.avatar
+    (kid, index) => !('afternoon' in kid) || !('hebrewName' in kid) || !('streak' in kid) || kid.avatar !== initialKids[index]?.avatar
   );
 
   if (!needsMigration) {
@@ -87,6 +95,7 @@ function migrateState(stored: Record<string, unknown>): AppState {
         taskId: taskIdMap[s.taskId] || s.taskId,
       })),
       starBank: kid.starBank || 0,
+      streak: kid.streak || { current: 0, best: 0, lastCompletionDate: null },
     };
   });
 

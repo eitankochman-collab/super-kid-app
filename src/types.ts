@@ -13,6 +13,12 @@ export interface TaskStatus {
   stars: number;
 }
 
+export interface StreakData {
+  current: number;
+  best: number;
+  lastCompletionDate: string | null; // YYYY-MM-DD
+}
+
 export interface KidData {
   id: string;
   name: string;
@@ -26,6 +32,7 @@ export interface KidData {
   evening: Task[];
   status: TaskStatus[];
   starBank: number;
+  streak: StreakData;
 }
 
 export interface Reward {
