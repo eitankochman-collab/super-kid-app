@@ -168,6 +168,15 @@ function App() {
     }));
   };
 
+  const handleAdjustStars = (kidId: string, delta: number) => {
+    setState((prev) => ({
+      ...prev,
+      kids: prev.kids.map((kid) =>
+        kid.id === kidId ? { ...kid, starBank: Math.max(0, kid.starBank + delta) } : kid
+      ),
+    }));
+  };
+
   const handlePinSuccess = () => {
     const unlockUntil = Date.now() + 5 * 60 * 1000;
     setState((prev) => ({ ...prev, pinUnlockedUntil: unlockUntil }));
@@ -430,6 +439,7 @@ function App() {
           kids={state.kids}
           rewards={state.rewards}
           onRedeemReward={handleRedeemReward}
+          onAdjustStars={handleAdjustStars}
           onClose={() => setShowAdmin(false)}
           isUnlocked={isUnlocked}
           onRequestPin={handleRequestPin}

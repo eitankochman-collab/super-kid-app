@@ -4,6 +4,7 @@ interface AdminPanelProps {
   kids: KidData[];
   rewards: Reward[];
   onRedeemReward: (kidId: string, rewardId: string) => void;
+  onAdjustStars: (kidId: string, delta: number) => void;
   onClose: () => void;
   isUnlocked: boolean;
   onRequestPin: (action: () => void) => void;
@@ -14,6 +15,7 @@ export function AdminPanel({
   kids,
   rewards,
   onRedeemReward,
+  onAdjustStars,
   onClose,
   isUnlocked,
   onRequestPin,
@@ -44,7 +46,7 @@ export function AdminPanel({
 
         {/* Star Banks */}
         <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-700 mb-4">⭐ בנק כוכבים</h3>
+          <h3 className="text-xl font-bold text-gray-700 mb-4">⭐ ניהול כוכבים</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {kids.map((kid) => (
               <div
@@ -59,7 +61,24 @@ export function AdminPanel({
                       <p className="text-sm text-gray-500">{kid.name}</p>
                     </div>
                   </div>
-                  <div className="text-3xl font-bold text-yellow-600">{kid.starBank} ⭐</div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onAdjustStars(kid.id, -1)}
+                      disabled={kid.starBank <= 0}
+                      className="w-10 h-10 rounded-full bg-red-100 text-red-600 font-bold text-xl flex items-center justify-center hover:bg-red-200 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      -
+                    </button>
+                    <div className="text-2xl font-bold text-yellow-600 min-w-[4rem] text-center">
+                      {kid.starBank} ⭐
+                    </div>
+                    <button
+                      onClick={() => onAdjustStars(kid.id, 1)}
+                      className="w-10 h-10 rounded-full bg-green-100 text-green-600 font-bold text-xl flex items-center justify-center hover:bg-green-200 transition-colors active:scale-95"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
