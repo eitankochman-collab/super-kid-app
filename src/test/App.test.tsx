@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Mock isWeekendDay to return false by default (weekday mode)
@@ -130,26 +130,24 @@ describe('App', () => {
   });
 
   it('removes 1 star when undoing a task', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const user = userEvent.setup();
     render(<App />);
 
     // Complete a task (+1 star)
     const doneButtons = screen.getAllByText(/סיימתי/);
     await user.click(doneButtons[0]);
 
-    // Undo requires long-press (500ms) via pointerDown
+    // Undo requires double-tap: first tap shows "?בטוח", second tap confirms
     const undoButton = screen.getAllByTitle('ביטול')[0];
-    fireEvent.pointerDown(undoButton);
-    act(() => { vi.advanceTimersByTime(600); });
+    await user.click(undoButton);
+    expect(screen.getByText('?בטוח')).toBeInTheDocument();
+    await user.click(undoButton);
 
     await waitFor(() => {
       const stored = localStorage.getItem('super-kid-app-state');
       const state = JSON.parse(stored!);
       expect(state.kids[0].starBank).toBe(0);
     });
-
-    vi.useRealTimers();
   });
 
   it('persists state to localStorage', async () => {

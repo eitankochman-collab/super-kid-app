@@ -30,9 +30,9 @@ interface TaskItemProps {
 
 export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked, kidColor }: TaskItemProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [pressing, setPressing] = useState(false);
+  const [confirmingUndo, setConfirmingUndo] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
-  const pressTimer = useRef<ReturnType<typeof setTimeout>>(null);
+  const undoTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const prevDone = useRef(status?.done || false);
   const isDone = status?.done || false;
   const emojiColor = EMOJI_COLORS[task.emoji] || 'from-yellow-200 to-orange-200';
@@ -60,19 +60,16 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
     }
   };
 
-  const startPress = () => {
-    setPressing(true);
-    pressTimer.current = setTimeout(() => {
-      setPressing(false);
+  const handleUndoTap = () => {
+    if (confirmingUndo) {
+      // Second tap — actually undo
+      setConfirmingUndo(false);
+      if (undoTimer.current) clearTimeout(undoTimer.current);
       onToggleDone();
-    }, 500);
-  };
-
-  const cancelPress = () => {
-    setPressing(false);
-    if (pressTimer.current) {
-      clearTimeout(pressTimer.current);
-      pressTimer.current = null;
+    } else {
+      // First tap — show confirmation
+      setConfirmingUndo(true);
+      undoTimer.current = setTimeout(() => setConfirmingUndo(false), 2000);
     }
   };
 
@@ -89,20 +86,30 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
             </div>
             <span className="text-xs text-green-500">{task.english}</span>
           </div>
+          {/* Undo button — same position/size as Done button, double-tap to confirm */}
+          <div className="flex-shrink-0">
+            <button
+              onClick={handleUndoTap}
+              className={`w-full rounded-2xl font-bold transition-all active:scale-95 py-3 px-5 bg-gray-300 text-gray-500 shadow-md flex flex-col items-center gap-0.5 ${
+                confirmingUndo ? 'animate-shake' : ''
+              }`}
+              style={{ minHeight: '64px' }}
+              title="ביטול"
+            >
+              {confirmingUndo ? (
+                <>
+                  <span className="text-xl">❓</span>
+                  <span className="text-xs font-bold">?בטוח</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-xl">↩️</span>
+                  <span className="text-xs font-bold">ביטול</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
-        {/* Tiny undo button — requires 500ms long-press */}
-        <button
-          onPointerDown={startPress}
-          onPointerUp={cancelPress}
-          onPointerLeave={cancelPress}
-          onPointerCancel={cancelPress}
-          className={`absolute bottom-2 right-2 flex items-center gap-0.5 px-2 h-7 rounded-full bg-gray-200 text-gray-400 text-[10px] transition-transform ${
-            pressing ? 'long-press-fill scale-110' : ''
-          }`}
-          title="ביטול"
-        >
-          ↩️ <span className="text-[9px]">החזק</span>
-        </button>
         {/* Remove star — parent-only */}
         {isUnlocked && (
           <button
