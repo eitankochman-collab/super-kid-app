@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Safelist dynamic gradient classes used in kid.color (stored as data strings) */
-@source inline("from-amber-400 to-orange-500 from-sky-400 to-blue-500 bg-gradient-to-r bg-gradient-to-br from-orange-100 to-yellow-100 from-purple-100 to-violet-100 from-blue-100 to-cyan-100 from-amber-100 to-yellow-100 from-green-100 to-emerald-100 from-teal-100 to-cyan-100 from-pink-100 to-rose-100 from-orange-100 to-amber-100 from-indigo-100 to-blue-100 from-lime-100 to-green-100 from-sky-100 to-blue-100 from-emerald-100 to-teal-100 from-fuchsia-100 to-pink-100 from-violet-100 to-purple-100 via-orange-50 via-blue-50 via-pink-100 via-purple-50 via-purple-100 from-amber-100 to-yellow-100 from-sky-100 to-cyan-100 from-orange-200 to-purple-100 from-indigo-200 to-blue-200");
+@source inline("from-amber-400 to-orange-500 from-sky-400 to-blue-500 bg-gradient-to-r bg-gradient-to-br from-orange-200 to-yellow-200 from-purple-200 to-violet-200 from-blue-200 to-cyan-200 from-amber-200 to-yellow-200 from-green-200 to-emerald-200 from-teal-200 to-cyan-200 from-pink-200 to-rose-200 from-orange-200 to-amber-200 from-indigo-200 to-blue-200 from-lime-200 to-green-200 from-sky-200 to-blue-200 from-emerald-200 to-teal-200 from-fuchsia-200 to-pink-200 from-violet-200 to-purple-200 from-yellow-200 to-amber-300 from-green-200 to-emerald-300 from-rose-200 to-red-300 via-orange-50 via-blue-50 via-pink-100 via-purple-50 via-purple-100 from-amber-100 to-yellow-100 from-sky-100 to-cyan-100 from-orange-200 to-purple-100 from-indigo-200");
 
 body {
   margin: 0;
@@ -250,4 +250,29 @@ body {
 
 .long-press-fill {
   animation: long-press-fill-anim 0.5s linear forwards;
+}
+
+/* Task completion pop animation */
+@keyframes task-done-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.05); }
+  60% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+.task-done-pop {
+  animation: task-done-pop 0.4s ease-out;
+}
+
+/* Shake animation for unaffordable reward */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-out;
 }

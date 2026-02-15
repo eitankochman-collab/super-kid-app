@@ -16,14 +16,24 @@ const TIER_CONFIG: Record<RewardTier, { label: string; emoji: string; bg: string
   monthly: { label: 'פרסים חודשיים', emoji: '🔴', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700' },
 };
 
+const TIER_EMOJI_BG: Record<RewardTier, string> = {
+  quick: 'from-green-200 to-emerald-300',
+  weekly: 'from-yellow-200 to-amber-300',
+  monthly: 'from-rose-200 to-red-300',
+};
+
 const TIER_ORDER: RewardTier[] = ['quick', 'weekly', 'monthly'];
 
 export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId, onPinReward }: RewardsShopProps) {
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
+  const [shakingId, setShakingId] = useState<string | null>(null);
 
   const handleRewardClick = (reward: Reward) => {
     if (starBank >= reward.starCost) {
       setSelectedReward(reward);
+    } else {
+      setShakingId(reward.id);
+      setTimeout(() => setShakingId(null), 500);
     }
   };
 
@@ -41,7 +51,6 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
     rewards: rewards.filter((r) => r.tier === tier).sort((a, b) => a.starCost - b.starCost),
   })).filter((g) => g.rewards.length > 0);
 
-  // If no rewards have tiers (shouldn't happen after migration), show flat
   const hasGrouped = groupedRewards.length > 0;
   const ungroupedRewards = rewards.filter((r) => !r.tier);
 
@@ -60,11 +69,11 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
         const cheapestReward = [...rewards].sort((a, b) => a.starCost - b.starCost)[0];
         if (starBank >= cheapestReward.starCost) return null;
         return (
-          <div className="mb-4 p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-2xl text-center" dir="rtl">
-            <p className="text-sm font-bold text-amber-700">
-              💪 השלימו את שגרת הבוקר כדי לצבור ⭐ — אתם בדרך לפרס הראשון!
+          <div className="mb-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-2xl text-center" dir="rtl">
+            <p className="text-base font-extrabold text-amber-700">
+              💪 השלימו משימות כדי לצבור ⭐ — אתם בדרך לפרס!
             </p>
-            <p className="text-xs text-amber-500 mt-1">
+            <p className="text-sm font-bold text-amber-500 mt-1">
               👇 הפרס הקרוב: {cheapestReward.emoji} {cheapestReward.hebrew} — {cheapestReward.starCost} ⭐
             </p>
           </div>
@@ -99,11 +108,13 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
                       key={reward.id}
                       onClick={() => handleRewardClick(reward)}
                       className={`p-4 rounded-2xl text-center transition-all relative ${
+                        shakingId === reward.id ? 'animate-shake' : ''
+                      } ${
                         isPinned
                           ? 'bg-yellow-50 border-3 border-yellow-400 shadow-lg ring-2 ring-yellow-200'
                           : canAfford
                             ? 'bg-white border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg cursor-pointer active:scale-95'
-                            : 'bg-gray-50 border-2 border-gray-200 cursor-not-allowed'
+                            : 'bg-gray-50 border-2 border-gray-200 cursor-pointer'
                       }`}
                     >
                       {/* Pin button */}
@@ -126,8 +137,8 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
                         </div>
                       )}
 
-                      {/* Emoji circle */}
-                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-yellow-200 to-amber-300 flex items-center justify-center text-3xl shadow-sm">
+                      {/* Emoji circle — tier-colored background */}
+                      <div className={`w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br ${TIER_EMOJI_BG[tier]} flex items-center justify-center text-3xl shadow-sm`}>
                         {reward.emoji}
                       </div>
 
@@ -156,7 +167,7 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
 
                       {/* Buy button */}
                       {canAfford ? (
-                        <div className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold btn-invite-pulse">
+                        <div className={`px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold ${isPinned ? 'btn-invite-pulse' : ''}`}>
                           🎉 !קנה פרס
                         </div>
                       ) : (
@@ -183,9 +194,11 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
                 key={reward.id}
                 onClick={() => handleRewardClick(reward)}
                 className={`p-4 rounded-2xl text-center transition-all ${
+                  shakingId === reward.id ? 'animate-shake' : ''
+                } ${
                   canAfford
                     ? 'bg-white border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg cursor-pointer active:scale-95'
-                    : 'bg-gray-50 border-2 border-gray-200 opacity-60 cursor-not-allowed'
+                    : 'bg-gray-50 border-2 border-gray-200 cursor-pointer'
                 }`}
               >
                 <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-yellow-200 to-amber-300 flex items-center justify-center text-3xl shadow-sm">

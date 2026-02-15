@@ -135,7 +135,7 @@ export function AdminPanel({
   });
 
   // Accordion state — all collapsed by default
-  const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['stars']));
   const toggleSection = (id: string) => setOpenSections(prev => {
     const next = new Set(prev);
     if (next.has(id)) next.delete(id); else next.add(id);

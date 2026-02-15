@@ -148,9 +148,6 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'הכנס קוד 
           </button>
         </div>
 
-        <p className="text-sm text-gray-400 text-center mt-4">
-          קוד ברירת מחדל: 1234
-        </p>
       </div>
     </div>
   );

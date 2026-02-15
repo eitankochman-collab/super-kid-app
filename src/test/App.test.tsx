@@ -20,7 +20,7 @@ describe('App', () => {
 
   it('renders the app title', () => {
     render(<App />);
-    expect(screen.getByText(/Super Kids/)).toBeInTheDocument();
+    expect(screen.getByText(/סופר קידס/)).toBeInTheDocument();
   });
 
   it('renders kid selector with both kids', () => {
@@ -73,7 +73,6 @@ describe('App', () => {
   it('shows progress display', () => {
     render(<App />);
     expect(screen.getByText(/מתוך/)).toBeInTheDocument();
-    expect(screen.getByText(/משימות/)).toBeInTheDocument();
   });
 
   it('switches selected kid when clicking kid card', async () => {

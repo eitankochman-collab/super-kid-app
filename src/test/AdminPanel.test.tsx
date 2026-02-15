@@ -71,11 +71,9 @@ describe('AdminPanel', () => {
   });
 
   it('displays star banks for all kids with Hebrew names and avatars', async () => {
-    const user = userEvent.setup();
     renderAdmin();
 
-    // Open stars section (accordion is collapsed by default)
-    await user.click(screen.getByText('⭐ ניהול כוכבים'));
+    // Stars section is auto-open by default
 
     expect(screen.getAllByText('ליאור').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('רוני').length).toBeGreaterThanOrEqual(1);

@@ -41,6 +41,15 @@ function getGreeting(): { text: string; emoji: string } {
   return { text: 'לילה טוב', emoji: '🌟' };
 }
 
+/** Character face for progress ring based on completion percentage */
+function getProgressCharacter(pct: number): string {
+  if (pct >= 100) return '🦸';
+  if (pct >= 75) return '🤩';
+  if (pct >= 50) return '😄';
+  if (pct >= 25) return '😊';
+  return '💪';
+}
+
 /** Auto-select the matching routine tab based on current time */
 function getInitialTab(): TabId {
   const hour = new Date().getHours();
@@ -479,9 +488,9 @@ function App() {
         <div className="sticky top-0 z-30 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 rounded-2xl shadow-lg px-4 py-2 mb-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-extrabold text-white drop-shadow-md">
-              Super Kids
+              🌟 סופר קידס
             </h1>
-            <span className="text-xs font-semibold text-white/70" dir="rtl">
+            <span className="text-sm font-semibold text-white/70" dir="rtl">
               {formatHebrewDate()}
             </span>
             {isWeekend && (
@@ -542,7 +551,7 @@ function App() {
 
         {/* Greeting */}
         <div className="text-center mb-3" dir="rtl">
-          <span className="text-lg font-bold text-gray-700">
+          <span className="text-2xl font-extrabold text-gray-700">
             {getGreeting().emoji} {getGreeting().text}, {selectedKid.hebrewName}!
           </span>
         </div>
@@ -551,9 +560,6 @@ function App() {
         <div className="grid grid-cols-2 gap-3 mb-5">
           {state.kids.map((kid, index) => {
             const isSelected = index === selectedKidIndex;
-            const allTaskIds = [...kid.morning, ...kid.afternoon, ...kid.evening].map(t => t.id);
-            const doneToday = kid.status.filter(s => allTaskIds.includes(s.taskId) && s.done).length;
-            const totalToday = allTaskIds.length;
             return (
               <button
                 key={kid.id}
@@ -585,11 +591,8 @@ function App() {
                             🔥 {kid.streak.current}
                           </span>
                         )}
-                        <span key={kid.starBank} className={`star-count-bump font-black ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'} ${kid.starBank === 0 ? 'text-base' : 'text-2xl'}`}>
-                          {kid.starBank === 0 ? '✨ !מתחילים' : `${kid.starBank} ⭐`}
-                        </span>
-                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-white/30 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                          {doneToday}/{totalToday} ✓
+                        <span key={kid.starBank} className={`star-count-bump inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-black ${isSelected ? 'bg-white/30 text-white star-glow' : 'bg-yellow-100 text-yellow-600 star-glow'} ${kid.starBank === 0 ? 'text-sm' : 'text-lg'}`}>
+                          {kid.starBank === 0 ? '⭐ הכוכב הראשון מחכה!' : `${kid.starBank} ⭐`}
                         </span>
                       </div>
                     )}
@@ -632,12 +635,14 @@ function App() {
           {/* Progress section */}
           {activeTab !== 'rewards' && activeTab !== 'lunchbox' && (
             <div className="flex items-center gap-5 mb-4">
-              <ProgressRing percent={progress} color={selectedKid.accent} size={120} glow={progress >= 75} />
+              <ProgressRing percent={progress} color={selectedKid.accent} size={96} glow={progress >= 75}>
+                <span className="text-2xl">{getProgressCharacter(progress)}</span>
+              </ProgressRing>
               <div>
-                <div className="text-2xl font-bold text-gray-800" dir="rtl">
-                  {doneTasks} מתוך {totalTasks} משימות
+                <div className="text-3xl font-black text-gray-800" dir="rtl">
+                  {doneTasks} מתוך {totalTasks}
                 </div>
-                <div className="text-lg font-bold" dir="rtl" style={{ color: selectedKid.accent }}>
+                <div className="text-xl font-extrabold" dir="rtl" style={{ color: selectedKid.accent }}>
                   {getEncouragementText(progress)}
                 </div>
               </div>
@@ -659,27 +664,20 @@ function App() {
                   }`}
                 >
                   <span className="block">{tab.emoji} {tab.label}</span>
-                  <span className={`block text-[10px] ${isActive ? 'text-white/70' : 'text-gray-400'}`}>
-                    {tab.labelEn}
-                  </span>
                 </button>
               );
             })}
           </div>
 
-          {/* Per-tab progress bar */}
-          {activeTab !== 'rewards' && activeTab !== 'lunchbox' && (
-            <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className={`h-full bg-gradient-to-r ${selectedKid.color} transition-all duration-500 ease-out rounded-full`}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          )}
         </div>
 
         {/* Content Area */}
-        <div key={effectiveTab} className="tab-slide-in bg-white/90 backdrop-blur-sm rounded-3xl shadow-md p-3 border border-white/50">
+        <div key={effectiveTab} className="tab-slide-in rounded-3xl shadow-md p-3 border border-white/50 backdrop-blur-sm" style={{
+          background: effectiveTab === 'morning' ? 'rgba(255, 251, 235, 0.95)'
+            : effectiveTab === 'afternoon' ? 'rgba(240, 249, 255, 0.95)'
+            : effectiveTab === 'evening' ? 'rgba(245, 243, 255, 0.95)'
+            : 'rgba(255, 255, 255, 0.9)'
+        }}>
           {activeTab === 'rewards' ? (
             <RewardsShop
               rewards={state.rewards}

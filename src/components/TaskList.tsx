@@ -11,9 +11,16 @@ interface TaskListProps {
 }
 
 export function TaskList({ tasks, statuses, onToggleDone, onRemoveStar, isUnlocked, kidColor }: TaskListProps) {
+  // Sort: undone tasks first, done tasks at bottom (stable sort preserves original order within groups)
+  const sortedTasks = [...tasks].sort((a, b) => {
+    const aDone = statuses.some(s => s.taskId === a.id && s.done) ? 1 : 0;
+    const bDone = statuses.some(s => s.taskId === b.id && s.done) ? 1 : 0;
+    return aDone - bDone;
+  });
+
   return (
     <div className="space-y-2">
-      {tasks.map((task) => {
+      {sortedTasks.map((task) => {
         const status = statuses.find((s) => s.taskId === task.id);
         return (
           <TaskItem

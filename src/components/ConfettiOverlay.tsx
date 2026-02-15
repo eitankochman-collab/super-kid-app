@@ -79,9 +79,9 @@ export function ConfettiOverlay({ kidName, avatar, onClose }: ConfettiOverlayPro
           }}
         >
           {particle.type === 'star' ? (
-            <span className="text-lg" style={{ color: particle.color }}>⭐</span>
+            <span className="text-2xl" style={{ color: particle.color }}>⭐</span>
           ) : (
-            <div className="w-2 h-2" style={{ backgroundColor: particle.color }} />
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: particle.color }} />
           )}
         </div>
       ))}
