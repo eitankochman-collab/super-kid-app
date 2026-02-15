@@ -101,33 +101,21 @@ function App() {
     }
   };
 
-  const handleAddStar = (kidId: string, taskId: string) => {
-    const action = () => {
-      setState((prev) => ({
-        ...prev,
-        kids: prev.kids.map((kid) => {
-          if (kid.id !== kidId) return kid;
+  const handleRemoveStar = (kidId: string, taskId: string) => {
+    setState((prev) => ({
+      ...prev,
+      kids: prev.kids.map((kid) => {
+        if (kid.id !== kidId) return kid;
 
-          const existingStatus = kid.status.find((s) => s.taskId === taskId);
-          if (!existingStatus?.done) return kid;
+        const existingStatus = kid.status.find((s) => s.taskId === taskId);
+        if (!existingStatus?.done) return kid;
 
-          return {
-            ...kid,
-            starBank: kid.starBank + 1,
-            status: kid.status.map((s) =>
-              s.taskId === taskId ? { ...s, stars: s.stars + 1 } : s
-            ),
-          };
-        }),
-      }));
-    };
-
-    if (isUnlocked) {
-      action();
-    } else {
-      setPendingAction(() => action);
-      setShowPinModal(true);
-    }
+        return {
+          ...kid,
+          starBank: Math.max(0, kid.starBank - 1),
+        };
+      }),
+    }));
   };
 
   const handlePinSuccess = () => {
@@ -326,7 +314,7 @@ function App() {
               tasks={currentTasks}
               statuses={currentStatuses}
               onToggleDone={(taskId) => handleToggleDone(selectedKid.id, taskId)}
-              onAddStar={(taskId) => handleAddStar(selectedKid.id, taskId)}
+              onRemoveStar={(taskId) => handleRemoveStar(selectedKid.id, taskId)}
               isUnlocked={isUnlocked}
               kidColor={selectedKid.color}
             />

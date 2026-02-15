@@ -20,7 +20,7 @@ describe('TaskItem', () => {
         task={mockTask}
         status={undefined}
         onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={false}
         kidColor={kidColor}
       />
@@ -37,7 +37,7 @@ describe('TaskItem', () => {
         task={mockTask}
         status={undefined}
         onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={false}
         kidColor={kidColor}
       />
@@ -53,7 +53,7 @@ describe('TaskItem', () => {
         task={mockTask}
         status={status}
         onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={false}
         kidColor={kidColor}
       />
@@ -71,7 +71,7 @@ describe('TaskItem', () => {
         task={mockTask}
         status={undefined}
         onToggleDone={onToggleDone}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={false}
         kidColor={kidColor}
       />
@@ -81,19 +81,19 @@ describe('TaskItem', () => {
     expect(onToggleDone).toHaveBeenCalledOnce();
   });
 
-  it('shows star button only when task is done and unlocked', () => {
+  it('shows remove star button only when task is done and unlocked', () => {
     const { rerender } = render(
       <TaskItem
         task={mockTask}
         status={undefined}
         onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={true}
         kidColor={kidColor}
       />
     );
 
-    expect(screen.queryByText(/\+1/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/הסר/)).not.toBeInTheDocument();
 
     const doneStatus: TaskStatus = { taskId: 'm1', done: true, stars: 0 };
     rerender(
@@ -101,18 +101,18 @@ describe('TaskItem', () => {
         task={mockTask}
         status={doneStatus}
         onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={true}
         kidColor={kidColor}
       />
     );
 
-    expect(screen.getByText(/\+1/)).toBeInTheDocument();
+    expect(screen.getByText(/הסר/)).toBeInTheDocument();
   });
 
-  it('calls onAddStar when star button is clicked', async () => {
+  it('calls onRemoveStar when remove star button is clicked', async () => {
     const user = userEvent.setup();
-    const onAddStar = vi.fn();
+    const onRemoveStar = vi.fn();
     const status: TaskStatus = { taskId: 'm1', done: true, stars: 0 };
 
     render(
@@ -120,31 +120,14 @@ describe('TaskItem', () => {
         task={mockTask}
         status={status}
         onToggleDone={vi.fn()}
-        onAddStar={onAddStar}
+        onRemoveStar={onRemoveStar}
         isUnlocked={true}
         kidColor={kidColor}
       />
     );
 
-    await user.click(screen.getByText(/\+1/));
-    expect(onAddStar).toHaveBeenCalledOnce();
-  });
-
-  it('displays star count when stars have been awarded', () => {
-    const status: TaskStatus = { taskId: 'm1', done: true, stars: 3 };
-
-    render(
-      <TaskItem
-        task={mockTask}
-        status={status}
-        onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
-        isUnlocked={true}
-        kidColor={kidColor}
-      />
-    );
-
-    expect(screen.getByText(/\(3\)/)).toBeInTheDocument();
+    await user.click(screen.getByText(/הסר/));
+    expect(onRemoveStar).toHaveBeenCalledOnce();
   });
 
   it('has green styling when done', () => {
@@ -154,7 +137,7 @@ describe('TaskItem', () => {
         task={mockTask}
         status={status}
         onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={false}
         kidColor={kidColor}
       />

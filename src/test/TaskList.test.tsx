@@ -18,7 +18,7 @@ describe('TaskList', () => {
         tasks={mockTasks}
         statuses={[]}
         onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={false}
         kidColor={kidColor}
       />
@@ -40,7 +40,7 @@ describe('TaskList', () => {
         tasks={mockTasks}
         statuses={statuses}
         onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={false}
         kidColor={kidColor}
       />
@@ -59,7 +59,7 @@ describe('TaskList', () => {
         tasks={[]}
         statuses={[]}
         onToggleDone={vi.fn()}
-        onAddStar={vi.fn()}
+        onRemoveStar={vi.fn()}
         isUnlocked={false}
         kidColor={kidColor}
       />

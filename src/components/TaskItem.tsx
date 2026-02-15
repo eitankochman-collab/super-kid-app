@@ -5,15 +5,14 @@ interface TaskItemProps {
   task: Task;
   status: TaskStatus | undefined;
   onToggleDone: () => void;
-  onAddStar: () => void;
+  onRemoveStar: () => void;
   isUnlocked: boolean;
   kidColor: string;
 }
 
-export function TaskItem({ task, status, onToggleDone, onAddStar, isUnlocked, kidColor }: TaskItemProps) {
+export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked, kidColor }: TaskItemProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const isDone = status?.done || false;
-  const stars = status?.stars || 0;
 
   const speak = () => {
     if ('speechSynthesis' in window) {
@@ -67,11 +66,11 @@ export function TaskItem({ task, status, onToggleDone, onAddStar, isUnlocked, ki
         <div className="flex items-center gap-2 flex-shrink-0">
           {isDone && isUnlocked && (
             <button
-              onClick={onAddStar}
-              className="px-3 py-2 rounded-xl bg-yellow-100 text-yellow-700 font-semibold text-sm hover:bg-yellow-200 transition-all active:scale-95 shadow-sm"
-              title="Award star"
+              onClick={onRemoveStar}
+              className="px-3 py-2 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-all active:scale-95 shadow-sm"
+              title="Remove star"
             >
-              ⭐ +1{stars > 0 && ` (${stars})`}
+              הסר ⭐
             </button>
           )}
 
