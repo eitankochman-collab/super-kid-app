@@ -33,7 +33,7 @@ describe('App', () => {
 
   it('renders parent button', () => {
     render(<App />);
-    expect(screen.getByText(/הורים/)).toBeInTheDocument();
+    expect(screen.getByTitle(/הורים/)).toBeInTheDocument();
   });
 
   it('shows morning tasks by default for selected kid', () => {
@@ -90,7 +90,7 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByText(/הורים/));
+    await user.click(screen.getByTitle(/הורים/));
     expect(screen.getByText(/הכנס קוד/)).toBeInTheDocument();
   });
 
@@ -98,7 +98,7 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByText(/הורים/));
+    await user.click(screen.getByTitle(/הורים/));
 
     await user.click(screen.getByText('1'));
     await user.click(screen.getByText('2'));

@@ -30,14 +30,20 @@ function getTimeBackground(): string {
   }
 }
 
-/** Time-based greeting with Luna */
-function getGreeting(): { text: string; emoji: string; luna: string } {
+/** Time-based greeting with Luna — bilingual */
+function getGreeting(): { text: string; textEn: string; emoji: string; luna: string; lunaEn: string } {
   const hour = new Date().getHours();
-  if (hour >= 6 && hour < 12) return { text: 'בוקר טוב', emoji: '☀️🐕', luna: '!לונה מחכה לך' };
-  if (hour >= 12 && hour < 17) return { text: 'צהריים טובים', emoji: '🌤🐕', luna: '!לונה גאה בך' };
-  if (hour >= 17 && hour < 21) return { text: 'ערב טוב', emoji: '🌙🐕', luna: '!לונה אומרת לילה טוב' };
-  return { text: 'לילה טוב', emoji: '🌟🐕', luna: '!לונה אומרת לילה טוב' };
+  if (hour >= 6 && hour < 12) return { text: 'בוקר טוב', textEn: 'Good morning', emoji: '☀️🐕', luna: '!לונה מחכה לך', lunaEn: 'Luna is waiting for you!' };
+  if (hour >= 12 && hour < 17) return { text: 'צהריים טובים', textEn: 'Good afternoon', emoji: '🌤🐕', luna: '!לונה גאה בך', lunaEn: 'Luna is proud of you!' };
+  if (hour >= 17 && hour < 21) return { text: 'ערב טוב', textEn: 'Good evening', emoji: '🌙🐕', luna: '!לונה אומרת לילה טוב', lunaEn: 'Luna says good night!' };
+  return { text: 'לילה טוב', textEn: 'Good night', emoji: '🌟🐕', luna: '!לונה אומרת לילה טוב', lunaEn: 'Luna says good night!' };
 }
+
+/** English day names */
+const ENGLISH_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+
+/** English month names */
+const ENGLISH_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const;
 
 /** Character face for progress ring based on completion percentage */
 function getProgressCharacter(pct: number): string {
@@ -471,6 +477,11 @@ function App() {
     return `יום ${dayName}, ${dayNum} ${month}`;
   };
 
+  const formatEnglishDate = () => {
+    const now = new Date();
+    return `${ENGLISH_DAYS[now.getDay()]}, ${ENGLISH_MONTHS[now.getMonth()]} ${now.getDate()}`;
+  };
+
   const getEncouragementText = (pct: number): string => {
     if (pct >= 100) return '!מושלם ✨';
     if (pct >= 75) return '!עוד קצת 🏆';
@@ -484,25 +495,20 @@ function App() {
 
       <div className="max-w-2xl mx-auto">
 
-        {/* Sticky Header */}
-        <div className="bg-gradient-to-r from-[#5B2C8E] via-purple-600 to-[#E8832A] rounded-2xl shadow-lg px-4 py-2 mb-5 flex items-center justify-between">
+        {/* Sticky Header — 3 sections: left (logo+title), center (empty), right (icons) */}
+        <div className="bg-gradient-to-r from-[#5B2C8E] via-purple-600 to-[#E8832A] rounded-2xl shadow-lg px-4 py-2 mb-2 flex items-center justify-between">
+          {/* LEFT: Logo + Title */}
           <div className="flex items-center gap-3">
             <img src="/super-kid-app/logo.png" alt="Luna's Super Sisters"
-                 className="w-10 h-10 rounded-full object-cover border-2 border-white/30 shadow-md" />
+                 className="rounded-full object-cover flex-shrink-0"
+                 style={{ width: '56px', height: '56px', border: '3px solid white', boxShadow: '0 0 12px rgba(255,255,255,0.4)' }} />
             <div>
               <h1 className="text-lg font-extrabold text-white drop-shadow-md">Luna's Super Sisters</h1>
               <span className="text-[10px] font-semibold text-white/70" dir="rtl">ליאור, רוני ולונה 🌙</span>
             </div>
-            <span className="text-sm font-semibold text-white/70" dir="rtl">
-              {formatHebrewDate()}
-            </span>
-            {isWeekend && (
-              <span className="px-2 py-0.5 bg-white/20 text-white rounded-full text-xs font-semibold">
-                🌴 סוף שבוע
-              </span>
-            )}
           </div>
 
+          {/* RIGHT: Unlock timer + Mute + Parent icon */}
           <div className="flex items-center gap-2">
             {isUnlocked && (
               <>
@@ -511,7 +517,7 @@ function App() {
                 </span>
                 <button
                   onClick={handleLockNow}
-                  className="px-2 py-1 bg-white/20 text-white rounded-full text-xs font-semibold hover:bg-white/30 transition-colors backdrop-blur-sm"
+                  className="w-9 h-9 flex items-center justify-center bg-white/20 text-white rounded-full text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
                 >
                   🔒
                 </button>
@@ -519,16 +525,29 @@ function App() {
             )}
             <button
               onClick={handleToggleMute}
-              className="w-10 h-10 flex items-center justify-center bg-white/20 text-white rounded-full text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
+              className="w-9 h-9 flex items-center justify-center bg-white/20 text-white rounded-full text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
             >
               {muted ? '🔇' : '🔊'}
             </button>
             <button
               onClick={handleOpenAdmin}
-              className="px-3 py-1.5 bg-white/20 text-white rounded-xl font-bold text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
+              className="w-9 h-9 flex items-center justify-center bg-white/20 text-white rounded-full text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
+              title="הורים / Parents"
             >
-              👨‍👩‍👧‍👦 הורים
+              👨‍👩‍👧‍👦
             </button>
+          </div>
+        </div>
+
+        {/* Date line — below header, centered, bilingual */}
+        <div className="text-center mb-4">
+          <div className="text-sm font-semibold text-gray-600" dir="rtl">
+            {formatHebrewDate()}
+            {isWeekend && <span className="mr-2 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold">🌴 סוף שבוע</span>}
+          </div>
+          <div className="text-xs text-gray-400">
+            {formatEnglishDate()}
+            {isWeekend && <span className="ml-2 text-xs text-green-600 font-semibold">Weekend</span>}
           </div>
         </div>
 
@@ -541,12 +560,18 @@ function App() {
           onShowWeekly={() => setShowWeeklyModal(true)}
         />
 
-        {/* Greeting */}
-        <div className="text-center mb-3" dir="rtl">
-          <span className="text-2xl font-extrabold text-gray-700">
-            {greeting.emoji} !{greeting.text}, {selectedKid.hebrewName}
-          </span>
-          <div className="text-sm font-bold text-purple-600">{greeting.luna}</div>
+        {/* Greeting — bilingual */}
+        <div className="text-center mb-3">
+          <div dir="rtl">
+            <span className="text-2xl font-extrabold text-gray-700">
+              {greeting.emoji} !{greeting.text}, {selectedKid.hebrewName}
+            </span>
+          </div>
+          <div className="text-sm font-semibold text-gray-400">
+            {greeting.textEn}, {selectedKid.name}!
+          </div>
+          <div className="text-sm font-bold text-purple-600 mt-0.5" dir="rtl">{greeting.luna}</div>
+          <div className="text-xs font-semibold text-purple-400">{greeting.lunaEn}</div>
         </div>
 
         {/* Kid Selector */}

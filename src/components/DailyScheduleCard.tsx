@@ -20,13 +20,16 @@ export function DailyScheduleCard({ kidId, kidHebrewName, kidColor, isWeekend, o
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🎉</span>
-            <span className="text-lg font-bold text-gray-700">!סוף שבוע</span>
+            <div>
+              <span className="text-lg font-bold text-gray-700">!סוף שבוע</span>
+              <div className="text-xs font-semibold text-gray-400">Weekend!</div>
+            </div>
           </div>
           <button
             onClick={onShowWeekly}
             className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-xl text-xs font-bold hover:bg-purple-200 transition-colors active:scale-95"
           >
-            📅 השבוע
+            📅 השבוע / This Week
           </button>
         </div>
       </div>
@@ -85,7 +88,7 @@ export function DailyScheduleCard({ kidId, kidHebrewName, kidColor, isWeekend, o
           onClick={onShowWeekly}
           className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-xl text-xs font-bold hover:bg-purple-200 transition-colors active:scale-95"
         >
-          📅 השבוע
+          📅 השבוע / This Week
         </button>
       </div>
 
