@@ -3,21 +3,23 @@ import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConfettiOverlay } from '../components/ConfettiOverlay';
 
-describe('ConfettiOverlay', () => {
-  it('renders celebration message with kid name', () => {
-    render(<ConfettiOverlay kidName="Lior" onClose={vi.fn()} />);
+const avatar = '/super-kid-app/lior-avatar.png';
 
-    expect(screen.getByText('Super Kid!')).toBeInTheDocument();
-    expect(screen.getByText('Lior')).toBeInTheDocument();
+describe('ConfettiOverlay', () => {
+  it('renders Super-Kid celebration with kid name', () => {
+    render(<ConfettiOverlay kidName="ליאור" avatar={avatar} onClose={vi.fn()} />);
+
+    expect(screen.getByText(/סופר-קיד/)).toBeInTheDocument();
+    expect(screen.getByText(/ליאור/)).toBeInTheDocument();
   });
 
   it('calls onClose when clicked', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
 
-    render(<ConfettiOverlay kidName="Lior" onClose={onClose} />);
+    render(<ConfettiOverlay kidName="ליאור" avatar={avatar} onClose={onClose} />);
 
-    await user.click(screen.getByText('Super Kid!'));
+    await user.click(screen.getByText(/סופר-קיד/));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
@@ -25,7 +27,7 @@ describe('ConfettiOverlay', () => {
     vi.useFakeTimers();
     const onClose = vi.fn();
 
-    render(<ConfettiOverlay kidName="Lior" onClose={onClose} />);
+    render(<ConfettiOverlay kidName="ליאור" avatar={avatar} onClose={onClose} />);
 
     expect(onClose).not.toHaveBeenCalled();
 
@@ -40,7 +42,7 @@ describe('ConfettiOverlay', () => {
 
   it('renders confetti particles', () => {
     const { container } = render(
-      <ConfettiOverlay kidName="Roni" onClose={vi.fn()} />
+      <ConfettiOverlay kidName="רוני" avatar={avatar} onClose={vi.fn()} />
     );
 
     const particles = container.querySelectorAll('.animate-fall');

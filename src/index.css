@@ -58,6 +58,61 @@ body {
   animation: fade-out;
 }
 
+/* Mini celebration (per-routine) */
+@keyframes mini-pop {
+  0% { transform: scale(0); opacity: 0; }
+  40% { transform: scale(1.15); opacity: 1; }
+  60% { transform: scale(1); }
+  80% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0; }
+}
+
+.mini-celebrate {
+  animation: mini-pop 2s ease-out forwards;
+}
+
+@keyframes sparkle-float {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  30% { opacity: 1; transform: scale(1) rotate(30deg); }
+  70% { opacity: 1; transform: scale(1.2) rotate(-20deg); }
+  100% { opacity: 0; transform: scale(0) rotate(60deg) translateY(-20px); }
+}
+
+.sparkle-1 { animation: sparkle-float 1.2s ease-out 0.1s forwards; opacity: 0; }
+.sparkle-2 { animation: sparkle-float 1.2s ease-out 0.3s forwards; opacity: 0; }
+.sparkle-3 { animation: sparkle-float 1.2s ease-out 0.5s forwards; opacity: 0; }
+
+/* Super-Kid full transformation */
+@keyframes super-entrance {
+  0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+  50% { transform: scale(1.1) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.super-kid-entrance {
+  animation: super-entrance 0.6s ease-out forwards;
+}
+
+@keyframes golden-pulse {
+  0%, 100% { box-shadow: 0 0 20px 8px rgba(250, 204, 21, 0.5); }
+  50% { box-shadow: 0 0 40px 16px rgba(250, 204, 21, 0.8); }
+}
+
+.golden-glow {
+  animation: golden-pulse 1s ease-in-out infinite;
+}
+
+@keyframes cape-wave {
+  0%, 100% { transform: translate(-50%, 0) skewX(0deg) scaleY(1); }
+  25% { transform: translate(-50%, 0) skewX(-5deg) scaleY(1.05); }
+  75% { transform: translate(-50%, 0) skewX(5deg) scaleY(0.95); }
+}
+
+.cape-flutter {
+  animation: cape-wave 0.8s ease-in-out infinite;
+  transform-origin: top center;
+}
+
 /* Modal backdrop */
 .modal-backdrop {
   position: fixed;

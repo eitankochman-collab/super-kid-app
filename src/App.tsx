@@ -7,6 +7,7 @@ import { ProgressRing } from './components/ProgressRing';
 import { TaskList } from './components/TaskList';
 import { RewardsShop } from './components/RewardsShop';
 import { ConfettiOverlay } from './components/ConfettiOverlay';
+import { MiniCelebration } from './components/MiniCelebration';
 import { PinModal } from './components/PinModal';
 import { AdminPanel } from './components/AdminPanel';
 
@@ -16,7 +17,8 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabId>('morning');
   const [showPinModal, setShowPinModal] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showSuperKid, setShowSuperKid] = useState(false);
+  const [miniCelebration, setMiniCelebration] = useState<{ message: string } | null>(null);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [yesterdaySummary, setYesterdaySummary] = useState<YesterdaySummary | null>(null);
@@ -105,11 +107,23 @@ function App() {
   const totalTasks = currentTasks.length;
   const progress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
+  const routineMessages: Record<string, string> = {
+    morning: '!סופר בוקר 🌅',
+    afternoon: '!כל הכבוד 🎒',
+    evening: '!לילה טוב 🌙',
+  };
+
+  // Check if all tasks in a routine are done (given a status array)
+  const isRoutineComplete = (taskIds: string[], statuses: { taskId: string; done: boolean }[]) => {
+    if (taskIds.length === 0) return true;
+    return taskIds.every((id) => statuses.some((s) => s.taskId === id && s.done));
+  };
+
   const handleToggleDone = (kidId: string, taskId: string) => {
-    // Pre-calculate if this will complete the routine
+    // Pre-calculate what will happen
     const kid = state.kids.find((k) => k.id === kidId);
-    const currentStatus = kid?.status.find((s) => s.taskId === taskId);
-    const willBeDone = !currentStatus?.done;
+    const currentStatusEntry = kid?.status.find((s) => s.taskId === taskId);
+    const willBeDone = !currentStatusEntry?.done;
 
     setState((prev) => ({
       ...prev,
@@ -139,11 +153,47 @@ function App() {
       }),
     }));
 
-    // Check if this completes the routine
-    if (willBeDone) {
-      const newDoneCount = doneTasks + 1;
-      if (newDoneCount === totalTasks && totalTasks > 0) {
-        setShowConfetti(true);
+    // Check celebrations only when completing (not undoing)
+    if (willBeDone && kid) {
+      // Simulate the new status after this toggle
+      const newStatuses = currentStatusEntry
+        ? kid.status.map((s) => s.taskId === taskId ? { ...s, done: true } : s)
+        : [...kid.status, { taskId, done: true, stars: 0 }];
+
+      // Get effective task lists (with weekend filtering)
+      const morningIds = (isWeekend
+        ? kid.morning.filter((t) => !WEEKEND_EXCLUDED_MORNING.includes(t.id))
+        : kid.morning
+      ).map((t) => t.id);
+      const afternoonIds = isWeekend ? [] : kid.afternoon.map((t) => t.id);
+      const eveningIds = kid.evening.map((t) => t.id);
+
+      const morningDone = isRoutineComplete(morningIds, newStatuses);
+      const afternoonDone = isRoutineComplete(afternoonIds, newStatuses);
+      const eveningDone = isRoutineComplete(eveningIds, newStatuses);
+
+      // Check if ALL routines are now complete → full Super-Kid
+      if (morningDone && afternoonDone && eveningDone) {
+        // Only trigger if this task was the final one across all routines
+        const oldMorningDone = isRoutineComplete(morningIds, kid.status);
+        const oldAfternoonDone = isRoutineComplete(afternoonIds, kid.status);
+        const oldEveningDone = isRoutineComplete(eveningIds, kid.status);
+        if (!(oldMorningDone && oldAfternoonDone && oldEveningDone)) {
+          setShowSuperKid(true);
+          return;
+        }
+      }
+
+      // Check if the CURRENT routine just completed → mini celebration
+      const currentRoutineTab = effectiveTab as string;
+      if (currentRoutineTab in routineMessages) {
+        const routineTaskIds = currentTasks.map((t) => t.id);
+        const wasComplete = isRoutineComplete(routineTaskIds, kid.status);
+        const nowComplete = isRoutineComplete(routineTaskIds, newStatuses);
+        if (!wasComplete && nowComplete) {
+          setMiniCelebration({ message: routineMessages[currentRoutineTab] });
+          setTimeout(() => setMiniCelebration(null), 2000);
+        }
       }
     }
   };
@@ -418,9 +468,22 @@ function App() {
         </div>
       )}
 
-      {/* Confetti Overlay */}
-      {showConfetti && (
-        <ConfettiOverlay kidName={selectedKid.hebrewName} onClose={() => setShowConfetti(false)} />
+      {/* Mini Celebration (per-routine) */}
+      {miniCelebration && (
+        <MiniCelebration
+          avatar={selectedKid.avatar}
+          kidName={selectedKid.hebrewName}
+          message={miniCelebration.message}
+        />
+      )}
+
+      {/* Full Super-Kid Celebration (all routines complete) */}
+      {showSuperKid && (
+        <ConfettiOverlay
+          kidName={selectedKid.hebrewName}
+          avatar={selectedKid.avatar}
+          onClose={() => setShowSuperKid(false)}
+        />
       )}
 
       {/* PIN Modal */}

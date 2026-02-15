@@ -8,6 +8,7 @@ import {
 
 interface ConfettiOverlayProps {
   kidName: string;
+  avatar: string;
   onClose: () => void;
 }
 
@@ -30,9 +31,9 @@ function playNote(
   oscillator.stop(audioContext.currentTime + duration);
 }
 
-export function ConfettiOverlay({ kidName, onClose }: ConfettiOverlayProps) {
+export function ConfettiOverlay({ kidName, avatar, onClose }: ConfettiOverlayProps) {
   const [confetti, setConfetti] = useState<
-    Array<{ id: number; left: number; delay: number; duration: number; color: string }>
+    Array<{ id: number; left: number; delay: number; duration: number; color: string; type: 'square' | 'star' }>
   >([]);
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export function ConfettiOverlay({ kidName, onClose }: ConfettiOverlayProps) {
       delay: Math.random() * 0.5,
       duration: 2 + Math.random() * 1,
       color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      type: (Math.random() > 0.6 ? 'star' : 'square') as 'square' | 'star',
     }));
     setConfetti(particles);
 
@@ -65,24 +67,44 @@ export function ConfettiOverlay({ kidName, onClose }: ConfettiOverlayProps) {
       role="dialog"
       aria-label={`Celebration for ${kidName}`}
     >
+      {/* Confetti + stars raining */}
       {confetti.map((particle) => (
         <div
           key={particle.id}
-          className="absolute top-0 w-2 h-2 animate-fall"
+          className="absolute top-0 animate-fall"
           style={{
             left: `${particle.left}%`,
             animationDelay: `${particle.delay}s`,
             animationDuration: `${particle.duration}s`,
-            backgroundColor: particle.color,
           }}
-        />
+        >
+          {particle.type === 'star' ? (
+            <span className="text-lg" style={{ color: particle.color }}>⭐</span>
+          ) : (
+            <div className="w-2 h-2" style={{ backgroundColor: particle.color }} />
+          )}
+        </div>
       ))}
 
-      <div className="relative z-10 text-center animate-bounce-in">
-        <div className="text-9xl mb-4">🎉</div>
-        <h1 className="text-6xl font-bold text-white mb-4">Super Kid!</h1>
-        <p className="text-3xl text-yellow-300 font-semibold">{kidName}</p>
-        <div className="mt-8 text-7xl animate-pulse">⭐</div>
+      {/* Super-Kid transformation */}
+      <div className="relative z-10 text-center super-kid-entrance">
+        {/* Cape behind avatar */}
+        <div className="cape-flutter absolute left-1/2 -translate-x-1/2 top-8 w-32 h-40 bg-gradient-to-b from-red-500 to-red-700 rounded-b-full opacity-80" />
+
+        {/* Avatar with golden glow */}
+        <div className="relative inline-block mb-4">
+          <div className="golden-glow absolute inset-0 rounded-full" />
+          <img
+            src={avatar}
+            alt={kidName}
+            className="relative w-28 h-28 rounded-full object-cover border-4 border-yellow-400 shadow-2xl"
+          />
+        </div>
+
+        <h1 className="text-4xl font-extrabold text-white mb-2 drop-shadow-lg" dir="rtl">
+          !{kidName} סופר-קיד
+        </h1>
+        <div className="text-5xl mt-2">🦸‍♂️</div>
       </div>
     </div>
   );
