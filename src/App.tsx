@@ -4,6 +4,7 @@ import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, save
 import type { YesterdaySummary } from './storage';
 import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES, PICKUP_KEY } from './constants';
 import { loadFoodCatalog, saveFoodCatalog } from './lunchboxStorage';
+import { isMuted, setMuted, playDing, playBoop, playFanfare, playChaChing, playClick, playPop } from './sounds';
 import { ProgressRing } from './components/ProgressRing';
 import { TaskList } from './components/TaskList';
 import { RewardsShop } from './components/RewardsShop';
@@ -27,7 +28,14 @@ function App() {
   const [isWeekendAuto, setIsWeekendAuto] = useState(isWeekendDay);
   const [weekendOverride, setWeekendOverride] = useState<boolean | null>(null);
   const [foodCatalog, setFoodCatalog] = useState<FoodItem[]>(loadFoodCatalog);
+  const [muted, setMutedState] = useState(isMuted);
   const isWeekend = weekendOverride !== null ? weekendOverride : isWeekendAuto;
+
+  const handleToggleMute = () => {
+    const next = !muted;
+    setMutedState(next);
+    setMuted(next);
+  };
 
   const isUnlocked = state.pinUnlockedUntil !== null && Date.now() < state.pinUnlockedUntil;
   const selectedKid = state.kids[selectedKidIndex];
@@ -184,6 +192,11 @@ function App() {
       }),
     }));
 
+    // Sound for undo
+    if (!willBeDone) {
+      playBoop();
+    }
+
     // Check celebrations only when completing (not undoing)
     if (willBeDone && kid) {
       // Simulate the new status after this toggle
@@ -239,11 +252,13 @@ function App() {
           if (milestone) {
             // Show streak celebration after a short delay (after Super-Kid closes)
             setTimeout(() => {
+              playChaChing();
               setMiniCelebration({ message: milestone.message });
               setTimeout(() => setMiniCelebration(null), 2000);
             }, 3200);
           }
 
+          playFanfare();
           setShowSuperKid(true);
           return;
         }
@@ -256,10 +271,15 @@ function App() {
         const wasComplete = isRoutineComplete(routineTaskIds, kid.status);
         const nowComplete = isRoutineComplete(routineTaskIds, newStatuses);
         if (!wasComplete && nowComplete) {
+          playFanfare();
           setMiniCelebration({ message: routineMessages[currentRoutineTab] });
           setTimeout(() => setMiniCelebration(null), 2000);
+          return;
         }
       }
+
+      // Regular task completion — no celebration
+      playDing();
     }
   };
 
@@ -430,6 +450,12 @@ function App() {
               </>
             )}
             <button
+              onClick={handleToggleMute}
+              className="w-10 h-10 flex items-center justify-center bg-white/20 text-white rounded-full text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
+            >
+              {muted ? '🔇' : '🔊'}
+            </button>
+            <button
               onClick={handleOpenAdmin}
               className="px-3 py-1.5 bg-white/20 text-white rounded-xl font-bold text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
             >
@@ -465,8 +491,8 @@ function App() {
             return (
               <button
                 key={kid.id}
-                onClick={() => setSelectedKidIndex(index)}
-                className={`p-3 rounded-2xl transition-all duration-200 w-full ${
+                onClick={() => { playPop(); setSelectedKidIndex(index); }}
+                className={`p-3 rounded-2xl transition-all duration-200 w-full active:scale-[0.98] ${
                   isSelected
                     ? `bg-gradient-to-br ${kid.color} text-white shadow-lg scale-[1.02] selected-card-glow`
                     : 'bg-white/80 text-gray-700 shadow-md hover:shadow-lg hover:scale-[1.01] border-2 border-white/60'
@@ -493,7 +519,7 @@ function App() {
                             🔥 {kid.streak.current}
                           </span>
                         )}
-                        <span className={`font-extrabold ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'} ${kid.starBank === 0 ? 'text-sm' : 'text-xl'}`}>
+                        <span key={kid.starBank} className={`star-count-bump font-extrabold ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'} ${kid.starBank === 0 ? 'text-sm' : 'text-xl'}`}>
                           {kid.starBank === 0 ? '✨ !מתחילים' : `${kid.starBank} ⭐`}
                         </span>
                       </div>
@@ -529,8 +555,8 @@ function App() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 min-w-0 py-2.5 px-3 rounded-full font-semibold text-sm transition-all whitespace-nowrap ${
+                  onClick={() => { playClick(); setActiveTab(tab.id); }}
+                  className={`flex-1 min-w-0 py-2.5 px-3 rounded-full font-semibold text-sm transition-all whitespace-nowrap active:scale-95 ${
                     isActive
                       ? `bg-gradient-to-r ${selectedKid.color} text-white shadow-md`
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -557,7 +583,7 @@ function App() {
         </div>
 
         {/* Content Area */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-md p-3 border border-white/50">
+        <div key={effectiveTab} className="tab-slide-in bg-white/90 backdrop-blur-sm rounded-3xl shadow-md p-3 border border-white/50">
           {activeTab === 'rewards' ? (
             <RewardsShop
               rewards={state.rewards}

@@ -50,7 +50,7 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
     <div
       className={`p-3 rounded-2xl transition-all duration-200 ${
         isDone
-          ? 'bg-green-100 border-2 border-green-300'
+          ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-300 scale-[0.97]'
           : 'bg-white hover:shadow-md border border-gray-100'
       }`}
     >

@@ -21,7 +21,12 @@ Object.defineProperty(window, 'speechSynthesis', {
 
 // Mock AudioContext
 class MockOscillator {
-  frequency = { value: 0 };
+  type = 'sine';
+  frequency = {
+    value: 0,
+    setValueAtTime: vi.fn(),
+    exponentialRampToValueAtTime: vi.fn(),
+  };
   connect = vi.fn();
   start = vi.fn();
   stop = vi.fn();
@@ -33,6 +38,7 @@ class MockGainNode {
     value: 0,
     setValueAtTime: vi.fn(),
     exponentialRampToValueAtTime: vi.fn(),
+    linearRampToValueAtTime: vi.fn(),
   };
   connect = vi.fn();
   disconnect = vi.fn();
@@ -40,10 +46,12 @@ class MockGainNode {
 
 class MockAudioContext {
   currentTime = 0;
+  state = 'running';
   createOscillator = () => new MockOscillator();
   createGain = () => new MockGainNode();
   destination = {};
   close = vi.fn();
+  resume = vi.fn(() => Promise.resolve());
 }
 
 Object.defineProperty(window, 'AudioContext', {
