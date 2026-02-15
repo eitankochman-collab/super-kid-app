@@ -67,6 +67,9 @@ export const STREAK_MILESTONES: { days: number; message: string; bonus: number }
   { days: 7, message: '!שבוע מושלם 🏆', bonus: 5 },
 ];
 
+/** localStorage key for bonus star log */
+export const BONUS_LOG_KEY = 'super-kid-app-bonus-log';
+
 /** Tab configuration for routine/rewards navigation */
 export type TabId = 'morning' | 'afternoon' | 'evening' | 'rewards';
 

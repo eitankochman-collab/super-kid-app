@@ -58,6 +58,16 @@ body {
   animation: fade-out;
 }
 
+/* Bonus star float animation */
+@keyframes bonus-float-up {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -30px) scale(1.3); }
+}
+
+.bonus-float {
+  animation: bonus-float-up 1s ease-out forwards;
+}
+
 /* Mini celebration (per-routine) */
 @keyframes mini-pop {
   0% { transform: scale(0); opacity: 0; }

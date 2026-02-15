@@ -1,4 +1,36 @@
+import { useState, useEffect } from 'react';
 import type { KidData, Reward } from '../types';
+import { BONUS_LOG_KEY } from '../constants';
+
+interface BonusEntry {
+  date: string; // YYYY-MM-DD
+  kidId: string;
+  description: string;
+}
+
+function getTodayKey(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function loadBonusLog(): BonusEntry[] {
+  try {
+    const stored = localStorage.getItem(BONUS_LOG_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch { /* ignore */ }
+  return [];
+}
+
+function saveBonusLog(log: BonusEntry[]): void {
+  localStorage.setItem(BONUS_LOG_KEY, JSON.stringify(log));
+}
+
+function getRecentBonuses(log: BonusEntry[]): BonusEntry[] {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 7);
+  const cutoffKey = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`;
+  return log.filter((e) => e.date >= cutoffKey).reverse();
+}
 
 interface AdminPanelProps {
   kids: KidData[];
@@ -21,6 +53,23 @@ export function AdminPanel({
   onRequestPin,
   onResetDone,
 }: AdminPanelProps) {
+  const [bonusKidId, setBonusKidId] = useState(kids[0]?.id || '');
+  const [bonusText, setBonusText] = useState('');
+  const [bonusLog, setBonusLog] = useState<BonusEntry[]>(loadBonusLog);
+  const [showFloat, setShowFloat] = useState(false);
+
+  const today = getTodayKey();
+  const bonusKid = kids.find((k) => k.id === bonusKidId);
+  const alreadyGotBonus = bonusLog.some((e) => e.date === today && e.kidId === bonusKidId);
+  const recentBonuses = getRecentBonuses(bonusLog);
+
+  // Keep the pronoun matching: for girls use feminine Hebrew
+  const bonusGivenText = `כבר קיבלה בונוס היום ✅`;
+
+  useEffect(() => {
+    saveBonusLog(bonusLog);
+  }, [bonusLog]);
+
   const handleRedeem = (kidId: string, rewardId: string) => {
     const action = () => onRedeemReward(kidId, rewardId);
 
@@ -29,6 +78,16 @@ export function AdminPanel({
     } else {
       onRequestPin(action);
     }
+  };
+
+  const handleAwardBonus = () => {
+    if (alreadyGotBonus || !bonusText.trim()) return;
+
+    onAdjustStars(bonusKidId, 1);
+    setBonusLog((prev) => [...prev, { date: today, kidId: bonusKidId, description: bonusText.trim() }]);
+    setBonusText('');
+    setShowFloat(true);
+    setTimeout(() => setShowFloat(false), 1000);
   };
 
   return (
@@ -82,6 +141,82 @@ export function AdminPanel({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Behavior Bonus */}
+        <div className="mb-8">
+          <h3 className="text-xl font-bold text-gray-700 mb-4">כוכב בונוס ⭐</h3>
+          <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-5 rounded-2xl border-2 border-amber-200">
+            {/* Kid selector */}
+            <div className="flex gap-3 mb-4 justify-center">
+              {kids.map((kid) => (
+                <button
+                  key={kid.id}
+                  onClick={() => setBonusKidId(kid.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all ${
+                    bonusKidId === kid.id
+                      ? `bg-gradient-to-r ${kid.color} text-white shadow-md`
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <img src={kid.avatar} alt={kid.name} className="w-7 h-7 rounded-full object-cover" />
+                  {kid.hebrewName}
+                </button>
+              ))}
+            </div>
+
+            {/* Input + button */}
+            <div className="flex gap-2 items-center" dir="rtl">
+              <input
+                type="text"
+                value={bonusText}
+                onChange={(e) => setBonusText(e.target.value)}
+                placeholder={`?מה עשתה ${bonusKid?.hebrewName || ''}`}
+                disabled={alreadyGotBonus}
+                className="flex-1 px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:border-amber-400 disabled:bg-gray-100 disabled:text-gray-400"
+                onKeyDown={(e) => { if (e.key === 'Enter') handleAwardBonus(); }}
+              />
+              <div className="relative">
+                <button
+                  onClick={handleAwardBonus}
+                  disabled={alreadyGotBonus || !bonusText.trim()}
+                  className={`px-5 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 whitespace-nowrap ${
+                    alreadyGotBonus
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : !bonusText.trim()
+                        ? 'bg-amber-200 text-amber-500 cursor-not-allowed'
+                        : 'bg-amber-500 text-white hover:bg-amber-600 shadow-md'
+                  }`}
+                >
+                  {alreadyGotBonus ? bonusGivenText : '⭐ תן כוכב'}
+                </button>
+                {showFloat && (
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-lg font-bold text-amber-500 bonus-float">
+                    +1 ⭐
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Recent bonuses */}
+            {recentBonuses.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-amber-200">
+                <p className="text-xs font-semibold text-gray-400 mb-2" dir="rtl">7 ימים אחרונים:</p>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {recentBonuses.map((entry, i) => {
+                    const kid = kids.find((k) => k.id === entry.kidId);
+                    return (
+                      <div key={i} className="flex items-center gap-2 text-sm" dir="rtl">
+                        {kid && <img src={kid.avatar} alt={kid.name} className="w-5 h-5 rounded-full object-cover" />}
+                        <span className="text-gray-500 text-xs">{entry.date.slice(5)}</span>
+                        <span className="text-gray-700 font-medium">{entry.description}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
