@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Safelist dynamic gradient classes used in kid.color (stored as data strings) */
-@source inline("from-amber-400 to-orange-500 from-sky-400 to-blue-500 bg-gradient-to-r bg-gradient-to-br from-orange-200 to-yellow-200 from-purple-200 to-violet-200 from-blue-200 to-cyan-200 from-amber-200 to-yellow-200 from-green-200 to-emerald-200 from-teal-200 to-cyan-200 from-pink-200 to-rose-200 from-orange-200 to-amber-200 from-indigo-200 to-blue-200 from-lime-200 to-green-200 from-sky-200 to-blue-200 from-emerald-200 to-teal-200 from-fuchsia-200 to-pink-200 from-violet-200 to-purple-200 from-yellow-200 to-amber-300 from-green-200 to-emerald-300 from-rose-200 to-red-300 via-orange-50 via-blue-50 via-pink-100 via-purple-50 via-purple-100 from-amber-100 to-yellow-100 from-sky-100 to-cyan-100 from-orange-200 to-purple-100 from-indigo-200");
+@source inline("from-amber-400 to-orange-500 from-purple-400 to-indigo-500 from-purple-600 to-orange-500 bg-gradient-to-r bg-gradient-to-br from-orange-200 to-yellow-200 from-purple-200 to-violet-200 from-blue-200 to-cyan-200 from-amber-200 to-yellow-200 from-green-200 to-emerald-200 from-teal-200 to-cyan-200 from-pink-200 to-rose-200 from-orange-200 to-amber-200 from-indigo-200 to-blue-200 from-lime-200 to-green-200 from-sky-200 to-blue-200 from-emerald-200 to-teal-200 from-fuchsia-200 to-pink-200 from-violet-200 to-purple-200 from-yellow-200 to-amber-300 from-green-200 to-emerald-300 from-rose-200 to-red-300 via-orange-50 via-blue-50 via-pink-100 via-purple-50 via-purple-100 from-amber-100 to-yellow-100 from-sky-100 to-cyan-100 from-orange-200 to-purple-100 from-indigo-200 from-purple-50 via-indigo-50 to-orange-50 to-purple-100 from-indigo-100 to-orange-100 to-indigo-100");
 
 body {
   margin: 0;

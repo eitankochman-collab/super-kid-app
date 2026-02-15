@@ -14,31 +14,27 @@ import { MiniCelebration } from './components/MiniCelebration';
 import { PinModal } from './components/PinModal';
 import { AdminPanel } from './components/AdminPanel';
 
-/** Time-based background gradient for wall-mounted tablet */
+/** Time-based background gradient — lavender tint for Luna's Super Sisters */
 function getTimeBackground(): string {
   const hour = new Date().getHours();
   if (hour >= 6 && hour < 12) {
-    // Morning — warm sunrise
-    return 'from-amber-100 via-orange-50 to-yellow-100';
+    return 'from-purple-50 via-indigo-50 to-orange-50';
   } else if (hour >= 12 && hour < 17) {
-    // Afternoon — bright daylight
-    return 'from-sky-100 via-blue-50 to-cyan-100';
+    return 'from-purple-50 via-indigo-50 to-purple-100';
   } else if (hour >= 17 && hour < 20) {
-    // Evening — sunset
-    return 'from-orange-200 via-pink-100 to-purple-100';
+    return 'from-indigo-100 via-purple-100 to-orange-100';
   } else {
-    // Night — calm indigo
-    return 'from-indigo-200 via-purple-100 to-blue-200';
+    return 'from-indigo-200 via-purple-100 to-indigo-100';
   }
 }
 
-/** Time-based greeting */
-function getGreeting(): { text: string; emoji: string } {
+/** Time-based greeting with Luna */
+function getGreeting(): { text: string; emoji: string; luna: string } {
   const hour = new Date().getHours();
-  if (hour >= 6 && hour < 12) return { text: 'בוקר טוב', emoji: '☀️' };
-  if (hour >= 12 && hour < 17) return { text: 'צהריים טובים', emoji: '🌤' };
-  if (hour >= 17 && hour < 21) return { text: 'ערב טוב', emoji: '🌙' };
-  return { text: 'לילה טוב', emoji: '🌟' };
+  if (hour >= 6 && hour < 12) return { text: 'בוקר טוב', emoji: '☀️🐕', luna: '!לונה מחכה לך' };
+  if (hour >= 12 && hour < 17) return { text: 'צהריים טובים', emoji: '🌤🐕', luna: '!לונה גאה בך' };
+  if (hour >= 17 && hour < 21) return { text: 'ערב טוב', emoji: '🌙🐕', luna: '!לונה אומרת לילה טוב' };
+  return { text: 'לילה טוב', emoji: '🌟🐕', luna: '!לונה אומרת לילה טוב' };
 }
 
 /** Character face for progress ring based on completion percentage */
@@ -85,6 +81,7 @@ function App() {
 
   const isUnlocked = state.pinUnlockedUntil !== null && Date.now() < state.pinUnlockedUntil;
   const selectedKid = state.kids[selectedKidIndex];
+  const greeting = getGreeting();
 
   // Daily reset: check on mount if the day has changed
   useEffect(() => {
@@ -201,9 +198,9 @@ function App() {
   const progress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
   const routineMessages: Record<string, string> = {
-    morning: '!סופר בוקר 🌅',
-    afternoon: '!כל הכבוד 🎒',
-    evening: '!לילה טוב 🌙',
+    morning: '!סופר בוקר — לונה שמחה 🌅🐕',
+    afternoon: '!כל הכבוד — לונה שמחה 🎒🐕',
+    evening: '!לילה טוב — לונה שמחה 🌙🐕',
   };
 
   // Check if all tasks in a routine are done (given a status array)
@@ -485,11 +482,14 @@ function App() {
       <div className="max-w-2xl mx-auto">
 
         {/* Sticky Header */}
-        <div className="sticky top-0 z-30 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 rounded-2xl shadow-lg px-4 py-2 mb-5 flex items-center justify-between">
+        <div className="sticky top-0 z-30 bg-gradient-to-r from-[#5B2C8E] via-purple-600 to-[#E8832A] rounded-2xl shadow-lg px-4 py-2 mb-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-extrabold text-white drop-shadow-md">
-              🌟 סופר קידס
-            </h1>
+            <img src="/super-kid-app/logo.png" alt="Luna's Super Sisters"
+                 className="w-10 h-10 rounded-full object-cover border-2 border-white/30 shadow-md" />
+            <div>
+              <h1 className="text-lg font-extrabold text-white drop-shadow-md">Luna's Super Sisters</h1>
+              <span className="text-[10px] font-semibold text-white/70" dir="rtl">ליאור, רוני ולונה 🌙</span>
+            </div>
             <span className="text-sm font-semibold text-white/70" dir="rtl">
               {formatHebrewDate()}
             </span>
@@ -552,8 +552,9 @@ function App() {
         {/* Greeting */}
         <div className="text-center mb-3" dir="rtl">
           <span className="text-2xl font-extrabold text-gray-700">
-            {getGreeting().emoji} {getGreeting().text}, {selectedKid.hebrewName}!
+            {greeting.emoji} !{greeting.text}, {selectedKid.hebrewName}
           </span>
+          <div className="text-sm font-bold text-purple-600">{greeting.luna}</div>
         </div>
 
         {/* Kid Selector */}
@@ -659,7 +660,7 @@ function App() {
                   onClick={() => { playClick(); setActiveTab(tab.id); }}
                   className={`flex-1 min-w-0 py-2.5 px-3 rounded-full font-semibold text-sm transition-all whitespace-nowrap active:scale-95 ${
                     isActive
-                      ? `bg-gradient-to-r ${selectedKid.color} text-white shadow-md`
+                      ? 'bg-gradient-to-r from-purple-600 to-orange-500 text-white shadow-md'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >

@@ -9,7 +9,7 @@ describe('ConfettiOverlay', () => {
   it('renders Super-Kid celebration with kid name', () => {
     render(<ConfettiOverlay kidName="ליאור" avatar={avatar} onClose={vi.fn()} />);
 
-    expect(screen.getByText(/סופר-קיד/)).toBeInTheDocument();
+    expect(screen.getByText(/סופר סיסטר/)).toBeInTheDocument();
     expect(screen.getByText(/ליאור/)).toBeInTheDocument();
   });
 
@@ -19,7 +19,7 @@ describe('ConfettiOverlay', () => {
 
     render(<ConfettiOverlay kidName="ליאור" avatar={avatar} onClose={onClose} />);
 
-    await user.click(screen.getByText(/סופר-קיד/));
+    await user.click(screen.getByText(/סופר סיסטר/));
     expect(onClose).toHaveBeenCalledOnce();
   });
 

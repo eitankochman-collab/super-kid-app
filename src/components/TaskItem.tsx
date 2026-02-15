@@ -28,7 +28,7 @@ interface TaskItemProps {
   kidColor: string;
 }
 
-export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked, kidColor }: TaskItemProps) {
+export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked, kidColor: _kidColor }: TaskItemProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [confirmingUndo, setConfirmingUndo] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
@@ -150,7 +150,7 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
         <div className="flex-shrink-0">
           <button
             onClick={onToggleDone}
-            className={`w-full rounded-2xl font-bold transition-all active:scale-95 py-3 px-5 bg-gradient-to-r ${kidColor} text-white shadow-lg hover:shadow-xl btn-invite-pulse flex flex-col items-center gap-0.5`}
+            className="w-full rounded-2xl font-bold transition-all active:scale-95 py-3 px-5 bg-gradient-to-r from-purple-600 to-orange-500 text-white shadow-lg hover:shadow-xl btn-invite-pulse flex flex-col items-center gap-0.5"
             style={{ minHeight: '64px' }}
           >
             <span className="text-3xl">✅</span>

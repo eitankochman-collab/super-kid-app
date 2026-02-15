@@ -8,7 +8,7 @@ interface ProgressRingProps {
   children?: ReactNode;
 }
 
-export function ProgressRing({ percent, color, size = 56, glow = false, children }: ProgressRingProps) {
+export function ProgressRing({ percent, color: _color, size = 56, glow = false, children }: ProgressRingProps) {
   const strokeWidth = 6;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -17,6 +17,12 @@ export function ProgressRing({ percent, color, size = 56, glow = false, children
   return (
     <div className={`relative flex-shrink-0 ${glow ? 'progress-ring-glow' : ''}`} style={{ width: size, height: size }}>
       <svg width={size} height={size} className="transform -rotate-90">
+        <defs>
+          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#5B2C8E" />
+            <stop offset="100%" stopColor="#E8832A" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -30,7 +36,7 @@ export function ProgressRing({ percent, color, size = 56, glow = false, children
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={color}
+          stroke="url(#progressGradient)"
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}

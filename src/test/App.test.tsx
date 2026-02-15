@@ -20,7 +20,7 @@ describe('App', () => {
 
   it('renders the app title', () => {
     render(<App />);
-    expect(screen.getByText(/סופר קידס/)).toBeInTheDocument();
+    expect(screen.getByText(/Luna's Super Sisters/)).toBeInTheDocument();
   });
 
   it('renders kid selector with both kids', () => {

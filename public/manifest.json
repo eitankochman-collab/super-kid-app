@@ -1,0 +1,12 @@
+{
+  "name": "Luna's Super Sisters",
+  "short_name": "Luna Stars",
+  "description": "Daily routine tracker for Lior and Roni with Luna",
+  "start_url": "/super-kid-app/",
+  "display": "standalone",
+  "background_color": "#f5f0ff",
+  "theme_color": "#5B2C8E",
+  "icons": [
+    { "src": "/super-kid-app/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
