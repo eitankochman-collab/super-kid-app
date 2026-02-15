@@ -144,6 +144,6 @@ describe('TaskItem', () => {
     );
 
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain('bg-green-50');
+    expect(wrapper.className).toContain('from-green-50');
   });
 });

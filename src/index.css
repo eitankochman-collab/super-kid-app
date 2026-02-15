@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Safelist dynamic gradient classes used in kid.color (stored as data strings) */
-@source inline("from-amber-400 to-orange-500 from-sky-400 to-blue-500 bg-gradient-to-r bg-gradient-to-br from-orange-100 to-yellow-100 from-purple-100 to-violet-100 from-blue-100 to-cyan-100 from-amber-100 to-yellow-100 from-green-100 to-emerald-100 from-teal-100 to-cyan-100 from-pink-100 to-rose-100 from-orange-100 to-amber-100 from-indigo-100 to-blue-100 from-lime-100 to-green-100 from-sky-100 to-blue-100 from-emerald-100 to-teal-100 from-fuchsia-100 to-pink-100 from-violet-100 to-purple-100");
+@source inline("from-amber-400 to-orange-500 from-sky-400 to-blue-500 bg-gradient-to-r bg-gradient-to-br from-orange-100 to-yellow-100 from-purple-100 to-violet-100 from-blue-100 to-cyan-100 from-amber-100 to-yellow-100 from-green-100 to-emerald-100 from-teal-100 to-cyan-100 from-pink-100 to-rose-100 from-orange-100 to-amber-100 from-indigo-100 to-blue-100 from-lime-100 to-green-100 from-sky-100 to-blue-100 from-emerald-100 to-teal-100 from-fuchsia-100 to-pink-100 from-violet-100 to-purple-100 via-orange-50 via-blue-50 via-pink-100 via-purple-50 via-purple-100 from-amber-100 to-yellow-100 from-sky-100 to-cyan-100 from-orange-200 to-purple-100 from-indigo-200 to-blue-200");
 
 body {
   margin: 0;

@@ -14,10 +14,37 @@ import { MiniCelebration } from './components/MiniCelebration';
 import { PinModal } from './components/PinModal';
 import { AdminPanel } from './components/AdminPanel';
 
+/** Time-based background gradient for wall-mounted tablet */
+function getTimeBackground(): string {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 12) {
+    // Morning — warm sunrise
+    return 'from-amber-100 via-orange-50 to-yellow-100';
+  } else if (hour >= 12 && hour < 17) {
+    // Afternoon — bright daylight
+    return 'from-sky-100 via-blue-50 to-cyan-100';
+  } else if (hour >= 17 && hour < 20) {
+    // Evening — sunset
+    return 'from-orange-200 via-pink-100 to-purple-100';
+  } else {
+    // Night — calm indigo
+    return 'from-indigo-200 via-purple-100 to-blue-200';
+  }
+}
+
+/** Auto-select the matching routine tab based on current time */
+function getInitialTab(): TabId {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 17) return 'afternoon';
+  if (hour >= 17 && hour < 22) return 'evening';
+  return 'morning';
+}
+
 function App() {
   const [state, setState] = useState<AppState>(loadState);
   const [selectedKidIndex, setSelectedKidIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<TabId>('morning');
+  const [activeTab, setActiveTab] = useState<TabId>(getInitialTab);
   const [showPinModal, setShowPinModal] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSuperKid, setShowSuperKid] = useState(false);
@@ -29,6 +56,7 @@ function App() {
   const [weekendOverride, setWeekendOverride] = useState<boolean | null>(null);
   const [foodCatalog, setFoodCatalog] = useState<FoodItem[]>(loadFoodCatalog);
   const [muted, setMutedState] = useState(isMuted);
+  const [timeBg, setTimeBg] = useState(getTimeBackground);
   const isWeekend = weekendOverride !== null ? weekendOverride : isWeekendAuto;
 
   const handleToggleMute = () => {
@@ -103,6 +131,14 @@ function App() {
   useEffect(() => {
     saveFoodCatalog(foodCatalog);
   }, [foodCatalog]);
+
+  // Update time-based background every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeBg(getTimeBackground());
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Update time remaining display
   useEffect(() => {
@@ -415,7 +451,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 px-2 py-4 md:px-4 md:py-6 relative">
+    <div className={`min-h-screen bg-gradient-to-br ${timeBg} px-2 py-4 md:px-4 md:py-6 relative transition-colors duration-[3000ms]`}>
 
       <div className="max-w-2xl mx-auto">
 
@@ -506,7 +542,7 @@ function App() {
                     style={{ width: '60px', height: '60px', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
                   />
                   <div className="flex-1 min-w-0">
-                    <div className={`text-lg font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`} dir="rtl">
+                    <div className={`text-lg font-black ${isSelected ? 'text-white' : 'text-gray-800'}`} dir="rtl">
                       {kid.hebrewName}
                     </div>
                     <div className={`text-xs ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
@@ -519,7 +555,7 @@ function App() {
                             🔥 {kid.streak.current}
                           </span>
                         )}
-                        <span key={kid.starBank} className={`star-count-bump font-extrabold ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'} ${kid.starBank === 0 ? 'text-sm' : 'text-xl'}`}>
+                        <span key={kid.starBank} className={`star-count-bump font-black ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'} ${kid.starBank === 0 ? 'text-base' : 'text-2xl'}`}>
                           {kid.starBank === 0 ? '✨ !מתחילים' : `${kid.starBank} ⭐`}
                         </span>
                       </div>

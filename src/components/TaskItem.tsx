@@ -56,13 +56,13 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
     >
       <div className="flex items-center gap-3">
         {/* Emoji in colored circle */}
-        <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${emojiColor} flex items-center justify-center text-3xl flex-shrink-0 shadow-md`}>
+        <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${emojiColor} flex items-center justify-center text-4xl flex-shrink-0 shadow-md`}>
           {isDone ? '✅' : task.emoji}
         </div>
 
         {/* Text content */}
         <div className="flex-1 min-w-0">
-          <div className={`text-xl font-extrabold ${isDone ? 'text-green-700' : 'text-gray-800'}`} dir="rtl">
+          <div className={`text-xl font-black ${isDone ? 'text-green-700' : 'text-gray-800'}`} dir="rtl">
             {task.hebrew}
           </div>
           <div className="flex items-center gap-2">
@@ -85,12 +85,12 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
         <div className="flex flex-col gap-1 flex-shrink-0 w-28">
           <button
             onClick={onToggleDone}
-            className={`w-full rounded-2xl font-bold text-base transition-all active:scale-95 ${
+            className={`w-full rounded-2xl font-bold text-lg transition-all active:scale-95 ${
               isDone
                 ? 'py-3 bg-gray-200 text-gray-600 hover:bg-gray-300'
                 : `py-3.5 bg-gradient-to-r ${kidColor} text-white shadow-lg hover:shadow-xl btn-invite-pulse`
             }`}
-            style={{ minHeight: '56px' }}
+            style={{ minHeight: '64px' }}
           >
             {isDone ? 'ביטול ↩️' : '✅ סיימתי'}
           </button>
