@@ -4,7 +4,7 @@ import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, save
 import type { YesterdaySummary } from './storage';
 import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES } from './constants';
 import { loadFoodCatalog, saveFoodCatalog } from './lunchboxStorage';
-import { isMuted, setMuted, playDing, playBoop, playFanfare, playChaChing, playClick, playPop } from './sounds';
+import { isMuted, setMuted, playDing, playBoop, playFanfare, playChaChing, playClick, playPop, playTaskSound } from './sounds';
 import { ProgressRing } from './components/ProgressRing';
 import { TaskList } from './components/TaskList';
 import { RewardsShop } from './components/RewardsShop';
@@ -340,6 +340,7 @@ function App() {
       }
 
       // Regular task completion — no celebration
+      playTaskSound(taskId);
       playDing();
     }
   };
