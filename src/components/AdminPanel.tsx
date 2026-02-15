@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import type { KidData, Reward, RewardTier, FoodItem } from '../types';
 import { BONUS_LOG_KEY, PICKUP_KEY } from '../constants';
 import { loadDailyLog } from '../storage';
@@ -142,16 +142,6 @@ export function AdminPanel({
     return next;
   });
 
-  // Debug triple-tap state
-  const [debugTaps, setDebugTaps] = useState(0);
-  const debugTimer = useRef<ReturnType<typeof setTimeout>>(null);
-
-  const handleTitleTap = () => {
-    setDebugTaps(p => p + 1);
-    if (debugTimer.current) clearTimeout(debugTimer.current);
-    debugTimer.current = setTimeout(() => setDebugTaps(0), 1500);
-  };
-
   // Reward CRUD state
   const [showRewardForm, setShowRewardForm] = useState(false);
   const [editingRewardId, setEditingRewardId] = useState<string | null>(null);
@@ -237,7 +227,7 @@ export function AdminPanel({
     <div className="fixed inset-0 bg-black/70 flex items-start justify-center z-40 p-4 pt-4 overflow-y-auto">
       <div className="bg-white rounded-3xl p-8 max-w-4xl w-full shadow-2xl mb-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800 cursor-default select-none" onClick={handleTitleTap}>
+          <h2 className="text-3xl font-bold text-gray-800">
             👨‍👩‍👧‍👦 ניהול הורים
           </h2>
           <button
@@ -793,22 +783,23 @@ export function AdminPanel({
           </div>
         )}
 
-        {/* Debug: Weekend mode toggle — hidden until triple-tap on title */}
-        {debugTaps >= 3 && (
-          <div className="mb-6 p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-300 flex items-center justify-between">
-            <span className="text-xs text-gray-400">🛠 Debug</span>
-            <button
-              onClick={onToggleWeekend}
-              className="px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 bg-gray-200 text-gray-700 hover:bg-gray-300"
-            >
-              {weekendOverride === null
-                ? '🔄 מצב: אוטומטי'
-                : weekendOverride
-                  ? '🌴 מצב: סוף שבוע'
-                  : '🏫 מצב: יום רגיל'}
-            </button>
+        {/* Weekend mode toggle */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-200 flex items-center justify-between" dir="rtl">
+          <div>
+            <span className="text-sm font-bold text-gray-700">🗓 מצב סוף שבוע</span>
+            <div className="text-xs text-gray-400 mt-0.5">שינוי ידני של מצב יום/סופ״ש</div>
           </div>
-        )}
+          <button
+            onClick={onToggleWeekend}
+            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 bg-gray-200 text-gray-700 hover:bg-gray-300"
+          >
+            {weekendOverride === null
+              ? '🔄 מצב: אוטומטי'
+              : weekendOverride
+                ? '🌴 מצב: סוף שבוע'
+                : '🏫 מצב: יום רגיל'}
+          </button>
+        </div>
 
         <div className="text-center">
           <button
