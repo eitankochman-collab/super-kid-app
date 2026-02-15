@@ -204,7 +204,7 @@ export function AdminPanel({
   })).filter((g) => g.rewards.length > 0);
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-start justify-center z-40 p-4 pt-16 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/70 flex items-start justify-center z-40 p-4 pt-4 overflow-y-auto">
       <div className="bg-white rounded-3xl p-8 max-w-4xl w-full shadow-2xl mb-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold text-gray-800">👨‍👩‍👧‍👦 ניהול הורים</h2>

@@ -32,7 +32,7 @@ export const defaultRewards: Reward[] = [
   // Quick rewards (15-20 stars)
   { id: 'r1', title: 'TV time', hebrew: 'זמן טלוויזיה', emoji: '📺', starCost: 15, tier: 'quick' },
   { id: 'r2', title: 'Family game', hebrew: 'משחק משפחתי', emoji: '🎲', starCost: 15, tier: 'quick' },
-  { id: 'r3', title: 'Choose dinner', hebrew: 'בוחרים ארוחת ערב', emoji: '🍕', starCost: 15, tier: 'quick' },
+  { id: 'r3', title: 'Choose dinner', hebrew: 'בוחרים ארוחת ערב', emoji: '🍕', starCost: 20, tier: 'quick' },
   { id: 'r4', title: 'Craft time', hebrew: 'זמן יצירה', emoji: '🎨', starCost: 20, tier: 'quick' },
   // Weekly rewards (30-60 stars)
   { id: 'r5', title: 'Playdate', hebrew: 'משחק עם חבר', emoji: '👫', starCost: 30, tier: 'weekly' },

@@ -486,16 +486,18 @@ function App() {
                     <div className={`text-xs ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
                       {kid.name}
                     </div>
-                    <div className="flex items-center gap-1 mt-1">
-                      {kid.streak.current >= 2 && (
-                        <span className={`text-xs font-bold ${isSelected ? 'text-white/90' : 'text-orange-500'}`}>
-                          🔥 {kid.streak.current}
+                    {activeTab !== 'lunchbox' && (
+                      <div className="flex items-center gap-1 mt-1">
+                        {kid.streak.current >= 2 && (
+                          <span className={`text-xs font-bold ${isSelected ? 'text-white/90' : 'text-orange-500'}`}>
+                            🔥 {kid.streak.current}
+                          </span>
+                        )}
+                        <span className={`font-extrabold ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'} ${kid.starBank === 0 ? 'text-sm' : 'text-xl'}`}>
+                          {kid.starBank === 0 ? '✨ !מתחילים' : `${kid.starBank} ⭐`}
                         </span>
-                      )}
-                      <span className={`font-extrabold ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'} ${kid.starBank === 0 ? 'text-sm' : 'text-xl'}`}>
-                        {kid.starBank === 0 ? '✨ !מתחילים' : `${kid.starBank} ⭐`}
-                      </span>
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </button>
