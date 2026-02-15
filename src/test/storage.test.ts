@@ -77,7 +77,7 @@ describe('storage', () => {
 
       // Should have new kid fields
       expect(state.kids[0].hebrewName).toBe('ליאור');
-      expect(state.kids[0].avatar).toBe('🦁');
+      expect(state.kids[0].avatar).toBe('/super-kid-app/lior-avatar.png');
       expect(state.kids[0].color).toBeTruthy();
       expect(state.kids[0].accent).toBeTruthy();
 

@@ -53,7 +53,7 @@ export function AdminPanel({
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-3">
-                    <span className="text-3xl">{kid.avatar}</span>
+                    <img src={kid.avatar} alt={kid.name} className="w-10 h-10 rounded-full object-cover border-2 border-white/50 shadow-sm" />
                     <div>
                       <h4 className="text-xl font-bold text-gray-800" dir="rtl">{kid.hebrewName}</h4>
                       <p className="text-sm text-gray-500">{kid.name}</p>
@@ -101,7 +101,7 @@ export function AdminPanel({
                           }`}
                           title={`Redeem for ${kid.name}`}
                         >
-                          {kid.avatar} {kid.hebrewName}
+                          <img src={kid.avatar} alt={kid.name} className="w-5 h-5 rounded-full object-cover inline-block mr-1" /> {kid.hebrewName}
                         </button>
                       );
                     })}

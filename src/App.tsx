@@ -239,7 +239,7 @@ function App() {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-4xl">{kid.avatar}</span>
+                  <img src={kid.avatar} alt={kid.name} className="w-16 h-16 rounded-full object-cover border-2 border-white/50 shadow-md" />
                   <div>
                     <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`} dir="rtl">
                       {kid.hebrewName}

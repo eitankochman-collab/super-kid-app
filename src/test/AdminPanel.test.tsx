@@ -9,7 +9,7 @@ const mockKids: KidData[] = [
     id: 'lior',
     name: 'Lior',
     hebrewName: 'ליאור',
-    avatar: '🦁',
+    avatar: '/super-kid-app/lior-avatar.png',
     color: 'from-amber-400 to-orange-500',
     accent: '#f59e0b',
     age: 8,
@@ -23,7 +23,7 @@ const mockKids: KidData[] = [
     id: 'roni',
     name: 'Roni',
     hebrewName: 'רוני',
-    avatar: '🦊',
+    avatar: '/super-kid-app/roni-avatar.png',
     color: 'from-sky-400 to-blue-500',
     accent: '#0ea5e9',
     age: 6,
@@ -70,10 +70,10 @@ describe('AdminPanel', () => {
       />
     );
 
-    expect(screen.getByText('ליאור')).toBeInTheDocument();
-    expect(screen.getByText('רוני')).toBeInTheDocument();
-    expect(screen.getByText('🦁')).toBeInTheDocument();
-    expect(screen.getByText('🦊')).toBeInTheDocument();
+    expect(screen.getAllByText('ליאור').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('רוני').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByAltText('Lior').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByAltText('Roni').length).toBeGreaterThanOrEqual(1);
   });
 
   it('displays all rewards with Hebrew names', () => {
