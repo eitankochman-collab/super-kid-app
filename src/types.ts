@@ -33,6 +33,7 @@ export interface KidData {
   status: TaskStatus[];
   starBank: number;
   streak: StreakData;
+  pinnedRewardId?: string | null;
 }
 
 export type RewardTier = 'quick' | 'weekly' | 'monthly';

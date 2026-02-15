@@ -12,7 +12,7 @@ const mockRewards: Reward[] = [
 describe('RewardsShop', () => {
   it('renders all rewards', () => {
     render(
-      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} />
+      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} pinnedRewardId={null} onPinReward={vi.fn()} />
     );
 
     expect(screen.getByText('סרט ערב')).toBeInTheDocument();
@@ -23,7 +23,7 @@ describe('RewardsShop', () => {
 
   it('shows empty state when no rewards', () => {
     render(
-      <RewardsShop rewards={[]} starBank={0} onRedeemReward={vi.fn()} />
+      <RewardsShop rewards={[]} starBank={0} onRedeemReward={vi.fn()} pinnedRewardId={null} onPinReward={vi.fn()} />
     );
 
     expect(screen.getByText(/אין פרסים/)).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe('RewardsShop', () => {
 
   it('shows "צריך עוד" when reward is unaffordable', () => {
     render(
-      <RewardsShop rewards={mockRewards} starBank={3} onRedeemReward={vi.fn()} />
+      <RewardsShop rewards={mockRewards} starBank={3} onRedeemReward={vi.fn()} pinnedRewardId={null} onPinReward={vi.fn()} />
     );
 
     expect(screen.getByText(/צריך עוד 7/)).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe('RewardsShop', () => {
 
   it('shows shop header with star count', () => {
     render(
-      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} />
+      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} pinnedRewardId={null} onPinReward={vi.fn()} />
     );
 
     expect(screen.getByText(/חנות פרסים/)).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('RewardsShop', () => {
     const user = userEvent.setup();
 
     render(
-      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} />
+      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} pinnedRewardId={null} onPinReward={vi.fn()} />
     );
 
     await user.click(screen.getByText('סרט ערב'));
@@ -62,7 +62,7 @@ describe('RewardsShop', () => {
     const user = userEvent.setup();
 
     render(
-      <RewardsShop rewards={mockRewards} starBank={3} onRedeemReward={vi.fn()} />
+      <RewardsShop rewards={mockRewards} starBank={3} onRedeemReward={vi.fn()} pinnedRewardId={null} onPinReward={vi.fn()} />
     );
 
     await user.click(screen.getByText('סרט ערב'));
@@ -71,7 +71,7 @@ describe('RewardsShop', () => {
 
   it('renders rewards in a grid layout within tier groups', () => {
     const { container } = render(
-      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} />
+      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} pinnedRewardId={null} onPinReward={vi.fn()} />
     );
 
     expect(container.querySelector('.grid.grid-cols-3')).toBeInTheDocument();

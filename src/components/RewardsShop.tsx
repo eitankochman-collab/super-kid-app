@@ -6,6 +6,8 @@ interface RewardsShopProps {
   rewards: Reward[];
   starBank: number;
   onRedeemReward: (rewardId: string) => void;
+  pinnedRewardId: string | null;
+  onPinReward: (rewardId: string) => void;
 }
 
 const TIER_CONFIG: Record<RewardTier, { label: string; emoji: string; bg: string; border: string; text: string }> = {
@@ -16,7 +18,7 @@ const TIER_CONFIG: Record<RewardTier, { label: string; emoji: string; bg: string
 
 const TIER_ORDER: RewardTier[] = ['quick', 'weekly', 'monthly'];
 
-export function RewardsShop({ rewards, starBank, onRedeemReward }: RewardsShopProps) {
+export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId, onPinReward }: RewardsShopProps) {
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
 
   const handleRewardClick = (reward: Reward) => {
@@ -74,17 +76,40 @@ export function RewardsShop({ rewards, starBank, onRedeemReward }: RewardsShopPr
                   const canAfford = starBank >= reward.starCost;
                   const progressPct = Math.min(100, Math.round((starBank / reward.starCost) * 100));
                   const starsNeeded = reward.starCost - starBank;
+                  const isPinned = reward.id === pinnedRewardId;
 
                   return (
                     <div
                       key={reward.id}
                       onClick={() => handleRewardClick(reward)}
-                      className={`p-4 rounded-2xl text-center transition-all ${
-                        canAfford
-                          ? 'bg-white border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg cursor-pointer active:scale-95'
-                          : 'bg-gray-50 border-2 border-gray-200 cursor-not-allowed'
+                      className={`p-4 rounded-2xl text-center transition-all relative ${
+                        isPinned
+                          ? 'bg-yellow-50 border-3 border-yellow-400 shadow-lg ring-2 ring-yellow-200'
+                          : canAfford
+                            ? 'bg-white border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg cursor-pointer active:scale-95'
+                            : 'bg-gray-50 border-2 border-gray-200 cursor-not-allowed'
                       }`}
                     >
+                      {/* Pin button */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onPinReward(reward.id); }}
+                        className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all active:scale-90 z-10 ${
+                          isPinned
+                            ? 'bg-yellow-400 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-400 hover:bg-yellow-100 hover:text-yellow-600'
+                        }`}
+                        title={isPinned ? 'הסר מטרה' : 'קבע כמטרה'}
+                      >
+                        📌
+                      </button>
+
+                      {/* Pinned label */}
+                      {isPinned && (
+                        <div className="text-xs font-bold text-yellow-600 mb-1" dir="rtl">
+                          📌 !המטרה שלי
+                        </div>
+                      )}
+
                       {/* Emoji circle */}
                       <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-yellow-200 to-amber-300 flex items-center justify-center text-3xl shadow-sm">
                         {reward.emoji}

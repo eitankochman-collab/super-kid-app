@@ -399,6 +399,17 @@ function App() {
     });
   };
 
+  const handlePinReward = (kidId: string, rewardId: string) => {
+    setState((prev) => ({
+      ...prev,
+      kids: prev.kids.map((k) =>
+        k.id === kidId
+          ? { ...k, pinnedRewardId: k.pinnedRewardId === rewardId ? null : rewardId }
+          : k
+      ),
+    }));
+  };
+
   const handleAddReward = (reward: Omit<Reward, 'id'>) => {
     const id = `r_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     setState((prev) => ({
@@ -560,6 +571,33 @@ function App() {
                         </span>
                       </div>
                     )}
+                    {activeTab !== 'lunchbox' && kid.pinnedRewardId && (() => {
+                      const reward = state.rewards.find((r) => r.id === kid.pinnedRewardId);
+                      if (!reward) return null;
+                      const canAfford = kid.starBank >= reward.starCost;
+                      const progressPct = Math.min(100, Math.round((kid.starBank / reward.starCost) * 100));
+                      return (
+                        <div className="mt-1" dir="rtl">
+                          {canAfford ? (
+                            <span className={`text-xs font-bold can-afford-glow ${isSelected ? 'text-yellow-200' : 'text-yellow-600'}`}>
+                              🎉 אפשר לקנות {reward.emoji}!
+                            </span>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-xs font-semibold ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
+                                עוד {reward.starCost - kid.starBank} ⭐ ל-{reward.emoji}
+                              </span>
+                              <div className="flex-1 h-1.5 bg-gray-200/50 rounded-full overflow-hidden max-w-[60px]">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 bg-gradient-to-r ${kid.color}`}
+                                  style={{ width: `${progressPct}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </button>
@@ -625,6 +663,8 @@ function App() {
               rewards={state.rewards}
               starBank={selectedKid.starBank}
               onRedeemReward={(rewardId) => handleRedeemReward(selectedKid.id, rewardId)}
+              pinnedRewardId={selectedKid.pinnedRewardId ?? null}
+              onPinReward={(rewardId) => handlePinReward(selectedKid.id, rewardId)}
             />
           ) : activeTab === 'lunchbox' ? (
             <LunchboxBuilder

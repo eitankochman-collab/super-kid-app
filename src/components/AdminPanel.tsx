@@ -252,6 +252,21 @@ export function AdminPanel({
                     </button>
                   </div>
                 </div>
+                {kid.pinnedRewardId && (() => {
+                  const pinnedReward = rewards.find((r) => r.id === kid.pinnedRewardId);
+                  if (!pinnedReward) return null;
+                  return (
+                    <div className="mt-3 pt-3 border-t border-yellow-200 flex items-center gap-2 text-sm" dir="rtl">
+                      <span>📌</span>
+                      <span className="font-bold text-yellow-700">
+                        {pinnedReward.emoji} {pinnedReward.hebrew} — {pinnedReward.starCost} ⭐
+                      </span>
+                      {kid.starBank >= pinnedReward.starCost && (
+                        <span className="text-green-600 font-bold text-xs">✅ אפשר לקנות!</span>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             ))}
           </div>

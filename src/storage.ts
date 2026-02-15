@@ -104,6 +104,7 @@ function migrateState(stored: Record<string, unknown>): AppState {
       })),
       starBank: kid.starBank || 0,
       streak: kid.streak || { current: 0, best: 0, lastCompletionDate: null },
+      pinnedRewardId: kid.pinnedRewardId ?? null,
     };
   });
 
