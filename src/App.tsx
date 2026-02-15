@@ -22,7 +22,9 @@ function App() {
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [yesterdaySummary, setYesterdaySummary] = useState<YesterdaySummary | null>(null);
-  const [isWeekend, setIsWeekend] = useState(isWeekendDay);
+  const [isWeekendAuto, setIsWeekendAuto] = useState(isWeekendDay);
+  const [weekendOverride, setWeekendOverride] = useState<boolean | null>(null);
+  const isWeekend = weekendOverride !== null ? weekendOverride : isWeekendAuto;
 
   const isUnlocked = state.pinUnlockedUntil !== null && Date.now() < state.pinUnlockedUntil;
   const selectedKid = state.kids[selectedKidIndex];
@@ -69,7 +71,7 @@ function App() {
 
     // Save today's date and update weekend status
     saveDate(today);
-    setIsWeekend(isWeekendDay());
+    setIsWeekendAuto(isWeekendDay());
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -593,6 +595,8 @@ function App() {
           isUnlocked={isUnlocked}
           onRequestPin={handleRequestPin}
           onResetDone={handleResetDone}
+          weekendOverride={weekendOverride}
+          onToggleWeekend={() => setWeekendOverride((prev) => prev === null ? !isWeekendAuto : prev ? false : null)}
         />
       )}
     </div>

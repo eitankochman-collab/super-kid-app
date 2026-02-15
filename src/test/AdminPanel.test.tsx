@@ -54,6 +54,8 @@ describe('AdminPanel', () => {
         isUnlocked={true}
         onRequestPin={vi.fn()}
         onResetDone={vi.fn()}
+        weekendOverride={null}
+        onToggleWeekend={vi.fn()}
       />
     );
 
@@ -71,6 +73,8 @@ describe('AdminPanel', () => {
         isUnlocked={true}
         onRequestPin={vi.fn()}
         onResetDone={vi.fn()}
+        weekendOverride={null}
+        onToggleWeekend={vi.fn()}
       />
     );
 
@@ -91,6 +95,8 @@ describe('AdminPanel', () => {
         isUnlocked={true}
         onRequestPin={vi.fn()}
         onResetDone={vi.fn()}
+        weekendOverride={null}
+        onToggleWeekend={vi.fn()}
       />
     );
 
@@ -112,6 +118,8 @@ describe('AdminPanel', () => {
         isUnlocked={true}
         onRequestPin={vi.fn()}
         onResetDone={vi.fn()}
+        weekendOverride={null}
+        onToggleWeekend={vi.fn()}
       />
     );
 
@@ -130,6 +138,8 @@ describe('AdminPanel', () => {
         isUnlocked={true}
         onRequestPin={vi.fn()}
         onResetDone={vi.fn()}
+        weekendOverride={null}
+        onToggleWeekend={vi.fn()}
       />
     );
 
@@ -152,6 +162,8 @@ describe('AdminPanel', () => {
         isUnlocked={true}
         onRequestPin={vi.fn()}
         onResetDone={vi.fn()}
+        weekendOverride={null}
+        onToggleWeekend={vi.fn()}
       />
     );
 
@@ -175,6 +187,8 @@ describe('AdminPanel', () => {
         isUnlocked={false}
         onRequestPin={onRequestPin}
         onResetDone={vi.fn()}
+        weekendOverride={null}
+        onToggleWeekend={vi.fn()}
       />
     );
 
@@ -198,6 +212,8 @@ describe('AdminPanel', () => {
         isUnlocked={true}
         onRequestPin={vi.fn()}
         onResetDone={onResetDone}
+        weekendOverride={null}
+        onToggleWeekend={vi.fn()}
       />
     );
 

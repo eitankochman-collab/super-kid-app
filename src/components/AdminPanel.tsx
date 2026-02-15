@@ -41,6 +41,8 @@ interface AdminPanelProps {
   isUnlocked: boolean;
   onRequestPin: (action: () => void) => void;
   onResetDone: () => void;
+  weekendOverride: boolean | null;
+  onToggleWeekend: () => void;
 }
 
 export function AdminPanel({
@@ -52,6 +54,8 @@ export function AdminPanel({
   isUnlocked,
   onRequestPin,
   onResetDone,
+  weekendOverride,
+  onToggleWeekend,
 }: AdminPanelProps) {
   const [bonusKidId, setBonusKidId] = useState(kids[0]?.id || '');
   const [bonusText, setBonusText] = useState('');
@@ -280,6 +284,21 @@ export function AdminPanel({
               🔄 איפוס
             </button>
           </div>
+        </div>
+
+        {/* Debug: Weekend mode toggle */}
+        <div className="mb-6 p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-300 flex items-center justify-between">
+          <span className="text-xs text-gray-400">🛠 Debug</span>
+          <button
+            onClick={onToggleWeekend}
+            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 bg-gray-200 text-gray-700 hover:bg-gray-300"
+          >
+            {weekendOverride === null
+              ? '🔄 מצב: אוטומטי'
+              : weekendOverride
+                ? '🌴 מצב: סוף שבוע'
+                : '🏫 מצב: יום רגיל'}
+          </button>
         </div>
 
         <div className="text-center">
