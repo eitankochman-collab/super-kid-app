@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Safelist dynamic gradient classes used in kid.color (stored as data strings) */
+@source inline("from-amber-400 to-orange-500 from-sky-400 to-blue-500 bg-gradient-to-r bg-gradient-to-br");
 
 body {
   margin: 0;
