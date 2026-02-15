@@ -10,10 +10,10 @@ interface RewardsShopProps {
   onPinReward: (rewardId: string) => void;
 }
 
-const TIER_CONFIG: Record<RewardTier, { label: string; emoji: string; bg: string; border: string; text: string }> = {
-  quick: { label: 'פרסים מהירים', emoji: '🟢', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
-  weekly: { label: 'פרסים שבועיים', emoji: '🟡', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' },
-  monthly: { label: 'פרסים חודשיים', emoji: '🔴', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700' },
+const TIER_CONFIG: Record<RewardTier, { label: string; labelEn: string; emoji: string; bg: string; border: string; text: string }> = {
+  quick: { label: 'פרסים מהירים', labelEn: 'Quick Rewards', emoji: '🟢', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
+  weekly: { label: 'פרסים שבועיים', labelEn: 'Weekly Rewards', emoji: '🟡', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' },
+  monthly: { label: 'פרסים חודשיים', labelEn: 'Monthly Rewards', emoji: '🔴', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700' },
 };
 
 const TIER_EMOJI_BG: Record<RewardTier, string> = {
@@ -58,10 +58,16 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
     <>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-gray-800">🏪 חנות פרסים</h3>
-        <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full font-bold text-sm">
-          {starBank} ⭐ זמינים
-        </span>
+        <div>
+          <h3 className="text-xl font-bold text-gray-800">🏪 חנות פרסים</h3>
+          <p className="text-xs text-gray-400">Reward Shop</p>
+        </div>
+        <div className="text-center">
+          <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full font-bold text-sm">
+            {starBank} ⭐ זמינים
+          </span>
+          <p className="text-[10px] text-gray-400 mt-0.5">{starBank} ⭐ Available</p>
+        </div>
       </div>
 
       {/* Encouragement for low stars */}
@@ -69,12 +75,18 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
         const cheapestReward = [...rewards].sort((a, b) => a.starCost - b.starCost)[0];
         if (starBank >= cheapestReward.starCost) return null;
         return (
-          <div className="mb-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-2xl text-center" dir="rtl">
-            <p className="text-base font-extrabold text-amber-700">
+          <div className="mb-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-2xl text-center">
+            <p className="text-base font-extrabold text-amber-700" dir="rtl">
               💪 השלימו משימות כדי לצבור ⭐ — אתם בדרך לפרס!
             </p>
-            <p className="text-sm font-bold text-amber-500 mt-1">
+            <p className="text-xs font-semibold text-amber-400">
+              Complete tasks to earn ⭐ — You're on your way!
+            </p>
+            <p className="text-sm font-bold text-amber-500 mt-1" dir="rtl">
               👇 הפרס הקרוב: {cheapestReward.emoji} {cheapestReward.hebrew} — {cheapestReward.starCost} ⭐
+            </p>
+            <p className="text-xs text-amber-400">
+              Next reward: {cheapestReward.emoji} {cheapestReward.title} — {cheapestReward.starCost} ⭐
             </p>
           </div>
         );
@@ -83,16 +95,20 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
       {rewards.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <p className="text-xl">🎁</p>
-          <p className="mt-2">אין פרסים עדיין!</p>
+          <p className="mt-2 font-bold">אין פרסים עדיין!</p>
+          <p className="text-xs text-gray-400">No rewards yet!</p>
         </div>
       ) : hasGrouped ? (
         <div className="space-y-5">
           {groupedRewards.map(({ tier, config, rewards: tierRewards }) => (
             <div key={tier}>
               {/* Tier header */}
-              <div className={`${config.bg} ${config.border} border-2 rounded-xl px-3 py-2 mb-3 flex items-center gap-2`} dir="rtl">
-                <span className="text-lg">{config.emoji}</span>
-                <span className={`font-bold ${config.text}`}>{config.label}</span>
+              <div className={`${config.bg} ${config.border} border-2 rounded-xl px-3 py-2 mb-3`}>
+                <div className="flex items-center gap-2" dir="rtl">
+                  <span className="text-lg">{config.emoji}</span>
+                  <span className={`font-bold ${config.text}`}>{config.label}</span>
+                </div>
+                <div className="text-[10px] text-gray-400 mr-8">{config.labelEn}</div>
               </div>
 
               {/* Reward cards */}
@@ -132,8 +148,9 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
 
                       {/* Pinned label */}
                       {isPinned && (
-                        <div className="text-xs font-bold text-yellow-600 mb-1" dir="rtl">
-                          📌 המטרה שלי!
+                        <div className="mb-1">
+                          <div className="text-xs font-bold text-yellow-600" dir="rtl">📌 המטרה שלי!</div>
+                          <div className="text-[9px] text-yellow-500">My goal!</div>
                         </div>
                       )}
 
@@ -167,12 +184,14 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
 
                       {/* Buy button */}
                       {canAfford ? (
-                        <div className={`px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold ${isPinned ? 'btn-invite-pulse' : ''}`}>
-                          🎉 קנה פרס!
+                        <div className={`px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold ${isPinned ? 'btn-invite-pulse' : ''}`}>
+                          <div className="text-xs">🎉 קנה פרס!</div>
+                          <div className="text-[9px] opacity-80">Get reward!</div>
                         </div>
                       ) : (
-                        <div className="px-3 py-1.5 bg-gray-200 text-gray-500 rounded-xl text-xs font-semibold" dir="rtl">
-                          צריך עוד {starsNeeded} ⭐
+                        <div className="px-3 py-1.5 bg-gray-200 rounded-xl">
+                          <div className="text-xs font-semibold text-gray-500" dir="rtl">צריך עוד {starsNeeded} ⭐</div>
+                          <div className="text-[9px] text-gray-400">Need {starsNeeded} more ⭐</div>
                         </div>
                       )}
                     </div>
@@ -208,12 +227,14 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
                 <p className="text-xs text-gray-500 mb-2">{reward.title}</p>
                 <div className="text-sm font-bold text-purple-600 mb-2">{reward.starCost} ⭐</div>
                 {canAfford ? (
-                  <div className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold">
-                    🎉 קנה פרס!
+                  <div className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold">
+                    <div className="text-xs">🎉 קנה פרס!</div>
+                    <div className="text-[9px] opacity-80">Get reward!</div>
                   </div>
                 ) : (
-                  <div className="px-3 py-1.5 bg-gray-200 text-gray-500 rounded-xl text-xs font-semibold" dir="rtl">
-                    צריך עוד {starsNeeded} ⭐
+                  <div className="px-3 py-1.5 bg-gray-200 rounded-xl">
+                    <div className="text-xs font-semibold text-gray-500" dir="rtl">צריך עוד {starsNeeded} ⭐</div>
+                    <div className="text-[9px] text-gray-400">Need {starsNeeded} more ⭐</div>
                   </div>
                 )}
               </div>

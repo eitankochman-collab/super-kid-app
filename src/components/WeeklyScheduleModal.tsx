@@ -23,7 +23,10 @@ export function WeeklyScheduleModal({ kidId, kidHebrewName, kidColor, onClose }:
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-bold text-gray-800">📅 השבוע של {kidHebrewName}</h2>
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">📅 השבוע של {kidHebrewName}</h2>
+            <p className="text-xs text-gray-400">{kidHebrewName}'s Week</p>
+          </div>
           <button
             onClick={onClose}
             className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 text-xl font-bold transition-colors"
@@ -101,10 +104,10 @@ export function WeeklyScheduleModal({ kidId, kidHebrewName, kidColor, onClose }:
 
         {/* Legend */}
         <div className="mt-4 flex flex-wrap gap-3 justify-center text-xs text-gray-500">
-          <span>👨/👩 הסעה</span>
-          <span>🏠 צהרון</span>
-          <span>🕐 איסוף</span>
-          <span>📚 חונכות</span>
+          <span>👨/👩 הסעה <span className="text-gray-400">Ride</span></span>
+          <span>🏠 צהרון <span className="text-gray-400">After-school</span></span>
+          <span>🕐 איסוף <span className="text-gray-400">Pickup</span></span>
+          <span>📚 חונכות <span className="text-gray-400">Tutoring</span></span>
         </div>
       </div>
     </div>

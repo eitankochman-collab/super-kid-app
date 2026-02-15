@@ -101,9 +101,12 @@ export function ConfettiOverlay({ kidName, avatar, onClose }: ConfettiOverlayPro
           />
         </div>
 
-        <h1 className="text-4xl font-extrabold text-white mb-2 drop-shadow-lg" dir="rtl">
+        <h1 className="text-4xl font-extrabold text-white mb-1 drop-shadow-lg" dir="rtl">
           לונה גאה בך — {kidName} סופר סיסטר! 🐕⭐
         </h1>
+        <p className="text-lg font-semibold text-white/70 drop-shadow-md">
+          Luna is proud of you — Super Sister! 🐕⭐
+        </p>
         <div className="text-5xl mt-2">🦸‍♀️</div>
       </div>
     </div>

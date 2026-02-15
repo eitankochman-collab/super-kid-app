@@ -137,10 +137,10 @@ describe('App', () => {
     const doneButtons = screen.getAllByText(/סיימתי/);
     await user.click(doneButtons[0]);
 
-    // Undo requires double-tap: first tap shows "?בטוח", second tap confirms
+    // Undo requires double-tap: first tap shows "בטוח?", second tap confirms
     const undoButton = screen.getAllByTitle('ביטול')[0];
     await user.click(undoButton);
-    expect(screen.getByText('?בטוח')).toBeInTheDocument();
+    expect(screen.getByText('בטוח?')).toBeInTheDocument();
     await user.click(undoButton);
 
     await waitFor(() => {

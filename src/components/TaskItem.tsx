@@ -99,12 +99,14 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
               {confirmingUndo ? (
                 <>
                   <span className="text-xl">❓</span>
-                  <span className="text-xs font-bold">?בטוח</span>
+                  <span className="text-xs font-bold">בטוח?</span>
+                  <span className="text-[9px] text-gray-400">Sure?</span>
                 </>
               ) : (
                 <>
                   <span className="text-xl">↩️</span>
                   <span className="text-xs font-bold">ביטול</span>
+                  <span className="text-[9px] text-gray-400">Undo</span>
                 </>
               )}
             </button>
@@ -155,6 +157,7 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
           >
             <span className="text-3xl">✅</span>
             <span className="text-xs font-bold">סיימתי</span>
+            <span className="text-[9px] opacity-70">Done!</span>
           </button>
         </div>
       </div>

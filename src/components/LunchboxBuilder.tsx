@@ -136,9 +136,12 @@ export function LunchboxBuilder({ kidId, kidHebrewName, kidColor, foodItems }: L
   return (
     <div className="p-2" dir="rtl">
       {/* Header */}
-      <h2 className="text-xl font-bold text-gray-800 text-center mb-4">
-        הקופסה של {kidHebrewName} {theme.heart}
-      </h2>
+      <div className="text-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">
+          הקופסה של {kidHebrewName} {theme.heart}
+        </h2>
+        <p className="text-xs text-gray-400">{kidHebrewName}'s Lunchbox {theme.heart}</p>
+      </div>
 
       {/* ── Bento Box ── */}
       <div
@@ -271,7 +274,8 @@ export function LunchboxBuilder({ kidId, kidHebrewName, kidColor, foodItems }: L
               : `bg-gradient-to-r ${kidColor} text-white hover:shadow-xl`
         }`}
       >
-        {isSaved ? 'נשמר! ✅' : 'הקופסה מוכנה! ✅'}
+        <div>{isSaved ? 'נשמר! ✅' : 'הקופסה מוכנה! ✅'}</div>
+        <div className="text-xs opacity-80">{isSaved ? 'Saved!' : 'Lunchbox ready!'}</div>
       </button>
     </div>
   );

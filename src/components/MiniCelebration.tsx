@@ -2,9 +2,10 @@ interface MiniCelebrationProps {
   avatar: string;
   kidName: string;
   message: string;
+  messageEn?: string;
 }
 
-export function MiniCelebration({ avatar, kidName, message }: MiniCelebrationProps) {
+export function MiniCelebration({ avatar, kidName, message, messageEn }: MiniCelebrationProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
@@ -26,6 +27,11 @@ export function MiniCelebration({ avatar, kidName, message }: MiniCelebrationPro
         <div className="text-2xl font-extrabold text-white drop-shadow-lg" dir="rtl">
           {message}
         </div>
+        {messageEn && (
+          <div className="text-sm font-semibold text-white/70 drop-shadow-md">
+            {messageEn}
+          </div>
+        )}
       </div>
     </div>
   );

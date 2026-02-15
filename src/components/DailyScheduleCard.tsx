@@ -3,6 +3,7 @@ import { getTodaySchedule } from '../scheduleStorage';
 interface DailyScheduleCardProps {
   kidId: string;
   kidHebrewName: string;
+  kidEnglishName: string;
   kidColor: string;
   isWeekend: boolean;
   onShowWeekly: () => void;
@@ -11,9 +12,10 @@ interface DailyScheduleCardProps {
 interface TimelineItem {
   emoji: string;
   text: string;
+  textEn: string;
 }
 
-export function DailyScheduleCard({ kidId, kidHebrewName, kidColor, isWeekend, onShowWeekly }: DailyScheduleCardProps) {
+export function DailyScheduleCard({ kidId, kidHebrewName, kidEnglishName, kidColor, isWeekend, onShowWeekly }: DailyScheduleCardProps) {
   if (isWeekend) {
     return (
       <div className="mb-3 px-4 py-3 bg-white/80 rounded-2xl shadow-sm" dir="rtl">
@@ -46,22 +48,23 @@ export function DailyScheduleCard({ kidId, kidHebrewName, kidColor, isWeekend, o
   items.push({
     emoji: '🚗',
     text: isDropoffAbba ? 'אבא מפזר' : 'אמא מפזרת',
+    textEn: isDropoffAbba ? 'Dad drops off' : 'Mom drops off',
   });
 
   // School
-  items.push({ emoji: '🏫', text: 'בית ספר' });
+  items.push({ emoji: '🏫', text: 'בית ספר', textEn: 'School' });
 
   // After school
   if (schedule.afterSchool === 'tzaharon') {
-    items.push({ emoji: '🏠', text: 'צהרון' });
+    items.push({ emoji: '🏠', text: 'צהרון', textEn: 'After-school' });
   } else {
     const time = schedule.pickupTimes[kidId] || '';
-    items.push({ emoji: '🕐', text: time ? `איסוף ב-${time}` : 'איסוף' });
+    items.push({ emoji: '🕐', text: time ? `איסוף ב-${time}` : 'איסוף', textEn: time ? `Pickup ${time}` : 'Pickup' });
   }
 
   // Tutoring
   if (schedule.tutoring) {
-    items.push({ emoji: '📚', text: `חונכות עם ${schedule.tutoring}` });
+    items.push({ emoji: '📚', text: `חונכות עם ${schedule.tutoring}`, textEn: `Tutoring: ${schedule.tutoring}` });
   }
 
   // Special event
@@ -69,6 +72,7 @@ export function DailyScheduleCard({ kidId, kidHebrewName, kidColor, isWeekend, o
     items.push({
       emoji: schedule.specialEventEmoji || '🎉',
       text: schedule.specialEvent,
+      textEn: schedule.specialEvent,
     });
   }
 
@@ -77,13 +81,17 @@ export function DailyScheduleCard({ kidId, kidHebrewName, kidColor, isWeekend, o
   items.push({
     emoji: '🚗',
     text: isPickupAbba ? 'אבא אוסף' : 'אמא אוספת',
+    textEn: isPickupAbba ? 'Dad picks up' : 'Mom picks up',
   });
 
   return (
     <div className="mb-3 bg-white/80 rounded-2xl shadow-sm overflow-hidden" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2">
-        <span className="text-sm font-bold text-gray-700">📅 היום של {kidHebrewName}</span>
+        <div>
+          <span className="text-sm font-bold text-gray-700">📅 היום של {kidHebrewName}</span>
+          <div className="text-[10px] text-gray-400">{kidEnglishName}'s Day</div>
+        </div>
         <button
           onClick={onShowWeekly}
           className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-xl text-xs font-bold hover:bg-purple-200 transition-colors active:scale-95"
@@ -101,6 +109,9 @@ export function DailyScheduleCard({ kidId, kidHebrewName, kidColor, isWeekend, o
             </div>
             <span className="text-[10px] font-semibold text-gray-600 mt-1 text-center leading-tight max-w-[72px]">
               {item.text}
+            </span>
+            <span className="text-[8px] text-gray-400 text-center leading-tight max-w-[72px]">
+              {item.textEn}
             </span>
             {i < items.length - 1 && (
               <div className="absolute" style={{ display: 'none' }}>→</div>

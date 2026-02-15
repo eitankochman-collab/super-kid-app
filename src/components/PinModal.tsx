@@ -89,7 +89,8 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'הכנס קוד 
       aria-label={title}
     >
       <div ref={modalRef} className="modal-content bg-white rounded-3xl p-8 shadow-2xl">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">{title}</h2>
+        <h2 className="text-2xl font-bold text-center mb-1 text-gray-800">{title}</h2>
+        <p className="text-sm text-center mb-5 text-gray-400">Enter parent code</p>
 
         <div className="flex justify-center gap-3 mb-8" role="status" aria-label={`${pin.length} of ${PIN_LENGTH} digits entered`}>
           {Array.from({ length: PIN_LENGTH }, (_, i) => (
@@ -109,9 +110,10 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'הכנס קוד 
         </div>
 
         {error && (
-          <p className="text-red-500 text-center mb-4 font-semibold" role="alert">
-            קוד שגוי
-          </p>
+          <div className="text-center mb-4" role="alert">
+            <p className="text-red-500 font-semibold">קוד שגוי</p>
+            <p className="text-red-400 text-xs">Incorrect code</p>
+          </div>
         )}
 
         <div className="grid grid-cols-3 gap-3 mb-4">
@@ -130,7 +132,8 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'הכנס קוד 
             className="h-14 text-base font-semibold bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-2xl transition-colors active:scale-95"
             aria-label="Clear PIN"
           >
-            מחיקה
+            <div className="font-semibold">מחיקה</div>
+            <div className="text-[9px] text-gray-400">Clear</div>
           </button>
           <button
             onClick={() => handleDigit('0')}
@@ -144,7 +147,8 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'הכנס קוד 
             className="h-14 text-base font-semibold bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-2xl transition-colors active:scale-95"
             aria-label="Cancel PIN entry"
           >
-            ביטול
+            <div className="font-semibold">ביטול</div>
+            <div className="text-[9px] text-gray-400">Cancel</div>
           </button>
         </div>
 

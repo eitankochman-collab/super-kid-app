@@ -39,9 +39,9 @@ describe('RewardModal', () => {
       />
     );
 
-    expect(screen.getByText(':עלות')).toBeInTheDocument();
-    expect(screen.getByText(':יש לך')).toBeInTheDocument();
-    expect(screen.getByText(':אחרי')).toBeInTheDocument();
+    expect(screen.getByText('עלות')).toBeInTheDocument();
+    expect(screen.getByText('יש לך')).toBeInTheDocument();
+    expect(screen.getByText('אחרי')).toBeInTheDocument();
   });
 
   it('calls onCancel when ביטול button is clicked', async () => {

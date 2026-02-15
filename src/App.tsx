@@ -70,7 +70,7 @@ function App() {
   const [showPinModal, setShowPinModal] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSuperKid, setShowSuperKid] = useState(false);
-  const [miniCelebration, setMiniCelebration] = useState<{ message: string } | null>(null);
+  const [miniCelebration, setMiniCelebration] = useState<{ message: string; messageEn?: string } | null>(null);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [yesterdaySummary, setYesterdaySummary] = useState<YesterdaySummary | null>(null);
@@ -206,10 +206,10 @@ function App() {
   const totalTasks = currentTasks.length;
   const progress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
-  const routineMessages: Record<string, string> = {
-    morning: 'סופר בוקר — לונה שמחה! 🌅🐕',
-    afternoon: 'כל הכבוד — לונה שמחה! 🎒🐕',
-    evening: 'לילה טוב — לונה שמחה! 🌙🐕',
+  const routineMessages: Record<string, { he: string; en: string }> = {
+    morning: { he: 'סופר בוקר — לונה שמחה! 🌅🐕', en: 'Super morning — Luna is happy! 🌅🐕' },
+    afternoon: { he: 'כל הכבוד — לונה שמחה! 🎒🐕', en: 'Great job — Luna is happy! 🎒🐕' },
+    evening: { he: 'לילה טוב — לונה שמחה! 🌙🐕', en: 'Good night — Luna is happy! 🌙🐕' },
   };
 
   // Check if all tasks in a routine are done (given a status array)
@@ -313,7 +313,7 @@ function App() {
             // Show streak celebration after a short delay (after Super-Kid closes)
             setTimeout(() => {
               playChaChing();
-              setMiniCelebration({ message: milestone.message });
+              setMiniCelebration({ message: milestone.message, messageEn: milestone.messageEn });
               setTimeout(() => setMiniCelebration(null), 2000);
             }, 3200);
           }
@@ -332,7 +332,8 @@ function App() {
         const nowComplete = isRoutineComplete(routineTaskIds, newStatuses);
         if (!wasComplete && nowComplete) {
           playFanfare();
-          setMiniCelebration({ message: routineMessages[currentRoutineTab] });
+          const msg = routineMessages[currentRoutineTab];
+          setMiniCelebration({ message: msg.he, messageEn: msg.en });
           setTimeout(() => setMiniCelebration(null), 2000);
           return;
         }
@@ -482,12 +483,12 @@ function App() {
     return `${ENGLISH_DAYS[now.getDay()]}, ${ENGLISH_MONTHS[now.getMonth()]} ${now.getDate()}`;
   };
 
-  const getEncouragementText = (pct: number): string => {
-    if (pct >= 100) return 'מושלם! ✨';
-    if (pct >= 75) return 'עוד קצת! 🏆';
-    if (pct >= 50) return 'וואו, כמעט שם! 🔥';
-    if (pct >= 25) return 'כל הכבוד, ממשיכים! 🌟';
-    return 'יאללה, מתחילים! 💪';
+  const getEncouragementText = (pct: number): { he: string; en: string } => {
+    if (pct >= 100) return { he: 'מושלם! ✨', en: 'Perfect! ✨' };
+    if (pct >= 75) return { he: 'עוד קצת! 🏆', en: 'Almost! 🏆' };
+    if (pct >= 50) return { he: 'וואו, כמעט שם! 🔥', en: 'Almost there! 🔥' };
+    if (pct >= 25) return { he: 'כל הכבוד, ממשיכים! 🌟', en: 'Great, keep going! 🌟' };
+    return { he: 'יאללה, מתחילים! 💪', en: "Let's go! 💪" };
   };
 
   return (
@@ -554,6 +555,7 @@ function App() {
         <DailyScheduleCard
           kidId={selectedKid.id}
           kidHebrewName={selectedKid.hebrewName}
+          kidEnglishName={selectedKid.name}
           kidColor={selectedKid.color}
           isWeekend={isWeekend}
           onShowWeekly={() => setShowWeeklyModal(true)}
@@ -606,9 +608,16 @@ function App() {
                             🔥 {kid.streak.current}
                           </span>
                         )}
-                        <span key={kid.starBank} className={`star-count-bump inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-black ${isSelected ? 'bg-white/30 text-white star-glow' : 'bg-yellow-100 text-yellow-600 star-glow'} ${kid.starBank === 0 ? 'text-sm' : 'text-lg'}`}>
-                          {kid.starBank === 0 ? '⭐ הכוכב הראשון מחכה!' : `${kid.starBank} ⭐`}
-                        </span>
+                        <div key={kid.starBank}>
+                          <span className={`star-count-bump inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-black ${isSelected ? 'bg-white/30 text-white star-glow' : 'bg-yellow-100 text-yellow-600 star-glow'} ${kid.starBank === 0 ? 'text-sm' : 'text-lg'}`}>
+                            {kid.starBank === 0 ? '⭐ הכוכב הראשון מחכה' : `${kid.starBank} ⭐`}
+                          </span>
+                          {kid.starBank === 0 && (
+                            <div className={`text-[9px] ${isSelected ? 'text-white/60' : 'text-gray-400'} mr-1`}>
+                              First star awaits!
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                     {activeTab !== 'lunchbox' && kid.pinnedRewardId && (() => {
@@ -619,14 +628,24 @@ function App() {
                       return (
                         <div className="mt-1" dir="rtl">
                           {canAfford ? (
-                            <span className={`text-xs font-bold can-afford-glow ${isSelected ? 'text-yellow-200' : 'text-yellow-600'}`}>
-                              🎉 אפשר לקנות {reward.emoji}!
-                            </span>
+                            <div>
+                              <span className={`text-xs font-bold can-afford-glow ${isSelected ? 'text-yellow-200' : 'text-yellow-600'}`}>
+                                🎉 אפשר לקנות {reward.emoji}!
+                              </span>
+                              <div className={`text-[9px] ${isSelected ? 'text-white/60' : 'text-yellow-400'}`}>
+                                Can buy {reward.emoji}!
+                              </div>
+                            </div>
                           ) : (
                             <div className="flex items-center gap-1.5">
-                              <span className={`text-xs font-semibold ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
-                                עוד {reward.starCost - kid.starBank} ⭐ ל-{reward.emoji}
-                              </span>
+                              <div>
+                                <span className={`text-xs font-semibold ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
+                                  עוד {reward.starCost - kid.starBank} ⭐ ל-{reward.emoji}
+                                </span>
+                                <div className={`text-[9px] ${isSelected ? 'text-white/60' : 'text-gray-400'}`}>
+                                  {reward.starCost - kid.starBank} more ⭐ for {reward.emoji}
+                                </div>
+                              </div>
                               <div className="flex-1 h-1.5 bg-gray-200/50 rounded-full overflow-hidden max-w-[60px]">
                                 <div
                                   className={`h-full rounded-full transition-all duration-500 bg-gradient-to-r ${kid.color}`}
@@ -657,8 +676,14 @@ function App() {
                 <div className="text-3xl font-black text-gray-800" dir="rtl">
                   {doneTasks} מתוך {totalTasks}
                 </div>
+                <div className="text-sm font-semibold text-gray-400">
+                  {doneTasks} of {totalTasks}
+                </div>
                 <div className="text-xl font-extrabold" dir="rtl" style={{ color: selectedKid.accent }}>
-                  {getEncouragementText(progress)}
+                  {getEncouragementText(progress).he}
+                </div>
+                <div className="text-xs font-semibold text-gray-400">
+                  {getEncouragementText(progress).en}
                 </div>
               </div>
             </div>
@@ -679,6 +704,7 @@ function App() {
                   }`}
                 >
                   <span className="block">{tab.emoji} {tab.label}</span>
+                  <span className={`block text-[9px] ${isActive ? 'text-white/70' : 'text-gray-400'}`}>{tab.labelEn}</span>
                 </button>
               );
             })}
@@ -727,13 +753,19 @@ function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-fade-out" style={{ animationDelay: '2s', animationDuration: '1s', animationFillMode: 'forwards' }}>
           <div className="bg-white rounded-3xl shadow-xl p-6 mx-4 max-w-sm w-full text-center" dir="rtl">
             <div className="text-2xl mb-3">📊</div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">סיכום אתמול</h2>
+            <h2 className="text-lg font-bold text-gray-800 mb-1">סיכום אתמול</h2>
+            <p className="text-xs text-gray-400 mb-4">Yesterday's Summary</p>
             {yesterdaySummary.kids.map((kid) => (
               <div key={kid.hebrewName} className="flex items-center justify-center gap-3 mb-2">
                 <img src={kid.avatar} alt={kid.hebrewName} className="w-10 h-10 rounded-full object-cover" />
-                <span className="font-semibold text-gray-700">
-                  {kid.hebrewName}: {kid.done} מתוך {kid.total} משימות!
-                </span>
+                <div>
+                  <span className="font-semibold text-gray-700">
+                    {kid.hebrewName}: {kid.done} מתוך {kid.total} משימות!
+                  </span>
+                  <div className="text-xs text-gray-400">
+                    {kid.done} of {kid.total} tasks!
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -746,6 +778,7 @@ function App() {
           avatar={selectedKid.avatar}
           kidName={selectedKid.hebrewName}
           message={miniCelebration.message}
+          messageEn={miniCelebration.messageEn}
         />
       )}
 
