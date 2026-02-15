@@ -16,12 +16,12 @@ describe('PinModal', () => {
       <PinModal isOpen={true} onClose={vi.fn()} onSuccess={vi.fn()} />
     );
 
-    expect(screen.getByText('Enter Parent PIN')).toBeInTheDocument();
+    expect(screen.getByText('הכנס קוד הורים')).toBeInTheDocument();
     for (let i = 0; i <= 9; i++) {
       expect(screen.getByText(i.toString())).toBeInTheDocument();
     }
-    expect(screen.getByText('Clear')).toBeInTheDocument();
-    expect(screen.getByText('Cancel')).toBeInTheDocument();
+    expect(screen.getByText('מחיקה')).toBeInTheDocument();
+    expect(screen.getByText('ביטול')).toBeInTheDocument();
   });
 
   it('accepts custom title', () => {
@@ -31,7 +31,7 @@ describe('PinModal', () => {
     expect(screen.getByText('Custom Title')).toBeInTheDocument();
   });
 
-  it('calls onClose when Cancel is clicked', async () => {
+  it('calls onClose when ביטול is clicked', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
 
@@ -39,11 +39,11 @@ describe('PinModal', () => {
       <PinModal isOpen={true} onClose={onClose} onSuccess={vi.fn()} />
     );
 
-    await user.click(screen.getByText('Cancel'));
+    await user.click(screen.getByText('ביטול'));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('clears input when Clear is clicked', async () => {
+  it('clears input when מחיקה is clicked', async () => {
     const user = userEvent.setup();
 
     render(
@@ -54,7 +54,7 @@ describe('PinModal', () => {
     const dots = screen.getAllByText('●');
     expect(dots).toHaveLength(1);
 
-    await user.click(screen.getByText('Clear'));
+    await user.click(screen.getByText('מחיקה'));
     expect(screen.queryByText('●')).not.toBeInTheDocument();
   });
 
@@ -91,7 +91,7 @@ describe('PinModal', () => {
     await user.click(screen.getByText('9'));
 
     await waitFor(() => {
-      expect(screen.getByText('Incorrect PIN')).toBeInTheDocument();
+      expect(screen.getByText('קוד שגוי')).toBeInTheDocument();
     });
   });
 

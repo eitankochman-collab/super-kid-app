@@ -20,23 +20,33 @@ describe('data', () => {
       });
     });
 
-    it('each kid has morning and evening tasks', () => {
+    it('each kid has morning, afternoon, and evening tasks', () => {
       initialKids.forEach((kid) => {
         expect(kid.morning.length).toBeGreaterThan(0);
+        expect(kid.afternoon.length).toBeGreaterThan(0);
         expect(kid.evening.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('each kid has hebrewName, avatar, color, and accent', () => {
+      initialKids.forEach((kid) => {
+        expect(kid.hebrewName).toBeTruthy();
+        expect(kid.avatar).toBeTruthy();
+        expect(kid.color).toBeTruthy();
+        expect(kid.accent).toBeTruthy();
       });
     });
 
     it('all tasks have unique ids within a kid', () => {
       initialKids.forEach((kid) => {
-        const allTaskIds = [...kid.morning, ...kid.evening].map((t) => t.id);
+        const allTaskIds = [...kid.morning, ...kid.afternoon, ...kid.evening].map((t) => t.id);
         expect(new Set(allTaskIds).size).toBe(allTaskIds.length);
       });
     });
 
     it('all tasks have required fields', () => {
       initialKids.forEach((kid) => {
-        [...kid.morning, ...kid.evening].forEach((task) => {
+        [...kid.morning, ...kid.afternoon, ...kid.evening].forEach((task) => {
           expect(task.id).toBeTruthy();
           expect(task.hebrew).toBeTruthy();
           expect(task.english).toBeTruthy();
@@ -47,8 +57,8 @@ describe('data', () => {
   });
 
   describe('defaultRewards', () => {
-    it('contains at least one reward', () => {
-      expect(defaultRewards.length).toBeGreaterThan(0);
+    it('contains 6 rewards', () => {
+      expect(defaultRewards).toHaveLength(6);
     });
 
     it('all rewards have positive star costs', () => {
@@ -60,6 +70,13 @@ describe('data', () => {
     it('all rewards have unique ids', () => {
       const ids = defaultRewards.map((r) => r.id);
       expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('all rewards have hebrew name and emoji', () => {
+      defaultRewards.forEach((r) => {
+        expect(r.hebrew).toBeTruthy();
+        expect(r.emoji).toBeTruthy();
+      });
     });
   });
 

@@ -11,6 +11,8 @@ const mockTask: Task = {
   emoji: '🌅',
 };
 
+const kidColor = 'from-amber-400 to-orange-500';
+
 describe('TaskItem', () => {
   it('renders task emoji, hebrew, and english text', () => {
     render(
@@ -20,6 +22,7 @@ describe('TaskItem', () => {
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
         isUnlocked={false}
+        kidColor={kidColor}
       />
     );
 
@@ -28,7 +31,7 @@ describe('TaskItem', () => {
     expect(screen.getByText('Wake up')).toBeInTheDocument();
   });
 
-  it('shows "Done" button when task is not done', () => {
+  it('shows "סיימתי" button when task is not done', () => {
     render(
       <TaskItem
         task={mockTask}
@@ -36,13 +39,14 @@ describe('TaskItem', () => {
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
         isUnlocked={false}
+        kidColor={kidColor}
       />
     );
 
-    expect(screen.getByText(/Done/)).toBeInTheDocument();
+    expect(screen.getByText(/סיימתי/)).toBeInTheDocument();
   });
 
-  it('shows "Undo" button when task is done', () => {
+  it('shows "ביטול" button when task is done', () => {
     const status: TaskStatus = { taskId: 'm1', done: true, stars: 0 };
     render(
       <TaskItem
@@ -51,13 +55,14 @@ describe('TaskItem', () => {
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
         isUnlocked={false}
+        kidColor={kidColor}
       />
     );
 
-    expect(screen.getByText(/Undo/)).toBeInTheDocument();
+    expect(screen.getByText(/ביטול/)).toBeInTheDocument();
   });
 
-  it('calls onToggleDone when Done button is clicked', async () => {
+  it('calls onToggleDone when done button is clicked', async () => {
     const user = userEvent.setup();
     const onToggleDone = vi.fn();
 
@@ -68,21 +73,23 @@ describe('TaskItem', () => {
         onToggleDone={onToggleDone}
         onAddStar={vi.fn()}
         isUnlocked={false}
+        kidColor={kidColor}
       />
     );
 
-    await user.click(screen.getByText(/Done/));
+    await user.click(screen.getByText(/סיימתי/));
     expect(onToggleDone).toHaveBeenCalledOnce();
   });
 
-  it('shows star button only when task is done', () => {
+  it('shows star button only when task is done and unlocked', () => {
     const { rerender } = render(
       <TaskItem
         task={mockTask}
         status={undefined}
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
-        isUnlocked={false}
+        isUnlocked={true}
+        kidColor={kidColor}
       />
     );
 
@@ -95,7 +102,8 @@ describe('TaskItem', () => {
         status={doneStatus}
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
-        isUnlocked={false}
+        isUnlocked={true}
+        kidColor={kidColor}
       />
     );
 
@@ -114,6 +122,7 @@ describe('TaskItem', () => {
         onToggleDone={vi.fn()}
         onAddStar={onAddStar}
         isUnlocked={true}
+        kidColor={kidColor}
       />
     );
 
@@ -131,6 +140,7 @@ describe('TaskItem', () => {
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
         isUnlocked={true}
+        kidColor={kidColor}
       />
     );
 
@@ -146,11 +156,11 @@ describe('TaskItem', () => {
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
         isUnlocked={false}
+        kidColor={kidColor}
       />
     );
 
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.className).toContain('bg-green-50');
-    expect(wrapper.className).toContain('border-green-400');
   });
 });

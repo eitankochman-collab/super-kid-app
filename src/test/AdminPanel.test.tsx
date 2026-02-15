@@ -8,8 +8,13 @@ const mockKids: KidData[] = [
   {
     id: 'lior',
     name: 'Lior',
+    hebrewName: 'ליאור',
+    avatar: '🦁',
+    color: 'from-amber-400 to-orange-500',
+    accent: '#f59e0b',
     age: 8,
     morning: [],
+    afternoon: [],
     evening: [],
     status: [],
     starBank: 12,
@@ -17,8 +22,13 @@ const mockKids: KidData[] = [
   {
     id: 'roni',
     name: 'Roni',
+    hebrewName: 'רוני',
+    avatar: '🦊',
+    color: 'from-sky-400 to-blue-500',
+    accent: '#0ea5e9',
     age: 6,
     morning: [],
+    afternoon: [],
     evening: [],
     status: [],
     starBank: 3,
@@ -26,8 +36,8 @@ const mockKids: KidData[] = [
 ];
 
 const mockRewards: Reward[] = [
-  { id: 'r1', title: 'Movie night', starCost: 10 },
-  { id: 'r2', title: 'Extra screen time', starCost: 5 },
+  { id: 'r1', title: 'Movie night', hebrew: 'סרט ערב', emoji: '🎬', starCost: 10 },
+  { id: 'r2', title: 'Extra screen time', hebrew: 'זמן מסך נוסף', emoji: '📱', starCost: 5 },
 ];
 
 describe('AdminPanel', () => {
@@ -40,13 +50,14 @@ describe('AdminPanel', () => {
         onClose={vi.fn()}
         isUnlocked={true}
         onRequestPin={vi.fn()}
+        onResetDone={vi.fn()}
       />
     );
 
-    expect(screen.getByText('Parent Admin')).toBeInTheDocument();
+    expect(screen.getByText(/ניהול הורים/)).toBeInTheDocument();
   });
 
-  it('displays star banks for all kids', () => {
+  it('displays star banks for all kids with Hebrew names and avatars', () => {
     render(
       <AdminPanel
         kids={mockKids}
@@ -55,18 +66,17 @@ describe('AdminPanel', () => {
         onClose={vi.fn()}
         isUnlocked={true}
         onRequestPin={vi.fn()}
+        onResetDone={vi.fn()}
       />
     );
 
-    // Kid names appear in star bank section AND as redeem buttons
-    // Check the heading-level elements for star bank
-    const headings = screen.getAllByText('Lior');
-    expect(headings.length).toBeGreaterThanOrEqual(1);
-    const roniHeadings = screen.getAllByText('Roni');
-    expect(roniHeadings.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('ליאור')).toBeInTheDocument();
+    expect(screen.getByText('רוני')).toBeInTheDocument();
+    expect(screen.getByText('🦁')).toBeInTheDocument();
+    expect(screen.getByText('🦊')).toBeInTheDocument();
   });
 
-  it('displays all rewards', () => {
+  it('displays all rewards with Hebrew names', () => {
     render(
       <AdminPanel
         kids={mockKids}
@@ -75,11 +85,12 @@ describe('AdminPanel', () => {
         onClose={vi.fn()}
         isUnlocked={true}
         onRequestPin={vi.fn()}
+        onResetDone={vi.fn()}
       />
     );
 
-    expect(screen.getByText('Movie night')).toBeInTheDocument();
-    expect(screen.getByText('Extra screen time')).toBeInTheDocument();
+    expect(screen.getByText('סרט ערב')).toBeInTheDocument();
+    expect(screen.getByText('זמן מסך נוסף')).toBeInTheDocument();
   });
 
   it('calls onClose when close button is clicked', async () => {
@@ -94,10 +105,11 @@ describe('AdminPanel', () => {
         onClose={onClose}
         isUnlocked={true}
         onRequestPin={vi.fn()}
+        onResetDone={vi.fn()}
       />
     );
 
-    await user.click(screen.getByText('Close Admin'));
+    await user.click(screen.getByText('סגירה'));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
@@ -110,11 +122,11 @@ describe('AdminPanel', () => {
         onClose={vi.fn()}
         isUnlocked={true}
         onRequestPin={vi.fn()}
+        onResetDone={vi.fn()}
       />
     );
 
     // Roni has 3 stars, Movie night costs 10 - button should be disabled
-    // Use title attribute to find the specific button
     const roniMovieButton = screen.getAllByTitle('Redeem for Roni')[0];
     expect(roniMovieButton).toBeDisabled();
   });
@@ -131,12 +143,13 @@ describe('AdminPanel', () => {
         onClose={vi.fn()}
         isUnlocked={true}
         onRequestPin={vi.fn()}
+        onResetDone={vi.fn()}
       />
     );
 
     // Lior has 12 stars, can afford Movie night (10)
     const liorButtons = screen.getAllByTitle('Redeem for Lior');
-    await user.click(liorButtons[0]); // First one is for Movie night
+    await user.click(liorButtons[0]);
     expect(onRedeemReward).toHaveBeenCalledWith('lior', 'r1');
   });
 
@@ -152,6 +165,7 @@ describe('AdminPanel', () => {
         onClose={vi.fn()}
         isUnlocked={false}
         onRequestPin={onRequestPin}
+        onResetDone={vi.fn()}
       />
     );
 
@@ -159,5 +173,25 @@ describe('AdminPanel', () => {
     const liorButtons = screen.getAllByTitle('Redeem for Lior');
     await user.click(liorButtons[0]);
     expect(onRequestPin).toHaveBeenCalledOnce();
+  });
+
+  it('has a reset button that calls onResetDone', async () => {
+    const user = userEvent.setup();
+    const onResetDone = vi.fn();
+
+    render(
+      <AdminPanel
+        kids={mockKids}
+        rewards={mockRewards}
+        onRedeemReward={vi.fn()}
+        onClose={vi.fn()}
+        isUnlocked={true}
+        onRequestPin={vi.fn()}
+        onResetDone={onResetDone}
+      />
+    );
+
+    await user.click(screen.getByText(/איפוס$/));
+    expect(onResetDone).toHaveBeenCalledOnce();
   });
 });

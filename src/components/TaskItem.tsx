@@ -7,9 +7,10 @@ interface TaskItemProps {
   onToggleDone: () => void;
   onAddStar: () => void;
   isUnlocked: boolean;
+  kidColor: string;
 }
 
-export function TaskItem({ task, status, onToggleDone, onAddStar, isUnlocked }: TaskItemProps) {
+export function TaskItem({ task, status, onToggleDone, onAddStar, isUnlocked, kidColor }: TaskItemProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const isDone = status?.done || false;
   const stars = status?.stars || 0;
@@ -22,34 +23,36 @@ export function TaskItem({ task, status, onToggleDone, onAddStar, isUnlocked }: 
       utterance.rate = 0.9;
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
-      window.speechSynthesis.cancel(); // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utterance);
     }
   };
 
   return (
     <div
-      className={`p-4 rounded-xl border-2 transition-all ${
+      className={`p-3 rounded-2xl transition-all duration-200 ${
         isDone
-          ? 'bg-green-50 border-green-400'
-          : 'bg-white border-gray-200 hover:border-blue-300'
+          ? 'bg-green-50 scale-[0.98]'
+          : 'bg-white hover:shadow-md'
       }`}
     >
-      <div className="flex items-center gap-4">
-        {/* Emoji */}
-        <div className="text-4xl flex-shrink-0">{task.emoji}</div>
+      <div className="flex items-center gap-3">
+        {/* Emoji in colored circle */}
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
+          {task.emoji}
+        </div>
 
         {/* Text content */}
         <div className="flex-1 min-w-0">
-          <div className="text-xl font-semibold text-gray-800" dir="rtl">
+          <div className={`text-lg font-bold text-gray-800 ${isDone ? 'line-through opacity-60' : ''}`} dir="rtl">
             {task.hebrew}
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-base text-gray-600">{task.english}</span>
+          <div className="flex items-center gap-2">
+            <span className={`text-sm text-gray-500 ${isDone ? 'line-through opacity-60' : ''}`}>{task.english}</span>
             {'speechSynthesis' in window && (
               <button
                 onClick={speak}
-                className={`text-lg hover:scale-110 transition-transform ${
+                className={`w-7 h-7 rounded-full bg-blue-50 text-sm flex items-center justify-center hover:bg-blue-100 transition-colors ${
                   isSpeaking ? 'animate-pulse' : ''
                 }`}
                 title="Listen"
@@ -61,31 +64,27 @@ export function TaskItem({ task, status, onToggleDone, onAddStar, isUnlocked }: 
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-col gap-2 flex-shrink-0">
-          <button
-            onClick={onToggleDone}
-            className={`px-6 py-3 rounded-lg font-bold text-lg transition-all active:scale-95 ${
-              isDone
-                ? 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                : 'bg-green-500 text-white hover:bg-green-600 shadow-lg'
-            }`}
-          >
-            {isDone ? 'Undo ↩️' : 'Done ✅'}
-          </button>
-
-          {isDone && (
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {isDone && isUnlocked && (
             <button
               onClick={onAddStar}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 ${
-                isUnlocked
-                  ? 'bg-yellow-400 text-yellow-900 hover:bg-yellow-500 shadow-md'
-                  : 'bg-yellow-300 text-yellow-800 hover:bg-yellow-400 shadow-md'
-              }`}
-              title={isUnlocked ? 'Award star' : 'Click to unlock with PIN'}
+              className="px-3 py-2 rounded-xl bg-yellow-100 text-yellow-700 font-semibold text-sm hover:bg-yellow-200 transition-all active:scale-95 shadow-sm"
+              title="Award star"
             >
-              ⭐ +1 {stars > 0 && `(${stars})`}
+              ⭐ +1{stars > 0 && ` (${stars})`}
             </button>
           )}
+
+          <button
+            onClick={onToggleDone}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 ${
+              isDone
+                ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                : `bg-gradient-to-r ${kidColor} text-white shadow-md hover:shadow-lg`
+            }`}
+          >
+            {isDone ? 'ביטול ↩️' : '✅ סיימתי'}
+          </button>
         </div>
       </div>
     </div>

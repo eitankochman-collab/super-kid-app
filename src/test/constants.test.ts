@@ -8,6 +8,7 @@ import {
   CONFETTI_COLORS,
   CELEBRATION_NOTES,
   STORAGE_KEY,
+  TABS,
 } from '../constants';
 
 describe('constants', () => {
@@ -42,5 +43,27 @@ describe('constants', () => {
   it('STORAGE_KEY is a non-empty string', () => {
     expect(STORAGE_KEY).toBeTruthy();
     expect(typeof STORAGE_KEY).toBe('string');
+  });
+
+  describe('TABS', () => {
+    it('has 4 tabs', () => {
+      expect(TABS).toHaveLength(4);
+    });
+
+    it('includes morning, afternoon, evening, and rewards', () => {
+      const ids = TABS.map((t) => t.id);
+      expect(ids).toContain('morning');
+      expect(ids).toContain('afternoon');
+      expect(ids).toContain('evening');
+      expect(ids).toContain('rewards');
+    });
+
+    it('each tab has label, labelEn, and emoji', () => {
+      TABS.forEach((tab) => {
+        expect(tab.label).toBeTruthy();
+        expect(tab.labelEn).toBeTruthy();
+        expect(tab.emoji).toBeTruthy();
+      });
+    });
   });
 });

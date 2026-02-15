@@ -9,6 +9,8 @@ const mockTasks: Task[] = [
   { id: 'm3', hebrew: 'מתלבשים', english: 'Get dressed', emoji: '👕' },
 ];
 
+const kidColor = 'from-amber-400 to-orange-500';
+
 describe('TaskList', () => {
   it('renders all tasks', () => {
     render(
@@ -18,6 +20,7 @@ describe('TaskList', () => {
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
         isUnlocked={false}
+        kidColor={kidColor}
       />
     );
 
@@ -39,12 +42,13 @@ describe('TaskList', () => {
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
         isUnlocked={false}
+        kidColor={kidColor}
       />
     );
 
     // m1 and m3 done, m2 not done
-    const undoButtons = screen.getAllByText(/Undo/);
-    const doneButtons = screen.getAllByText(/^Done/);
+    const undoButtons = screen.getAllByText(/ביטול/);
+    const doneButtons = screen.getAllByText(/סיימתי/);
     expect(undoButtons).toHaveLength(2);
     expect(doneButtons).toHaveLength(1);
   });
@@ -57,10 +61,11 @@ describe('TaskList', () => {
         onToggleDone={vi.fn()}
         onAddStar={vi.fn()}
         isUnlocked={false}
+        kidColor={kidColor}
       />
     );
 
     // Should render the container but with no task items
-    expect(container.querySelector('.space-y-3')).toBeInTheDocument();
+    expect(container.querySelector('.space-y-2')).toBeInTheDocument();
   });
 });

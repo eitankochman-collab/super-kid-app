@@ -13,41 +13,82 @@ describe('App', () => {
     expect(screen.getByText(/Super Kids/)).toBeInTheDocument();
   });
 
-  it('renders both kid cards', () => {
+  it('renders kid selector with both kids', () => {
     render(<App />);
+    expect(screen.getByText('ליאור')).toBeInTheDocument();
+    expect(screen.getByText('רוני')).toBeInTheDocument();
     expect(screen.getByText('Lior')).toBeInTheDocument();
     expect(screen.getByText('Roni')).toBeInTheDocument();
   });
 
-  it('renders Parent and Reset buttons', () => {
+  it('renders parent button', () => {
     render(<App />);
-    expect(screen.getByText(/Parent/)).toBeInTheDocument();
-    expect(screen.getByText(/Reset/)).toBeInTheDocument();
+    expect(screen.getByText(/הורים/)).toBeInTheDocument();
   });
 
-  it('toggles task completion', async () => {
+  it('shows morning tasks by default for selected kid', () => {
+    render(<App />);
+    expect(screen.getByText('Wake up')).toBeInTheDocument();
+    expect(screen.getByText('Breakfast')).toBeInTheDocument();
+  });
+
+  it('switches between tabs', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const doneButtons = screen.getAllByText(/^Done/);
+    // Click afternoon tab
+    await user.click(screen.getByText(/אחרי ביה״ס/));
+    expect(screen.getByText('Lunchbox to sink')).toBeInTheDocument();
+
+    // Click evening tab
+    await user.click(screen.getByText(/ערב/));
+    expect(screen.getByText('Tidy playroom')).toBeInTheDocument();
+
+    // Click rewards tab
+    await user.click(screen.getByText(/פרסים/));
+    expect(screen.getByText(/חנות פרסים/)).toBeInTheDocument();
+  });
+
+  it('toggles task completion with Hebrew button text', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const doneButtons = screen.getAllByText(/סיימתי/);
     await user.click(doneButtons[0]);
 
-    expect(screen.getAllByText(/Undo/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/ביטול/).length).toBeGreaterThanOrEqual(1);
   });
 
-  it('opens PIN modal when Parent button clicked while locked', async () => {
+  it('shows progress display', () => {
+    render(<App />);
+    expect(screen.getByText(/מתוך/)).toBeInTheDocument();
+    expect(screen.getByText(/משימות/)).toBeInTheDocument();
+  });
+
+  it('switches selected kid when clicking kid card', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByText(/Parent/));
-    expect(screen.getByText('Enter Parent PIN')).toBeInTheDocument();
+    // Click Roni's card
+    await user.click(screen.getByText('רוני'));
+
+    // Should still show morning tasks (default tab)
+    expect(screen.getByText('Wake up')).toBeInTheDocument();
+  });
+
+  it('opens PIN modal when parent button clicked while locked', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByText(/הורים/));
+    expect(screen.getByText(/הכנס קוד/)).toBeInTheDocument();
   });
 
   it('opens admin panel after correct PIN', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByText(/Parent/));
+    await user.click(screen.getByText(/הורים/));
 
     await user.click(screen.getByText('1'));
     await user.click(screen.getByText('2'));
@@ -55,40 +96,15 @@ describe('App', () => {
     await user.click(screen.getByText('4'));
 
     await waitFor(() => {
-      expect(screen.getByText('Parent Admin')).toBeInTheDocument();
+      expect(screen.getByText(/ניהול הורים/)).toBeInTheDocument();
     });
-  });
-
-  it('shows unlocked state after PIN entry', async () => {
-    const user = userEvent.setup();
-    render(<App />);
-
-    // Complete a task first
-    const doneButtons = screen.getAllByText(/^Done/);
-    await user.click(doneButtons[0]);
-
-    // Click star button (requires PIN)
-    const starButton = screen.getByText(/\+1/);
-    await user.click(starButton);
-
-    expect(screen.getByText('Enter Parent PIN')).toBeInTheDocument();
-
-    await user.click(screen.getByText('1'));
-    await user.click(screen.getByText('2'));
-    await user.click(screen.getByText('3'));
-    await user.click(screen.getByText('4'));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Unlocked/)).toBeInTheDocument();
-    });
-    expect(screen.getByText(/Lock Now/)).toBeInTheDocument();
   });
 
   it('persists state to localStorage', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const doneButtons = screen.getAllByText(/^Done/);
+    const doneButtons = screen.getAllByText(/סיימתי/);
     await user.click(doneButtons[0]);
 
     await waitFor(() => {

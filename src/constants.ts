@@ -38,3 +38,13 @@ export const CELEBRATION_NOTES = {
 
 /** localStorage key for app state */
 export const STORAGE_KEY = 'super-kid-app-state';
+
+/** Tab configuration for routine/rewards navigation */
+export type TabId = 'morning' | 'afternoon' | 'evening' | 'rewards';
+
+export const TABS: { id: TabId; label: string; labelEn: string; emoji: string }[] = [
+  { id: 'morning', label: 'בוקר', labelEn: 'Morning', emoji: '🌅' },
+  { id: 'afternoon', label: 'אחרי ביה״ס', labelEn: 'After School', emoji: '🎒' },
+  { id: 'evening', label: 'ערב', labelEn: 'Evening', emoji: '🌙' },
+  { id: 'rewards', label: 'פרסים', labelEn: 'Rewards', emoji: '🎁' },
+];

@@ -7,6 +7,8 @@ import type { Reward } from '../types';
 const mockReward: Reward = {
   id: 'r1',
   title: 'Movie night',
+  hebrew: 'סרט ערב',
+  emoji: '🎬',
   starCost: 10,
 };
 
@@ -21,8 +23,9 @@ describe('RewardModal', () => {
       />
     );
 
+    expect(screen.getByText('סרט ערב')).toBeInTheDocument();
     expect(screen.getByText('Movie night')).toBeInTheDocument();
-    expect(screen.getByText('Redeem Reward?')).toBeInTheDocument();
+    expect(screen.getByText(/לפדות פרס/)).toBeInTheDocument();
   });
 
   it('shows cost, current stars, and remaining stars', () => {
@@ -35,13 +38,12 @@ describe('RewardModal', () => {
       />
     );
 
-    // Check specific labeled values
-    expect(screen.getByText('Cost:')).toBeInTheDocument();
-    expect(screen.getByText('You have:')).toBeInTheDocument();
-    expect(screen.getByText('After:')).toBeInTheDocument();
+    expect(screen.getByText(':עלות')).toBeInTheDocument();
+    expect(screen.getByText(':יש לך')).toBeInTheDocument();
+    expect(screen.getByText(':אחרי')).toBeInTheDocument();
   });
 
-  it('calls onCancel when Cancel button is clicked', async () => {
+  it('calls onCancel when ביטול button is clicked', async () => {
     const user = userEvent.setup();
     const onCancel = vi.fn();
 
@@ -54,7 +56,7 @@ describe('RewardModal', () => {
       />
     );
 
-    await user.click(screen.getByText('Cancel'));
+    await user.click(screen.getByText('ביטול'));
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
@@ -71,11 +73,11 @@ describe('RewardModal', () => {
       />
     );
 
-    await user.click(screen.getByText(/Yes, Redeem/));
+    await user.click(screen.getByText(/כן, לפדות/));
 
     // Should show celebration immediately (isRedeeming = true)
-    expect(screen.getByText('Awesome!')).toBeInTheDocument();
-    expect(screen.getByText('Reward redeemed!')).toBeInTheDocument();
+    expect(screen.getByText(/מדהים/)).toBeInTheDocument();
+    expect(screen.getByText(/הפרס נפדה/)).toBeInTheDocument();
 
     // onConfirm called after delay
     await waitFor(() => {

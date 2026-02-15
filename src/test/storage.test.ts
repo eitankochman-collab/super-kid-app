@@ -42,6 +42,61 @@ describe('storage', () => {
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();
     });
+
+    it('migrates old state format (missing afternoon and hebrewName)', () => {
+      const oldState = {
+        kids: [
+          {
+            id: 'lior',
+            name: 'Lior',
+            age: 8,
+            morning: [{ id: 'm1', hebrew: 'קמים', english: 'Wake up', emoji: '🌅' }],
+            evening: [{ id: 'e1', hebrew: 'old', english: 'old', emoji: '🍱' }],
+            status: [
+              { taskId: 'e1', done: true, stars: 2 },
+              { taskId: 'm1', done: false, stars: 0 },
+            ],
+            starBank: 15,
+          },
+          {
+            id: 'roni',
+            name: 'Roni',
+            age: 6,
+            morning: [],
+            evening: [],
+            status: [],
+            starBank: 8,
+          },
+        ],
+        rewards: [{ id: 'r1', title: 'Old reward', starCost: 5 }],
+        pinUnlockedUntil: null,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(oldState));
+
+      const state = loadState();
+
+      // Should have new kid fields
+      expect(state.kids[0].hebrewName).toBe('ליאור');
+      expect(state.kids[0].avatar).toBe('🦁');
+      expect(state.kids[0].color).toBeTruthy();
+      expect(state.kids[0].accent).toBeTruthy();
+
+      // Should have afternoon tasks
+      expect(state.kids[0].afternoon.length).toBeGreaterThan(0);
+
+      // Should preserve starBank
+      expect(state.kids[0].starBank).toBe(15);
+      expect(state.kids[1].starBank).toBe(8);
+
+      // Should remap old task IDs: e1 -> a1
+      const remappedStatus = state.kids[0].status.find((s) => s.taskId === 'a1');
+      expect(remappedStatus).toBeTruthy();
+      expect(remappedStatus!.done).toBe(true);
+      expect(remappedStatus!.stars).toBe(2);
+
+      // Should have new rewards
+      expect(state.rewards).toEqual(defaultRewards);
+    });
   });
 
   describe('saveState', () => {
@@ -89,7 +144,7 @@ describe('storage', () => {
             status: [
               { taskId: 'm1', done: true, stars: 2 },
               { taskId: 'm2', done: true, stars: 1 },
-              { taskId: 'e1', done: false, stars: 0 },
+              { taskId: 'a1', done: false, stars: 0 },
             ],
           },
         ],

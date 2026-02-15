@@ -7,6 +7,7 @@ interface AdminPanelProps {
   onClose: () => void;
   isUnlocked: boolean;
   onRequestPin: (action: () => void) => void;
+  onResetDone: () => void;
 }
 
 export function AdminPanel({
@@ -16,6 +17,7 @@ export function AdminPanel({
   onClose,
   isUnlocked,
   onRequestPin,
+  onResetDone,
 }: AdminPanelProps) {
   const handleRedeem = (kidId: string, rewardId: string) => {
     const action = () => onRedeemReward(kidId, rewardId);
@@ -29,12 +31,12 @@ export function AdminPanel({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-40 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl p-8 max-w-4xl w-full shadow-2xl my-8">
+      <div className="bg-white rounded-3xl p-8 max-w-4xl w-full shadow-2xl my-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">Parent Admin</h2>
+          <h2 className="text-3xl font-bold text-gray-800">👨‍👩‍👧‍👦 ניהול הורים</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-3xl font-bold"
+            className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 text-xl font-bold transition-colors"
           >
             ×
           </button>
@@ -42,19 +44,22 @@ export function AdminPanel({
 
         {/* Star Banks */}
         <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-700 mb-4">⭐ Star Banks</h3>
+          <h3 className="text-xl font-bold text-gray-700 mb-4">⭐ בנק כוכבים</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {kids.map((kid) => (
               <div
                 key={kid.id}
-                className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-200"
+                className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-2xl border-2 border-yellow-200"
               >
                 <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="text-2xl font-bold text-gray-800">{kid.name}</h4>
-                    <p className="text-gray-600">{kid.age} years old</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{kid.avatar}</span>
+                    <div>
+                      <h4 className="text-xl font-bold text-gray-800" dir="rtl">{kid.hebrewName}</h4>
+                      <p className="text-sm text-gray-500">{kid.name}</p>
+                    </div>
                   </div>
-                  <div className="text-4xl font-bold text-yellow-600">{kid.starBank} ⭐</div>
+                  <div className="text-3xl font-bold text-yellow-600">{kid.starBank} ⭐</div>
                 </div>
               </div>
             ))}
@@ -62,20 +67,24 @@ export function AdminPanel({
         </div>
 
         {/* Rewards */}
-        <div>
-          <h3 className="text-xl font-bold text-gray-700 mb-4">🎁 Rewards</h3>
-          <div className="space-y-4">
+        <div className="mb-8">
+          <h3 className="text-xl font-bold text-gray-700 mb-4">🎁 פרסים</h3>
+          <div className="space-y-3">
             {rewards.map((reward) => (
               <div
                 key={reward.id}
-                className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200"
+                className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-2xl border-2 border-purple-200"
               >
                 <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="text-xl font-bold text-gray-800">{reward.title}</h4>
-                    <p className="text-purple-600 font-semibold">
-                      Cost: {reward.starCost} ⭐
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{reward.emoji}</span>
+                    <div>
+                      <h4 className="text-lg font-bold text-gray-800" dir="rtl">{reward.hebrew}</h4>
+                      <p className="text-sm text-gray-500">{reward.title}</p>
+                    </div>
+                    <span className="text-purple-600 font-semibold text-sm">
+                      {reward.starCost} ⭐
+                    </span>
                   </div>
                   <div className="flex gap-2">
                     {kids.map((kid) => {
@@ -85,14 +94,14 @@ export function AdminPanel({
                           key={kid.id}
                           onClick={() => handleRedeem(kid.id, reward.id)}
                           disabled={!canAfford}
-                          className={`px-6 py-3 rounded-lg font-bold transition-all active:scale-95 ${
+                          className={`px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95 ${
                             canAfford
                               ? 'bg-green-500 text-white hover:bg-green-600 shadow-md'
-                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                           }`}
                           title={`Redeem for ${kid.name}`}
                         >
-                          {kid.name}
+                          {kid.avatar} {kid.hebrewName}
                         </button>
                       );
                     })}
@@ -103,12 +112,28 @@ export function AdminPanel({
           </div>
         </div>
 
-        <div className="mt-8 text-center">
+        {/* Reset button */}
+        <div className="mb-6 p-4 bg-red-50 rounded-2xl border-2 border-red-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <h4 className="font-bold text-gray-800">🔄 איפוס משימות</h4>
+              <p className="text-sm text-gray-500">איפוס כל המשימות ליום חדש</p>
+            </div>
+            <button
+              onClick={onResetDone}
+              className="px-5 py-2.5 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors active:scale-95 shadow-md"
+            >
+              🔄 איפוס
+            </button>
+          </div>
+        </div>
+
+        <div className="text-center">
           <button
             onClick={onClose}
-            className="px-8 py-4 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-colors shadow-lg"
+            className="px-8 py-3 bg-blue-500 text-white font-bold rounded-2xl hover:bg-blue-600 transition-colors shadow-lg"
           >
-            Close Admin
+            סגירה
           </button>
         </div>
       </div>

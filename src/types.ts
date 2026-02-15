@@ -1,4 +1,4 @@
-export type RoutineType = 'morning' | 'evening';
+export type RoutineType = 'morning' | 'afternoon' | 'evening';
 
 export interface Task {
   id: string;
@@ -16,8 +16,13 @@ export interface TaskStatus {
 export interface KidData {
   id: string;
   name: string;
+  hebrewName: string;
+  avatar: string;
+  color: string;
+  accent: string;
   age: number;
   morning: Task[];
+  afternoon: Task[];
   evening: Task[];
   status: TaskStatus[];
   starBank: number;
@@ -26,6 +31,8 @@ export interface KidData {
 export interface Reward {
   id: string;
   title: string;
+  hebrew: string;
+  emoji: string;
   starCost: number;
 }
 

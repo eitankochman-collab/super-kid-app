@@ -5,8 +5,8 @@ import { RewardsShop } from '../components/RewardsShop';
 import type { Reward } from '../types';
 
 const mockRewards: Reward[] = [
-  { id: 'r1', title: 'Movie night', starCost: 10 },
-  { id: 'r2', title: 'Extra screen time', starCost: 5 },
+  { id: 'r1', title: 'Movie night', hebrew: 'סרט ערב', emoji: '🎬', starCost: 10 },
+  { id: 'r2', title: 'Extra screen time', hebrew: 'זמן מסך נוסף', emoji: '📱', starCost: 5 },
 ];
 
 describe('RewardsShop', () => {
@@ -15,8 +15,10 @@ describe('RewardsShop', () => {
       <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} />
     );
 
-    expect(screen.getByText(/Movie night/)).toBeInTheDocument();
-    expect(screen.getByText(/Extra screen time/)).toBeInTheDocument();
+    expect(screen.getByText('סרט ערב')).toBeInTheDocument();
+    expect(screen.getByText('זמן מסך נוסף')).toBeInTheDocument();
+    expect(screen.getByText('Movie night')).toBeInTheDocument();
+    expect(screen.getByText('Extra screen time')).toBeInTheDocument();
   });
 
   it('shows empty state when no rewards', () => {
@@ -24,16 +26,25 @@ describe('RewardsShop', () => {
       <RewardsShop rewards={[]} starBank={0} onRedeemReward={vi.fn()} />
     );
 
-    expect(screen.getByText(/No rewards available/)).toBeInTheDocument();
+    expect(screen.getByText(/אין פרסים/)).toBeInTheDocument();
   });
 
-  it('shows "Need X more" when reward is unaffordable', () => {
+  it('shows "צריך עוד" when reward is unaffordable', () => {
     render(
       <RewardsShop rewards={mockRewards} starBank={3} onRedeemReward={vi.fn()} />
     );
 
-    expect(screen.getByText(/Need 7 more/)).toBeInTheDocument();
-    expect(screen.getByText(/Need 2 more/)).toBeInTheDocument();
+    expect(screen.getByText(/צריך עוד 7/)).toBeInTheDocument();
+    expect(screen.getByText(/צריך עוד 2/)).toBeInTheDocument();
+  });
+
+  it('shows shop header with star count', () => {
+    render(
+      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} />
+    );
+
+    expect(screen.getByText(/חנות פרסים/)).toBeInTheDocument();
+    expect(screen.getByText(/15 ⭐ זמינים/)).toBeInTheDocument();
   });
 
   it('opens reward modal when affordable reward is clicked', async () => {
@@ -43,8 +54,8 @@ describe('RewardsShop', () => {
       <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} />
     );
 
-    await user.click(screen.getByText(/Movie night/));
-    expect(screen.getByText('Redeem Reward?')).toBeInTheDocument();
+    await user.click(screen.getByText('סרט ערב'));
+    expect(screen.getByText(/לפדות פרס/)).toBeInTheDocument();
   });
 
   it('does not open modal for unaffordable reward', async () => {
@@ -54,15 +65,15 @@ describe('RewardsShop', () => {
       <RewardsShop rewards={mockRewards} starBank={3} onRedeemReward={vi.fn()} />
     );
 
-    await user.click(screen.getByText(/Movie night/));
-    expect(screen.queryByText('Redeem Reward?')).not.toBeInTheDocument();
+    await user.click(screen.getByText('סרט ערב'));
+    expect(screen.queryByText(/לפדות פרס/)).not.toBeInTheDocument();
   });
 
-  it('shows tip text when rewards exist', () => {
-    render(
-      <RewardsShop rewards={mockRewards} starBank={0} onRedeemReward={vi.fn()} />
+  it('renders rewards in a grid layout', () => {
+    const { container } = render(
+      <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} />
     );
 
-    expect(screen.getByText(/Complete tasks to earn more stars/)).toBeInTheDocument();
+    expect(container.querySelector('.grid.grid-cols-3')).toBeInTheDocument();
   });
 });

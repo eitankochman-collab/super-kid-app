@@ -9,7 +9,7 @@ interface PinModalProps {
   title?: string;
 }
 
-export function PinModal({ isOpen, onClose, onSuccess, title = 'Enter Parent PIN' }: PinModalProps) {
+export function PinModal({ isOpen, onClose, onSuccess, title = 'הכנס קוד הורים' }: PinModalProps) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -21,7 +21,7 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'Enter Parent PIN
     }
   }, [isOpen]);
 
-  // Focus trap: trap focus within modal when open
+  // Focus trap
   useEffect(() => {
     if (!isOpen) return;
 
@@ -88,19 +88,19 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'Enter Parent PIN
       aria-modal="true"
       aria-label={title}
     >
-      <div ref={modalRef} className="modal-content bg-white rounded-2xl p-8 shadow-2xl">
+      <div ref={modalRef} className="modal-content bg-white rounded-3xl p-8 shadow-2xl">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">{title}</h2>
 
         <div className="flex justify-center gap-3 mb-8" role="status" aria-label={`${pin.length} of ${PIN_LENGTH} digits entered`}>
           {Array.from({ length: PIN_LENGTH }, (_, i) => (
             <div
               key={i}
-              className={`w-16 h-16 rounded-xl flex items-center justify-center text-3xl font-bold border-4 transition-all ${
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl font-bold border-3 transition-all ${
                 error
                   ? 'border-red-500 bg-red-50'
                   : pin.length > i
                   ? 'border-green-500 bg-green-50'
-                  : 'border-gray-300 bg-gray-50'
+                  : 'border-gray-200 bg-gray-50'
               }`}
             >
               {pin.length > i ? '●' : ''}
@@ -110,7 +110,7 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'Enter Parent PIN
 
         {error && (
           <p className="text-red-500 text-center mb-4 font-semibold" role="alert">
-            Incorrect PIN
+            קוד שגוי
           </p>
         )}
 
@@ -119,7 +119,7 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'Enter Parent PIN
             <button
               key={digit}
               onClick={() => handleDigit(digit.toString())}
-              className="h-16 text-2xl font-bold bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors active:scale-95"
+              className="h-14 text-2xl font-bold bg-blue-500 hover:bg-blue-600 text-white rounded-2xl transition-colors active:scale-95"
               aria-label={`Digit ${digit}`}
             >
               {digit}
@@ -127,29 +127,29 @@ export function PinModal({ isOpen, onClose, onSuccess, title = 'Enter Parent PIN
           ))}
           <button
             onClick={handleClear}
-            className="h-16 text-lg font-semibold bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-xl transition-colors active:scale-95"
+            className="h-14 text-base font-semibold bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-2xl transition-colors active:scale-95"
             aria-label="Clear PIN"
           >
-            Clear
+            מחיקה
           </button>
           <button
             onClick={() => handleDigit('0')}
-            className="h-16 text-2xl font-bold bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors active:scale-95"
+            className="h-14 text-2xl font-bold bg-blue-500 hover:bg-blue-600 text-white rounded-2xl transition-colors active:scale-95"
             aria-label="Digit 0"
           >
             0
           </button>
           <button
             onClick={onClose}
-            className="h-16 text-lg font-semibold bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-xl transition-colors active:scale-95"
+            className="h-14 text-base font-semibold bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-2xl transition-colors active:scale-95"
             aria-label="Cancel PIN entry"
           >
-            Cancel
+            ביטול
           </button>
         </div>
 
-        <p className="text-sm text-gray-500 text-center mt-4">
-          Default PIN: 1234
+        <p className="text-sm text-gray-400 text-center mt-4">
+          קוד ברירת מחדל: 1234
         </p>
       </div>
     </div>

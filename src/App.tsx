@@ -1,18 +1,26 @@
 import { useState, useEffect } from 'react';
-import type { AppState } from './types';
+import type { AppState, RoutineType } from './types';
 import { loadState, saveState, resetTaskStatus } from './storage';
-import { KidCard } from './components/KidCard';
+import { TABS, type TabId } from './constants';
+import { ProgressRing } from './components/ProgressRing';
+import { TaskList } from './components/TaskList';
+import { RewardsShop } from './components/RewardsShop';
+import { ConfettiOverlay } from './components/ConfettiOverlay';
 import { PinModal } from './components/PinModal';
 import { AdminPanel } from './components/AdminPanel';
 
 function App() {
   const [state, setState] = useState<AppState>(loadState);
+  const [selectedKidIndex, setSelectedKidIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<TabId>('morning');
   const [showPinModal, setShowPinModal] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
 
   const isUnlocked = state.pinUnlockedUntil !== null && Date.now() < state.pinUnlockedUntil;
+  const selectedKid = state.kids[selectedKidIndex];
 
   // Save state whenever it changes
   useEffect(() => {
@@ -38,28 +46,54 @@ function App() {
     return () => clearInterval(interval);
   }, [isUnlocked, state.pinUnlockedUntil]);
 
+  // Get tasks for current routine tab
+  const getTasksForTab = (tab: TabId) => {
+    if (tab === 'rewards') return [];
+    return selectedKid[tab as RoutineType] || [];
+  };
+
+  const currentTasks = getTasksForTab(activeTab);
+  const currentTaskIds = currentTasks.map((t) => t.id);
+  const currentStatuses = selectedKid.status.filter((s) => currentTaskIds.includes(s.taskId));
+  const doneTasks = currentStatuses.filter((s) => s.done).length;
+  const totalTasks = currentTasks.length;
+  const progress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
   const handleToggleDone = (kidId: string, taskId: string) => {
+    // Pre-calculate if this will complete the routine
+    const kid = state.kids.find((k) => k.id === kidId);
+    const currentStatus = kid?.status.find((s) => s.taskId === taskId);
+    const willBeDone = !currentStatus?.done;
+
     setState((prev) => ({
       ...prev,
-      kids: prev.kids.map((kid) => {
-        if (kid.id !== kidId) return kid;
+      kids: prev.kids.map((k) => {
+        if (k.id !== kidId) return k;
 
-        const existingStatus = kid.status.find((s) => s.taskId === taskId);
+        const existingStatus = k.status.find((s) => s.taskId === taskId);
         if (existingStatus) {
           return {
-            ...kid,
-            status: kid.status.map((s) =>
+            ...k,
+            status: k.status.map((s) =>
               s.taskId === taskId ? { ...s, done: !s.done } : s
             ),
           };
         } else {
           return {
-            ...kid,
-            status: [...kid.status, { taskId, done: true, stars: 0 }],
+            ...k,
+            status: [...k.status, { taskId, done: true, stars: 0 }],
           };
         }
       }),
     }));
+
+    // Check if this completes the routine
+    if (willBeDone) {
+      const newDoneCount = doneTasks + 1;
+      if (newDoneCount === totalTasks && totalTasks > 0) {
+        setShowConfetti(true);
+      }
+    }
   };
 
   const handleAddStar = (kidId: string, taskId: string) => {
@@ -70,7 +104,7 @@ function App() {
           if (kid.id !== kidId) return kid;
 
           const existingStatus = kid.status.find((s) => s.taskId === taskId);
-          if (!existingStatus?.done) return kid; // Only award stars to completed tasks
+          if (!existingStatus?.done) return kid;
 
           return {
             ...kid,
@@ -92,7 +126,7 @@ function App() {
   };
 
   const handlePinSuccess = () => {
-    const unlockUntil = Date.now() + 5 * 60 * 1000; // 5 minutes
+    const unlockUntil = Date.now() + 5 * 60 * 1000;
     setState((prev) => ({ ...prev, pinUnlockedUntil: unlockUntil }));
 
     if (pendingAction) {
@@ -155,63 +189,150 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4 md:p-8">
-      {/* Header with parent controls */}
-      <div className="max-w-7xl mx-auto mb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
-            🦸 Super Kids
-          </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
+      <div className="max-w-2xl mx-auto">
 
-          <div className="flex gap-3 items-center">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md rounded-2xl shadow-sm px-5 py-3 mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🦸</span>
+            <h1 className="text-2xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+              Super Kids
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-2">
             {isUnlocked && (
-              <div className="flex gap-2">
-                <span className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold shadow-md">
-                  🔓 Unlocked: {formatTime(timeRemaining)}
+              <>
+                <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+                  🔓 {formatTime(timeRemaining)}
                 </span>
                 <button
                   onClick={handleLockNow}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors shadow-md"
+                  className="px-3 py-1.5 bg-red-100 text-red-600 rounded-full text-sm font-semibold hover:bg-red-200 transition-colors"
                 >
-                  🔒 Lock Now
+                  🔒
                 </button>
-              </div>
+              </>
             )}
-
             <button
               onClick={handleOpenAdmin}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-colors shadow-lg"
+              className="px-4 py-2 bg-purple-100 text-purple-700 rounded-xl font-bold text-sm hover:bg-purple-200 transition-colors"
             >
-              👨‍👩‍👧‍👦 Parent
-            </button>
-
-            <button
-              onClick={handleResetDone}
-              className="px-6 py-3 bg-orange-500 text-white rounded-lg font-bold hover:bg-orange-600 transition-colors shadow-lg"
-              title="Reset all task completion (for testing)"
-            >
-              🔄 Reset
+              👨‍👩‍👧‍👦 הורים
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Kid cards side by side */}
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {state.kids.map((kid) => (
-            <KidCard
-              key={kid.id}
-              kid={kid}
+        {/* Kid Selector */}
+        <div className="grid grid-cols-2 gap-4 mb-5">
+          {state.kids.map((kid, index) => {
+            const isSelected = index === selectedKidIndex;
+            return (
+              <button
+                key={kid.id}
+                onClick={() => setSelectedKidIndex(index)}
+                className={`p-4 rounded-2xl transition-all duration-200 text-left ${
+                  isSelected
+                    ? `bg-gradient-to-br ${kid.color} text-white shadow-lg scale-[1.02]`
+                    : 'bg-white text-gray-700 shadow-sm hover:shadow-md'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl">{kid.avatar}</span>
+                  <div>
+                    <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`} dir="rtl">
+                      {kid.hebrewName}
+                    </div>
+                    <div className={`text-sm ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
+                      {kid.name}
+                    </div>
+                  </div>
+                </div>
+                <div className={`mt-2 text-right text-lg font-bold ${isSelected ? 'text-white/90' : 'text-yellow-600'}`}>
+                  {kid.starBank} ⭐
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Progress + Tabs Card */}
+        <div className="bg-white rounded-3xl shadow-sm p-5 mb-5">
+          {/* Progress section */}
+          {activeTab !== 'rewards' && (
+            <div className="flex items-center gap-4 mb-4">
+              <ProgressRing percent={progress} color={selectedKid.accent} size={56} />
+              <div>
+                <div className="text-2xl font-bold text-gray-800" dir="rtl">
+                  {doneTasks} מתוך {totalTasks} משימות
+                </div>
+                <div className="text-sm text-gray-500">
+                  {progress}% complete
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tabs */}
+          <div className="flex gap-2 overflow-x-auto">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 min-w-0 py-2.5 px-3 rounded-full font-semibold text-sm transition-all whitespace-nowrap ${
+                    isActive
+                      ? `bg-gradient-to-r ${selectedKid.color} text-white shadow-md`
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <span className="block">{tab.emoji} {tab.label}</span>
+                  <span className={`block text-[10px] ${isActive ? 'text-white/70' : 'text-gray-400'}`}>
+                    {tab.labelEn}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Per-tab progress bar */}
+          {activeTab !== 'rewards' && (
+            <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full bg-gradient-to-r ${selectedKid.color} transition-all duration-500 ease-out rounded-full`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Content Area */}
+        <div className="bg-white rounded-3xl shadow-sm p-4">
+          {activeTab === 'rewards' ? (
+            <RewardsShop
               rewards={state.rewards}
-              onToggleDone={handleToggleDone}
-              onAddStar={handleAddStar}
-              onRedeemReward={handleRedeemReward}
-              isUnlocked={isUnlocked}
+              starBank={selectedKid.starBank}
+              onRedeemReward={(rewardId) => handleRedeemReward(selectedKid.id, rewardId)}
             />
-          ))}
+          ) : (
+            <TaskList
+              tasks={currentTasks}
+              statuses={currentStatuses}
+              onToggleDone={(taskId) => handleToggleDone(selectedKid.id, taskId)}
+              onAddStar={(taskId) => handleAddStar(selectedKid.id, taskId)}
+              isUnlocked={isUnlocked}
+              kidColor={selectedKid.color}
+            />
+          )}
         </div>
       </div>
+
+      {/* Confetti Overlay */}
+      {showConfetti && (
+        <ConfettiOverlay kidName={selectedKid.hebrewName} onClose={() => setShowConfetti(false)} />
+      )}
 
       {/* PIN Modal */}
       <PinModal
@@ -232,6 +353,7 @@ function App() {
           onClose={() => setShowAdmin(false)}
           isUnlocked={isUnlocked}
           onRequestPin={handleRequestPin}
+          onResetDone={handleResetDone}
         />
       )}
     </div>

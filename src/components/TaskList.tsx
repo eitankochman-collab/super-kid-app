@@ -7,11 +7,12 @@ interface TaskListProps {
   onToggleDone: (taskId: string) => void;
   onAddStar: (taskId: string) => void;
   isUnlocked: boolean;
+  kidColor: string;
 }
 
-export function TaskList({ tasks, statuses, onToggleDone, onAddStar, isUnlocked }: TaskListProps) {
+export function TaskList({ tasks, statuses, onToggleDone, onAddStar, isUnlocked, kidColor }: TaskListProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {tasks.map((task) => {
         const status = statuses.find((s) => s.taskId === task.id);
         return (
@@ -22,6 +23,7 @@ export function TaskList({ tasks, statuses, onToggleDone, onAddStar, isUnlocked 
             onToggleDone={() => onToggleDone(task.id)}
             onAddStar={() => onAddStar(task.id)}
             isUnlocked={isUnlocked}
+            kidColor={kidColor}
           />
         );
       })}

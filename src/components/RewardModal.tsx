@@ -57,37 +57,40 @@ export function RewardModal({ reward, starBank, onConfirm, onCancel }: RewardMod
       aria-modal="true"
       aria-label={`Redeem ${reward.title}`}
     >
-      <div ref={modalRef} className="modal-content bg-white rounded-2xl p-8 shadow-2xl">
+      <div ref={modalRef} className="modal-content bg-white rounded-3xl p-8 shadow-2xl">
         {isRedeeming ? (
           <div className="text-center py-8">
-            <div className="text-6xl mb-4 animate-bounce">🎉</div>
-            <h2 className="text-3xl font-bold text-green-600 mb-2">Awesome!</h2>
-            <p className="text-xl text-gray-700">Reward redeemed!</p>
+            <div className="text-6xl mb-4 animate-bounce">{reward.emoji}</div>
+            <h2 className="text-3xl font-bold text-green-600 mb-2">!מדהים</h2>
+            <p className="text-xl text-gray-700">!הפרס נפדה בהצלחה</p>
           </div>
         ) : (
           <>
             <div className="text-center mb-6">
-              <div className="text-5xl mb-4">🎁</div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Redeem Reward?
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-yellow-200 to-amber-300 flex items-center justify-center text-4xl shadow-md">
+                {reward.emoji}
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-1" dir="rtl">
+                ?לפדות פרס
               </h2>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-300 mb-6">
-              <h3 className="text-xl font-bold text-gray-800 text-center mb-4">
-                {reward.title}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-2xl border-2 border-purple-200 mb-6">
+              <h3 className="text-xl font-bold text-gray-800 text-center mb-1" dir="rtl">
+                {reward.hebrew}
               </h3>
-              <div className="flex justify-between items-center text-lg">
-                <span className="text-gray-700">Cost:</span>
+              <p className="text-sm text-gray-500 text-center mb-4">{reward.title}</p>
+              <div className="flex justify-between items-center text-base">
+                <span className="text-gray-600">:עלות</span>
                 <span className="font-bold text-purple-600">{reward.starCost} ⭐</span>
               </div>
-              <div className="flex justify-between items-center text-lg mt-2">
-                <span className="text-gray-700">You have:</span>
+              <div className="flex justify-between items-center text-base mt-2">
+                <span className="text-gray-600">:יש לך</span>
                 <span className="font-bold text-yellow-600">{starBank} ⭐</span>
               </div>
               <div className="border-t-2 border-purple-200 mt-3 pt-3">
-                <div className="flex justify-between items-center text-lg">
-                  <span className="text-gray-700">After:</span>
+                <div className="flex justify-between items-center text-base">
+                  <span className="text-gray-600">:אחרי</span>
                   <span className="font-bold text-green-600">{remainingStars} ⭐</span>
                 </div>
               </div>
@@ -96,20 +99,20 @@ export function RewardModal({ reward, starBank, onConfirm, onCancel }: RewardMod
             <div className="flex gap-3">
               <button
                 onClick={onCancel}
-                className="flex-1 px-6 py-4 bg-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-400 transition-colors active:scale-95"
+                className="flex-1 px-6 py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-300 transition-colors active:scale-95"
               >
-                Cancel
+                ביטול
               </button>
               <button
                 onClick={handleConfirm}
-                className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all active:scale-95 shadow-lg"
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all active:scale-95 shadow-lg"
               >
-                Yes, Redeem! 🎉
+                🎉 !כן, לפדות
               </button>
             </div>
 
-            <p className="text-center text-sm text-gray-500 mt-4">
-              Ask a parent to give you your reward!
+            <p className="text-center text-sm text-gray-500 mt-4" dir="rtl">
+              !בקשו מהורה לתת לכם את הפרס
             </p>
           </>
         )}
