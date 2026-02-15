@@ -38,8 +38,8 @@ const mockKids: KidData[] = [
 ];
 
 const mockRewards: Reward[] = [
-  { id: 'r1', title: 'Movie night', hebrew: 'סרט ערב', emoji: '🎬', starCost: 10 },
-  { id: 'r2', title: 'Extra screen time', hebrew: 'זמן מסך נוסף', emoji: '📱', starCost: 5 },
+  { id: 'r1', title: 'Movie night', hebrew: 'סרט ערב', emoji: '🎬', starCost: 10, tier: 'weekly' },
+  { id: 'r2', title: 'Extra screen time', hebrew: 'זמן מסך נוסף', emoji: '📱', starCost: 5, tier: 'quick' },
 ];
 
 describe('AdminPanel', () => {
@@ -56,6 +56,9 @@ describe('AdminPanel', () => {
         onResetDone={vi.fn()}
         weekendOverride={null}
         onToggleWeekend={vi.fn()}
+        onAddReward={vi.fn()}
+        onEditReward={vi.fn()}
+        onDeleteReward={vi.fn()}
       />
     );
 
@@ -75,6 +78,9 @@ describe('AdminPanel', () => {
         onResetDone={vi.fn()}
         weekendOverride={null}
         onToggleWeekend={vi.fn()}
+        onAddReward={vi.fn()}
+        onEditReward={vi.fn()}
+        onDeleteReward={vi.fn()}
       />
     );
 
@@ -97,6 +103,9 @@ describe('AdminPanel', () => {
         onResetDone={vi.fn()}
         weekendOverride={null}
         onToggleWeekend={vi.fn()}
+        onAddReward={vi.fn()}
+        onEditReward={vi.fn()}
+        onDeleteReward={vi.fn()}
       />
     );
 
@@ -120,6 +129,9 @@ describe('AdminPanel', () => {
         onResetDone={vi.fn()}
         weekendOverride={null}
         onToggleWeekend={vi.fn()}
+        onAddReward={vi.fn()}
+        onEditReward={vi.fn()}
+        onDeleteReward={vi.fn()}
       />
     );
 
@@ -140,6 +152,9 @@ describe('AdminPanel', () => {
         onResetDone={vi.fn()}
         weekendOverride={null}
         onToggleWeekend={vi.fn()}
+        onAddReward={vi.fn()}
+        onEditReward={vi.fn()}
+        onDeleteReward={vi.fn()}
       />
     );
 
@@ -164,12 +179,17 @@ describe('AdminPanel', () => {
         onResetDone={vi.fn()}
         weekendOverride={null}
         onToggleWeekend={vi.fn()}
+        onAddReward={vi.fn()}
+        onEditReward={vi.fn()}
+        onDeleteReward={vi.fn()}
       />
     );
 
-    // Lior has 12 stars, can afford Movie night (10)
+    // Lior has 12 stars, can afford Movie night (10) - find the button for r1
+    // Rewards are grouped by tier: quick (r2) appears before weekly (r1)
     const liorButtons = screen.getAllByTitle('Redeem for Lior');
-    await user.click(liorButtons[0]);
+    // r2 (quick) is first, r1 (weekly) is second
+    await user.click(liorButtons[1]);
     expect(onRedeemReward).toHaveBeenCalledWith('lior', 'r1');
   });
 
@@ -189,6 +209,9 @@ describe('AdminPanel', () => {
         onResetDone={vi.fn()}
         weekendOverride={null}
         onToggleWeekend={vi.fn()}
+        onAddReward={vi.fn()}
+        onEditReward={vi.fn()}
+        onDeleteReward={vi.fn()}
       />
     );
 
@@ -214,6 +237,9 @@ describe('AdminPanel', () => {
         onResetDone={onResetDone}
         weekendOverride={null}
         onToggleWeekend={vi.fn()}
+        onAddReward={vi.fn()}
+        onEditReward={vi.fn()}
+        onDeleteReward={vi.fn()}
       />
     );
 

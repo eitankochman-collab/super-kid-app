@@ -29,12 +29,23 @@ const roniEveningTasks: Task[] = [
 ];
 
 export const defaultRewards: Reward[] = [
-  { id: 'r1', title: 'Movie night', hebrew: 'סרט ערב', emoji: '🎬', starCost: 10 },
-  { id: 'r2', title: 'Extra screen time', hebrew: 'זמן מסך נוסף', emoji: '📱', starCost: 5 },
-  { id: 'r3', title: 'Special outing', hebrew: 'טיול מיוחד', emoji: '🎡', starCost: 15 },
-  { id: 'r4', title: 'New toy', hebrew: 'צעצוע חדש', emoji: '🧸', starCost: 20 },
-  { id: 'r5', title: 'Ice cream', hebrew: 'גלידה', emoji: '🍦', starCost: 8 },
-  { id: 'r6', title: 'Friend sleepover', hebrew: 'לינה עם חבר', emoji: '🏠', starCost: 25 },
+  // Quick rewards (15-20 stars)
+  { id: 'r1', title: 'TV time', hebrew: 'זמן טלוויזיה', emoji: '📺', starCost: 15, tier: 'quick' },
+  { id: 'r2', title: 'Family game', hebrew: 'משחק משפחתי', emoji: '🎲', starCost: 15, tier: 'quick' },
+  { id: 'r3', title: 'Choose dinner', hebrew: 'בוחרים ארוחת ערב', emoji: '🍕', starCost: 15, tier: 'quick' },
+  { id: 'r4', title: 'Craft time', hebrew: 'זמן יצירה', emoji: '🎨', starCost: 20, tier: 'quick' },
+  // Weekly rewards (30-60 stars)
+  { id: 'r5', title: 'Playdate', hebrew: 'משחק עם חבר', emoji: '👫', starCost: 30, tier: 'weekly' },
+  { id: 'r6', title: '$2 allowance', hebrew: '₪10 דמי כיס', emoji: '💰', starCost: 35, tier: 'weekly' },
+  { id: 'r7', title: 'New book', hebrew: 'ספר חדש', emoji: '📚', starCost: 40, tier: 'weekly' },
+  { id: 'r8', title: 'Movie night', hebrew: 'סרט ערב', emoji: '🎬', starCost: 45, tier: 'weekly' },
+  { id: 'r9', title: 'Ice cream', hebrew: 'גלידה', emoji: '🍦', starCost: 60, tier: 'weekly' },
+  // Monthly rewards (150-250 stars)
+  { id: 'r10', title: 'Toy ($10)', hebrew: 'צעצוע (₪35)', emoji: '🧸', starCost: 150, tier: 'monthly' },
+  { id: 'r11', title: 'Trampoline park', hebrew: 'פארק טרמפולינות', emoji: '🤸', starCost: 180, tier: 'monthly' },
+  { id: 'r12', title: '$5 allowance', hebrew: '₪20 דמי כיס', emoji: '💵', starCost: 200, tier: 'monthly' },
+  { id: 'r13', title: 'Special outing', hebrew: 'טיול מיוחד', emoji: '🎡', starCost: 220, tier: 'monthly' },
+  { id: 'r14', title: 'Amazon ($15)', hebrew: 'אמזון (₪50)', emoji: '🛒', starCost: 250, tier: 'monthly' },
 ];
 
 export const initialKids: KidData[] = [

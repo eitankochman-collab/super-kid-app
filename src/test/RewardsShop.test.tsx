@@ -5,8 +5,8 @@ import { RewardsShop } from '../components/RewardsShop';
 import type { Reward } from '../types';
 
 const mockRewards: Reward[] = [
-  { id: 'r1', title: 'Movie night', hebrew: 'סרט ערב', emoji: '🎬', starCost: 10 },
-  { id: 'r2', title: 'Extra screen time', hebrew: 'זמן מסך נוסף', emoji: '📱', starCost: 5 },
+  { id: 'r1', title: 'Movie night', hebrew: 'סרט ערב', emoji: '🎬', starCost: 10, tier: 'weekly' },
+  { id: 'r2', title: 'Extra screen time', hebrew: 'זמן מסך נוסף', emoji: '📱', starCost: 5, tier: 'quick' },
 ];
 
 describe('RewardsShop', () => {
@@ -69,7 +69,7 @@ describe('RewardsShop', () => {
     expect(screen.queryByText(/לפדות פרס/)).not.toBeInTheDocument();
   });
 
-  it('renders rewards in a grid layout', () => {
+  it('renders rewards in a grid layout within tier groups', () => {
     const { container } = render(
       <RewardsShop rewards={mockRewards} starBank={15} onRedeemReward={vi.fn()} />
     );

@@ -55,9 +55,17 @@ export function isWeekendDay(): boolean {
   return day === 0 || day === 6;
 }
 
-/** Migrate old state format (no afternoon, old task IDs) to new format */
+/** Migrate old state format (no afternoon, old task IDs, no reward tiers) to new format */
 function migrateState(stored: Record<string, unknown>): AppState {
   const state = stored as unknown as AppState;
+
+  // Check if rewards need tier migration
+  const rewardsNeedMigration = state.rewards?.some(
+    (r) => !('tier' in r)
+  );
+  if (rewardsNeedMigration) {
+    state.rewards = defaultRewards;
+  }
 
   // Check if migration is needed (missing fields or stale avatar)
   const needsMigration = state.kids?.some(

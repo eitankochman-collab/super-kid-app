@@ -1,4 +1,4 @@
-import type { Reward } from '../types';
+import type { Reward, RewardTier } from '../types';
 import { useState } from 'react';
 import { RewardModal } from './RewardModal';
 
@@ -7,6 +7,14 @@ interface RewardsShopProps {
   starBank: number;
   onRedeemReward: (rewardId: string) => void;
 }
+
+const TIER_CONFIG: Record<RewardTier, { label: string; emoji: string; bg: string; border: string; text: string }> = {
+  quick: { label: 'פרסים מהירים', emoji: '🟢', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
+  weekly: { label: 'פרסים שבועיים', emoji: '🟡', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' },
+  monthly: { label: 'פרסים חודשיים', emoji: '🔴', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700' },
+};
+
+const TIER_ORDER: RewardTier[] = ['quick', 'weekly', 'monthly'];
 
 export function RewardsShop({ rewards, starBank, onRedeemReward }: RewardsShopProps) {
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
@@ -24,6 +32,17 @@ export function RewardsShop({ rewards, starBank, onRedeemReward }: RewardsShopPr
     }
   };
 
+  // Group rewards by tier
+  const groupedRewards = TIER_ORDER.map((tier) => ({
+    tier,
+    config: TIER_CONFIG[tier],
+    rewards: rewards.filter((r) => r.tier === tier).sort((a, b) => a.starCost - b.starCost),
+  })).filter((g) => g.rewards.length > 0);
+
+  // If no rewards have tiers (shouldn't happen after migration), show flat
+  const hasGrouped = groupedRewards.length > 0;
+  const ungroupedRewards = rewards.filter((r) => !r.tier);
+
   return (
     <>
       {/* Header */}
@@ -39,9 +58,82 @@ export function RewardsShop({ rewards, starBank, onRedeemReward }: RewardsShopPr
           <p className="text-xl">🎁</p>
           <p className="mt-2">!אין פרסים עדיין</p>
         </div>
+      ) : hasGrouped ? (
+        <div className="space-y-5">
+          {groupedRewards.map(({ tier, config, rewards: tierRewards }) => (
+            <div key={tier}>
+              {/* Tier header */}
+              <div className={`${config.bg} ${config.border} border-2 rounded-xl px-3 py-2 mb-3 flex items-center gap-2`} dir="rtl">
+                <span className="text-lg">{config.emoji}</span>
+                <span className={`font-bold ${config.text}`}>{config.label}</span>
+              </div>
+
+              {/* Reward cards */}
+              <div className="grid grid-cols-3 gap-3">
+                {tierRewards.map((reward) => {
+                  const canAfford = starBank >= reward.starCost;
+                  const progressPct = Math.min(100, Math.round((starBank / reward.starCost) * 100));
+                  const starsNeeded = reward.starCost - starBank;
+
+                  return (
+                    <div
+                      key={reward.id}
+                      onClick={() => handleRewardClick(reward)}
+                      className={`p-4 rounded-2xl text-center transition-all ${
+                        canAfford
+                          ? 'bg-white border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg cursor-pointer active:scale-95'
+                          : 'bg-gray-50 border-2 border-gray-200 cursor-not-allowed'
+                      }`}
+                    >
+                      {/* Emoji circle */}
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-yellow-200 to-amber-300 flex items-center justify-center text-3xl shadow-sm">
+                        {reward.emoji}
+                      </div>
+
+                      {/* Hebrew name */}
+                      <h4 className="font-bold text-gray-800 text-sm mb-0.5" dir="rtl">
+                        {reward.hebrew}
+                      </h4>
+
+                      {/* English name */}
+                      <p className="text-xs text-gray-500 mb-2">{reward.title}</p>
+
+                      {/* Cost */}
+                      <div className="text-sm font-bold text-purple-600 mb-2">
+                        {reward.starCost} ⭐
+                      </div>
+
+                      {/* Progress bar */}
+                      {!canAfford && (
+                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+                          <div
+                            className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full transition-all duration-500"
+                            style={{ width: `${progressPct}%` }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Buy button */}
+                      {canAfford ? (
+                        <div className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold btn-invite-pulse">
+                          🎉 !קנה פרס
+                        </div>
+                      ) : (
+                        <div className="px-3 py-1.5 bg-gray-200 text-gray-500 rounded-xl text-xs font-semibold" dir="rtl">
+                          צריך עוד {starsNeeded} ⭐
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
+        /* Fallback flat display for rewards without tiers */
         <div className="grid grid-cols-3 gap-3">
-          {rewards.map((reward) => {
+          {ungroupedRewards.map((reward) => {
             const canAfford = starBank >= reward.starCost;
             const starsNeeded = reward.starCost - starBank;
 
@@ -55,25 +147,12 @@ export function RewardsShop({ rewards, starBank, onRedeemReward }: RewardsShopPr
                     : 'bg-gray-50 border-2 border-gray-200 opacity-60 cursor-not-allowed'
                 }`}
               >
-                {/* Emoji circle */}
                 <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-yellow-200 to-amber-300 flex items-center justify-center text-3xl shadow-sm">
                   {reward.emoji}
                 </div>
-
-                {/* Hebrew name */}
-                <h4 className="font-bold text-gray-800 text-sm mb-0.5" dir="rtl">
-                  {reward.hebrew}
-                </h4>
-
-                {/* English name */}
+                <h4 className="font-bold text-gray-800 text-sm mb-0.5" dir="rtl">{reward.hebrew}</h4>
                 <p className="text-xs text-gray-500 mb-2">{reward.title}</p>
-
-                {/* Cost */}
-                <div className="text-sm font-bold text-purple-600 mb-2">
-                  {reward.starCost} ⭐
-                </div>
-
-                {/* Buy button */}
+                <div className="text-sm font-bold text-purple-600 mb-2">{reward.starCost} ⭐</div>
                 {canAfford ? (
                   <div className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold">
                     🎉 !קנה פרס

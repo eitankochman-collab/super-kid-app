@@ -10,6 +10,7 @@ const mockReward: Reward = {
   hebrew: 'סרט ערב',
   emoji: '🎬',
   starCost: 10,
+  tier: 'weekly',
 };
 
 describe('RewardModal', () => {

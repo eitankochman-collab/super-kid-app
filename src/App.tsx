@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { AppState, RoutineType } from './types';
+import type { AppState, RoutineType, Reward } from './types';
 import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isWeekendDay, isYesterday, saveTodaySnapshot, saveDailyRecord } from './storage';
 import type { YesterdaySummary } from './storage';
 import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES, PICKUP_KEY } from './constants';
@@ -335,6 +335,30 @@ function App() {
     });
   };
 
+  const handleAddReward = (reward: Omit<Reward, 'id'>) => {
+    const id = `r_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    setState((prev) => ({
+      ...prev,
+      rewards: [...prev.rewards, { ...reward, id }],
+    }));
+  };
+
+  const handleEditReward = (rewardId: string, updates: Partial<Omit<Reward, 'id'>>) => {
+    setState((prev) => ({
+      ...prev,
+      rewards: prev.rewards.map((r) =>
+        r.id === rewardId ? { ...r, ...updates } : r
+      ),
+    }));
+  };
+
+  const handleDeleteReward = (rewardId: string) => {
+    setState((prev) => ({
+      ...prev,
+      rewards: prev.rewards.filter((r) => r.id !== rewardId),
+    }));
+  };
+
   const handleRequestPin = (action: () => void) => {
     setPendingAction(() => action);
     setShowPinModal(true);
@@ -602,6 +626,9 @@ function App() {
           onResetDone={handleResetDone}
           weekendOverride={weekendOverride}
           onToggleWeekend={() => setWeekendOverride((prev) => prev === null ? !isWeekendAuto : prev ? false : null)}
+          onAddReward={handleAddReward}
+          onEditReward={handleEditReward}
+          onDeleteReward={handleDeleteReward}
         />
       )}
     </div>

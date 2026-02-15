@@ -35,12 +35,15 @@ export interface KidData {
   streak: StreakData;
 }
 
+export type RewardTier = 'quick' | 'weekly' | 'monthly';
+
 export interface Reward {
   id: string;
   title: string;
   hebrew: string;
   emoji: string;
   starCost: number;
+  tier: RewardTier;
 }
 
 export interface AppState {

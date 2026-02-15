@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { KidData, Reward } from '../types';
+import type { KidData, Reward, RewardTier } from '../types';
 import { BONUS_LOG_KEY, PICKUP_KEY } from '../constants';
 import { loadDailyLog } from '../storage';
 import type { DailyRecord } from '../storage';
@@ -34,6 +34,43 @@ function getRecentBonuses(log: BonusEntry[]): BonusEntry[] {
   return log.filter((e) => e.date >= cutoffKey).reverse();
 }
 
+const EMOJI_PICKER = ['🎬', '📺', '🎲', '🍕', '🎨', '👫', '💰', '📚', '🍦', '🧸', '🤸', '💵', '🎡', '🛒', '🎮', '🎪', '🏊', '🎤', '🍰', '⚽'];
+
+const TIER_OPTIONS: { value: RewardTier; label: string; bg: string }[] = [
+  { value: 'quick', label: 'מהיר', bg: 'bg-green-100 text-green-700 border-green-300' },
+  { value: 'weekly', label: 'שבועי', bg: 'bg-amber-100 text-amber-700 border-amber-300' },
+  { value: 'monthly', label: 'חודשי', bg: 'bg-rose-100 text-rose-700 border-rose-300' },
+];
+
+const TIER_BADGE: Record<RewardTier, { label: string; className: string }> = {
+  quick: { label: 'מהיר', className: 'bg-green-100 text-green-700' },
+  weekly: { label: 'שבועי', className: 'bg-amber-100 text-amber-700' },
+  monthly: { label: 'חודשי', className: 'bg-rose-100 text-rose-700' },
+};
+
+const TIER_ORDER: RewardTier[] = ['quick', 'weekly', 'monthly'];
+const TIER_HEADERS: Record<RewardTier, string> = {
+  quick: '🟢 פרסים מהירים',
+  weekly: '🟡 פרסים שבועיים',
+  monthly: '🔴 פרסים חודשיים',
+};
+
+interface RewardFormData {
+  emoji: string;
+  hebrew: string;
+  title: string;
+  starCost: number;
+  tier: RewardTier;
+}
+
+const EMPTY_FORM: RewardFormData = {
+  emoji: '🎁',
+  hebrew: '',
+  title: '',
+  starCost: 15,
+  tier: 'quick',
+};
+
 interface AdminPanelProps {
   kids: KidData[];
   rewards: Reward[];
@@ -45,6 +82,9 @@ interface AdminPanelProps {
   onResetDone: () => void;
   weekendOverride: boolean | null;
   onToggleWeekend: () => void;
+  onAddReward: (reward: Omit<Reward, 'id'>) => void;
+  onEditReward: (rewardId: string, updates: Partial<Omit<Reward, 'id'>>) => void;
+  onDeleteReward: (rewardId: string) => void;
 }
 
 export function AdminPanel({
@@ -58,6 +98,9 @@ export function AdminPanel({
   onResetDone,
   weekendOverride,
   onToggleWeekend,
+  onAddReward,
+  onEditReward,
+  onDeleteReward,
 }: AdminPanelProps) {
   const [bonusKidId, setBonusKidId] = useState(kids[0]?.id || '');
   const [bonusText, setBonusText] = useState('');
@@ -74,12 +117,17 @@ export function AdminPanel({
     return { '1': 'אבא', '2': 'אמא', '3': 'אבא', '4': 'אמא', '5': 'אבא' };
   });
 
+  // Reward CRUD state
+  const [showRewardForm, setShowRewardForm] = useState(false);
+  const [editingRewardId, setEditingRewardId] = useState<string | null>(null);
+  const [rewardForm, setRewardForm] = useState<RewardFormData>(EMPTY_FORM);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
   const today = getTodayKey();
   const bonusKid = kids.find((k) => k.id === bonusKidId);
   const alreadyGotBonus = bonusLog.some((e) => e.date === today && e.kidId === bonusKidId);
   const recentBonuses = getRecentBonuses(bonusLog);
 
-  // Keep the pronoun matching: for girls use feminine Hebrew
   const bonusGivenText = `כבר קיבלה בונוס היום ✅`;
 
   useEffect(() => {
@@ -105,6 +153,50 @@ export function AdminPanel({
     setShowFloat(true);
     setTimeout(() => setShowFloat(false), 1000);
   };
+
+  const handleOpenAddForm = () => {
+    setRewardForm(EMPTY_FORM);
+    setEditingRewardId(null);
+    setShowRewardForm(true);
+    setShowEmojiPicker(false);
+  };
+
+  const handleOpenEditForm = (reward: Reward) => {
+    setRewardForm({
+      emoji: reward.emoji,
+      hebrew: reward.hebrew,
+      title: reward.title,
+      starCost: reward.starCost,
+      tier: reward.tier,
+    });
+    setEditingRewardId(reward.id);
+    setShowRewardForm(true);
+    setShowEmojiPicker(false);
+  };
+
+  const handleSaveReward = () => {
+    if (!rewardForm.hebrew.trim() || !rewardForm.title.trim() || rewardForm.starCost < 1) return;
+
+    if (editingRewardId) {
+      onEditReward(editingRewardId, rewardForm);
+    } else {
+      onAddReward(rewardForm);
+    }
+    setShowRewardForm(false);
+    setEditingRewardId(null);
+  };
+
+  const handleDeleteReward = (rewardId: string) => {
+    if (window.confirm('למחוק את הפרס?')) {
+      onDeleteReward(rewardId);
+    }
+  };
+
+  // Group rewards by tier for display
+  const groupedRewards = TIER_ORDER.map((tier) => ({
+    tier,
+    rewards: rewards.filter((r) => r.tier === tier).sort((a, b) => a.starCost - b.starCost),
+  })).filter((g) => g.rewards.length > 0);
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-start justify-center z-40 p-4 pt-16 overflow-y-auto">
@@ -186,13 +278,11 @@ export function AdminPanel({
             {(() => {
               const HEBREW_DAY_SHORT = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
 
-              // Calculate the Sunday of the target week
               const now = new Date();
-              const currentDay = now.getDay(); // 0=Sun
+              const currentDay = now.getDay();
               const sunday = new Date(now);
               sunday.setDate(now.getDate() - currentDay + weekOffset * 7);
 
-              // Build 7 days Sun-Sat
               const weekDays = Array.from({ length: 7 }, (_, i) => {
                 const d = new Date(sunday);
                 d.setDate(sunday.getDate() + i);
@@ -206,28 +296,23 @@ export function AdminPanel({
                 };
               });
 
-              // Format week range for display
               const sunDate = new Date(sunday);
               const satDate = new Date(sunday);
               satDate.setDate(sunday.getDate() + 6);
               const rangeLabel = `${sunDate.getDate()}/${sunDate.getMonth() + 1} - ${satDate.getDate()}/${satDate.getMonth() + 1}`;
 
-              // Get records for this kid this week
               const weekRecords = weekDays.map((day) => {
                 const record = dailyLog.find((r) => r.date === day.dateKey && r.kidId === weeklyKidId);
                 return { ...day, record };
               });
 
-              // Count amazing days (all done)
               const amazingDays = weekRecords.filter((d) => d.record && d.record.done > 0 && d.record.done === d.record.total).length;
               const totalStars = weekRecords.reduce((sum, d) => sum + (d.record?.done || 0), 0);
 
-              // Detect streaks for flame display
               const weeklyKid = kids.find((k) => k.id === weeklyKidId);
               const streakLastDate = weeklyKid?.streak.lastCompletionDate;
               const streakCurrent = weeklyKid?.streak.current || 0;
 
-              // Build streak dates going backwards from lastCompletionDate
               const streakDates = new Set<string>();
               if (streakLastDate && streakCurrent > 0) {
                 const lastDate = new Date(streakLastDate + 'T00:00:00');
@@ -257,7 +342,6 @@ export function AdminPanel({
                     </button>
                   </div>
 
-                  {/* Day grid */}
                   <div className="grid grid-cols-7 gap-2 mb-4">
                     {weekRecords.map((day) => {
                       const allDone = day.record && day.record.done > 0 && day.record.done === day.record.total;
@@ -293,7 +377,6 @@ export function AdminPanel({
                     })}
                   </div>
 
-                  {/* Positive summary */}
                   <div className="text-center" dir="rtl">
                     {amazingDays > 0 ? (
                       <p className="text-base font-bold text-green-700">
@@ -324,7 +407,6 @@ export function AdminPanel({
         <div className="mb-8">
           <h3 className="text-xl font-bold text-gray-700 mb-4">כוכב בונוס ⭐</h3>
           <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-5 rounded-2xl border-2 border-amber-200">
-            {/* Kid selector */}
             <div className="flex gap-3 mb-4 justify-center">
               {kids.map((kid) => (
                 <button
@@ -342,7 +424,6 @@ export function AdminPanel({
               ))}
             </div>
 
-            {/* Input + button */}
             <div className="flex gap-2 items-center" dir="rtl">
               <input
                 type="text"
@@ -375,7 +456,6 @@ export function AdminPanel({
               </div>
             </div>
 
-            {/* Recent bonuses */}
             {recentBonuses.length > 0 && (
               <div className="mt-4 pt-3 border-t border-amber-200">
                 <p className="text-xs font-semibold text-gray-400 mb-2" dir="rtl">7 ימים אחרונים:</p>
@@ -396,46 +476,195 @@ export function AdminPanel({
           </div>
         </div>
 
-        {/* Rewards */}
+        {/* Rewards Management */}
         <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-700 mb-4">🎁 פרסים</h3>
-          <div className="space-y-3">
-            {rewards.map((reward) => (
-              <div
-                key={reward.id}
-                className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-2xl border-2 border-purple-200"
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{reward.emoji}</span>
-                    <div>
-                      <h4 className="text-lg font-bold text-gray-800" dir="rtl">{reward.hebrew}</h4>
-                      <p className="text-sm text-gray-500">{reward.title}</p>
-                    </div>
-                    <span className="text-purple-600 font-semibold text-sm">
-                      {reward.starCost} ⭐
-                    </span>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-700">🎁 ניהול פרסים</h3>
+            <button
+              onClick={handleOpenAddForm}
+              className="px-4 py-2 bg-purple-500 text-white rounded-xl font-bold text-sm hover:bg-purple-600 transition-colors active:scale-95 shadow-md"
+            >
+              + הוסף פרס
+            </button>
+          </div>
+
+          {/* Reward form (add/edit) */}
+          {showRewardForm && (
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-2xl border-2 border-purple-200 mb-4">
+              <h4 className="text-lg font-bold text-gray-800 mb-4" dir="rtl">
+                {editingRewardId ? '✏️ עריכת פרס' : '➕ פרס חדש'}
+              </h4>
+
+              <div className="space-y-3">
+                {/* Emoji picker */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">אימוג׳י</label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="w-14 h-14 rounded-xl bg-white border-2 border-purple-200 text-3xl flex items-center justify-center hover:border-purple-400 transition-colors"
+                    >
+                      {rewardForm.emoji}
+                    </button>
+                    {showEmojiPicker && (
+                      <div className="flex flex-wrap gap-1.5 bg-white p-2 rounded-xl border-2 border-purple-200 max-w-xs">
+                        {EMOJI_PICKER.map((emoji) => (
+                          <button
+                            key={emoji}
+                            onClick={() => { setRewardForm((f) => ({ ...f, emoji })); setShowEmojiPicker(false); }}
+                            className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center hover:bg-purple-100 transition-colors ${
+                              rewardForm.emoji === emoji ? 'bg-purple-200 ring-2 ring-purple-400' : ''
+                            }`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                </div>
+
+                {/* Hebrew name */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">שם בעברית</label>
+                  <input
+                    type="text"
+                    value={rewardForm.hebrew}
+                    onChange={(e) => setRewardForm((f) => ({ ...f, hebrew: e.target.value }))}
+                    placeholder="סרט ערב"
+                    dir="rtl"
+                    className="w-full px-4 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:border-purple-400"
+                  />
+                </div>
+
+                {/* English name */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-600 block mb-1">English name</label>
+                  <input
+                    type="text"
+                    value={rewardForm.title}
+                    onChange={(e) => setRewardForm((f) => ({ ...f, title: e.target.value }))}
+                    placeholder="Movie night"
+                    className="w-full px-4 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:border-purple-400"
+                  />
+                </div>
+
+                {/* Star cost */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">מחיר (כוכבים)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={rewardForm.starCost}
+                    onChange={(e) => setRewardForm((f) => ({ ...f, starCost: Math.max(1, parseInt(e.target.value) || 1) }))}
+                    className="w-32 px-4 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-gray-800 font-bold text-center focus:outline-none focus:border-purple-400"
+                  />
+                </div>
+
+                {/* Tier selector */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-600 block mb-1" dir="rtl">דרגה</label>
                   <div className="flex gap-2">
-                    {kids.map((kid) => {
-                      const canAfford = kid.starBank >= reward.starCost;
-                      return (
-                        <button
-                          key={kid.id}
-                          onClick={() => handleRedeem(kid.id, reward.id)}
-                          disabled={!canAfford}
-                          className={`px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95 ${
-                            canAfford
-                              ? 'bg-green-500 text-white hover:bg-green-600 shadow-md'
-                              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          }`}
-                          title={`Redeem for ${kid.name}`}
-                        >
-                          <img src={kid.avatar} alt={kid.name} className="w-5 h-5 rounded-full object-cover inline-block mr-1" /> {kid.hebrewName}
-                        </button>
-                      );
-                    })}
+                    {TIER_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setRewardForm((f) => ({ ...f, tier: opt.value }))}
+                        className={`px-4 py-2 rounded-xl font-bold text-sm border-2 transition-all active:scale-95 ${
+                          rewardForm.tier === opt.value
+                            ? `${opt.bg} ring-2 ring-offset-1 ring-purple-400`
+                            : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
                   </div>
+                </div>
+
+                {/* Save / Cancel */}
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={handleSaveReward}
+                    disabled={!rewardForm.hebrew.trim() || !rewardForm.title.trim()}
+                    className="px-6 py-2.5 bg-green-500 text-white rounded-xl font-bold text-sm hover:bg-green-600 transition-colors active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    💾 שמירה
+                  </button>
+                  <button
+                    onClick={() => { setShowRewardForm(false); setEditingRewardId(null); }}
+                    className="px-6 py-2.5 bg-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-300 transition-colors active:scale-95"
+                  >
+                    ביטול
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Rewards list grouped by tier */}
+          <div className="space-y-4">
+            {groupedRewards.map(({ tier, rewards: tierRewards }) => (
+              <div key={tier}>
+                <div className="text-sm font-bold text-gray-500 mb-2" dir="rtl">{TIER_HEADERS[tier]}</div>
+                <div className="space-y-2">
+                  {tierRewards.map((reward) => (
+                    <div
+                      key={reward.id}
+                      className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-2xl border-2 border-purple-200"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{reward.emoji}</span>
+                          <div>
+                            <h4 className="text-base font-bold text-gray-800" dir="rtl">{reward.hebrew}</h4>
+                            <p className="text-sm text-gray-500">{reward.title}</p>
+                          </div>
+                          <span className="text-purple-600 font-semibold text-sm">
+                            {reward.starCost} ⭐
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${TIER_BADGE[reward.tier].className}`}>
+                            {TIER_BADGE[reward.tier].label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleOpenEditForm(reward)}
+                            className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors active:scale-95"
+                            title="ערוך"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDeleteReward(reward.id)}
+                            className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-colors active:scale-95"
+                            title="מחק"
+                          >
+                            🗑️
+                          </button>
+                          <div className="flex gap-1 ml-2">
+                            {kids.map((kid) => {
+                              const canAfford = kid.starBank >= reward.starCost;
+                              return (
+                                <button
+                                  key={kid.id}
+                                  onClick={() => handleRedeem(kid.id, reward.id)}
+                                  disabled={!canAfford}
+                                  className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 ${
+                                    canAfford
+                                      ? 'bg-green-500 text-white hover:bg-green-600 shadow-md'
+                                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                  }`}
+                                  title={`Redeem for ${kid.name}`}
+                                >
+                                  <img src={kid.avatar} alt={kid.name} className="w-5 h-5 rounded-full object-cover inline-block mr-1" /> {kid.hebrewName}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

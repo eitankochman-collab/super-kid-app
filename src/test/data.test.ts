@@ -57,8 +57,8 @@ describe('data', () => {
   });
 
   describe('defaultRewards', () => {
-    it('contains 6 rewards', () => {
-      expect(defaultRewards).toHaveLength(6);
+    it('contains 14 rewards', () => {
+      expect(defaultRewards).toHaveLength(14);
     });
 
     it('all rewards have positive star costs', () => {
@@ -76,6 +76,13 @@ describe('data', () => {
       defaultRewards.forEach((r) => {
         expect(r.hebrew).toBeTruthy();
         expect(r.emoji).toBeTruthy();
+      });
+    });
+
+    it('all rewards have a valid tier', () => {
+      const validTiers = ['quick', 'weekly', 'monthly'];
+      defaultRewards.forEach((r) => {
+        expect(validTiers).toContain(r.tier);
       });
     });
   });
