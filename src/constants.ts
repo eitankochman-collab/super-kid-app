@@ -73,6 +73,9 @@ export const BONUS_LOG_KEY = 'super-kid-app-bonus-log';
 /** localStorage key for daily completion history */
 export const DAILY_LOG_KEY = 'super-kid-app-daily-log';
 
+/** localStorage key for pickup schedule (Mon-Fri → אבא/אמא) */
+export const PICKUP_KEY = 'super-kid-app-pickup';
+
 /** Tab configuration for routine/rewards navigation */
 export type TabId = 'morning' | 'afternoon' | 'evening' | 'rewards';
 

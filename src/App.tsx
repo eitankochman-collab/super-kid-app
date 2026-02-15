@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { AppState, RoutineType } from './types';
 import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isWeekendDay, isYesterday, saveTodaySnapshot, saveDailyRecord } from './storage';
 import type { YesterdaySummary } from './storage';
-import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES } from './constants';
+import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES, PICKUP_KEY } from './constants';
 import { ProgressRing } from './components/ProgressRing';
 import { TaskList } from './components/TaskList';
 import { RewardsShop } from './components/RewardsShop';
@@ -405,6 +405,26 @@ function App() {
             </button>
           </div>
         </div>
+
+        {/* Who picks up today — weekdays only */}
+        {!isWeekend && (() => {
+          const day = new Date().getDay(); // 1=Mon..5=Fri
+          if (day < 1 || day > 5) return null;
+          try {
+            const stored = localStorage.getItem(PICKUP_KEY);
+            if (!stored) return null;
+            const schedule: Record<string, string> = JSON.parse(stored);
+            const picker = schedule[String(day)];
+            if (!picker) return null;
+            const isAbba = picker === 'אבא';
+            return (
+              <div className="mb-3 px-3 py-2 bg-white/80 rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm" dir="rtl">
+                <span className="text-lg">{isAbba ? '👨' : '👩'}</span>
+                <span className="font-bold text-gray-700">היום {isAbba ? 'אוסף' : 'אוספת'}: {picker}</span>
+              </div>
+            );
+          } catch { return null; }
+        })()}
 
         {/* Kid Selector */}
         <div className="grid grid-cols-2 gap-3 mb-5">

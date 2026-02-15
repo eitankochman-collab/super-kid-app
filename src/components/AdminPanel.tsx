@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { KidData, Reward } from '../types';
-import { BONUS_LOG_KEY } from '../constants';
+import { BONUS_LOG_KEY, PICKUP_KEY } from '../constants';
 import { loadDailyLog } from '../storage';
 import type { DailyRecord } from '../storage';
 
@@ -66,6 +66,13 @@ export function AdminPanel({
   const [weeklyKidId, setWeeklyKidId] = useState(kids[0]?.id || '');
   const [weekOffset, setWeekOffset] = useState(0);
   const [dailyLog] = useState<DailyRecord[]>(loadDailyLog);
+  const [pickupSchedule, setPickupSchedule] = useState<Record<string, string>>(() => {
+    try {
+      const stored = localStorage.getItem(PICKUP_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch { /* ignore */ }
+    return { '1': 'אבא', '2': 'אמא', '3': 'אבא', '4': 'אמא', '5': 'אבא' };
+  });
 
   const today = getTodayKey();
   const bonusKid = kids.find((k) => k.id === bonusKidId);
@@ -432,6 +439,36 @@ export function AdminPanel({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Pickup Schedule */}
+        <div className="mb-8">
+          <h3 className="text-xl font-bold text-gray-700 mb-4">🚗 מי אוסף/ת</h3>
+          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-2xl border-2 border-teal-200">
+            <div className="grid grid-cols-5 gap-2">
+              {(['1', '2', '3', '4', '5'] as const).map((day) => {
+                const labels: Record<string, string> = { '1': 'ב׳', '2': 'ג׳', '3': 'ד׳', '4': 'ה׳', '5': 'ו׳' };
+                const isAbba = pickupSchedule[day] === 'אבא';
+                return (
+                  <button
+                    key={day}
+                    onClick={() => {
+                      const updated = { ...pickupSchedule, [day]: isAbba ? 'אמא' : 'אבא' };
+                      setPickupSchedule(updated);
+                      localStorage.setItem(PICKUP_KEY, JSON.stringify(updated));
+                    }}
+                    className={`flex flex-col items-center p-2 rounded-xl border-2 transition-all active:scale-95 ${
+                      isAbba ? 'bg-blue-100 border-blue-300' : 'bg-pink-100 border-pink-300'
+                    }`}
+                  >
+                    <span className="text-xs font-bold text-gray-600">{labels[day]}</span>
+                    <span className="text-lg">{isAbba ? '👨' : '👩'}</span>
+                    <span className="text-xs font-semibold text-gray-700">{pickupSchedule[day]}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
