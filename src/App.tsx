@@ -355,7 +355,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-4 md:p-6 relative">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 px-2 py-4 md:px-4 md:py-6 relative">
 
       <div className="max-w-2xl mx-auto">
 
@@ -399,44 +399,44 @@ function App() {
         </div>
 
         {/* Kid Selector */}
-        <div className="grid grid-cols-2 gap-4 mb-5">
+        <div className="grid grid-cols-2 gap-3 mb-5">
           {state.kids.map((kid, index) => {
             const isSelected = index === selectedKidIndex;
             return (
               <button
                 key={kid.id}
                 onClick={() => setSelectedKidIndex(index)}
-                className={`p-4 rounded-2xl transition-all duration-200 ${
+                className={`p-3 rounded-2xl transition-all duration-200 w-full ${
                   isSelected
                     ? `bg-gradient-to-br ${kid.color} text-white shadow-lg scale-[1.02] selected-card-glow`
                     : 'bg-white/80 text-gray-700 shadow-md hover:shadow-lg hover:scale-[1.01] border-2 border-white/60'
                 }`}
               >
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-3">
                   <img
                     src={kid.avatar}
                     alt={kid.name}
-                    className="w-16 h-16 rounded-full object-cover shadow-lg"
-                    style={{ border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+                    className="w-15 h-15 rounded-full object-cover flex-shrink-0"
+                    style={{ width: '60px', height: '60px', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
                   />
-                  <div className="text-center">
-                    <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`} dir="rtl">
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-lg font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`} dir="rtl">
                       {kid.hebrewName}
                     </div>
                     <div className={`text-xs ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
                       {kid.name}
                     </div>
+                    <div className="flex items-center gap-1 mt-1">
+                      {kid.streak.current >= 2 && (
+                        <span className={`text-xs font-bold ${isSelected ? 'text-white/90' : 'text-orange-500'}`}>
+                          🔥 {kid.streak.current}
+                        </span>
+                      )}
+                      <span className={`font-extrabold ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'} ${kid.starBank === 0 ? 'text-sm' : 'text-xl'}`}>
+                        {kid.starBank === 0 ? '✨ !מתחילים' : `${kid.starBank} ⭐`}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="mt-2 flex items-center justify-center gap-2">
-                  {kid.streak.current >= 2 && (
-                    <span className={`text-sm font-bold ${isSelected ? 'text-white/90' : 'text-orange-500'}`}>
-                      🔥 {kid.streak.current}
-                    </span>
-                  )}
-                  <span className={`text-2xl font-extrabold ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'}`}>
-                    {kid.starBank === 0 ? '✨ !מתחילים' : `${kid.starBank} ⭐`}
-                  </span>
                 </div>
               </button>
             );
@@ -495,7 +495,7 @@ function App() {
         </div>
 
         {/* Content Area */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-md p-4 border border-white/50">
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-md p-3 border border-white/50">
           {activeTab === 'rewards' ? (
             <RewardsShop
               rewards={state.rewards}

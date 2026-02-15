@@ -82,20 +82,10 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {isDone && isUnlocked && (
-            <button
-              onClick={onRemoveStar}
-              className="px-3 py-2 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-all active:scale-95 shadow-sm"
-              title="Remove star"
-            >
-              הסר ⭐
-            </button>
-          )}
-
+        <div className="flex flex-col gap-1 flex-shrink-0 w-28">
           <button
             onClick={onToggleDone}
-            className={`px-6 rounded-2xl font-bold text-base transition-all active:scale-95 ${
+            className={`w-full rounded-2xl font-bold text-base transition-all active:scale-95 ${
               isDone
                 ? 'py-3 bg-gray-200 text-gray-600 hover:bg-gray-300'
                 : `py-3.5 bg-gradient-to-r ${kidColor} text-white shadow-lg hover:shadow-xl btn-invite-pulse`
@@ -104,6 +94,15 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
           >
             {isDone ? 'ביטול ↩️' : '✅ סיימתי'}
           </button>
+          {isDone && isUnlocked && (
+            <button
+              onClick={onRemoveStar}
+              className="w-full py-1.5 rounded-xl bg-red-50 text-red-600 font-semibold text-xs hover:bg-red-100 transition-all active:scale-95"
+              title="Remove star"
+            >
+              הסר ⭐
+            </button>
+          )}
         </div>
       </div>
     </div>
