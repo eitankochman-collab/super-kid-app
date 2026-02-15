@@ -100,6 +100,42 @@ describe('App', () => {
     });
   });
 
+  it('awards 1 star automatically when completing a task', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    // Star bank starts at 0
+    const doneButtons = screen.getAllByText(/סיימתי/);
+    await user.click(doneButtons[0]);
+
+    await waitFor(() => {
+      const stored = localStorage.getItem('super-kid-app-state');
+      expect(stored).not.toBeNull();
+      const state = JSON.parse(stored!);
+      expect(state.kids[0].starBank).toBe(1);
+      expect(state.kids[0].status.some((s: { done: boolean }) => s.done)).toBe(true);
+    });
+  });
+
+  it('removes 1 star when undoing a task', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    // Complete a task (+1 star)
+    const doneButtons = screen.getAllByText(/סיימתי/);
+    await user.click(doneButtons[0]);
+
+    // Undo it (-1 star)
+    const undoButton = screen.getAllByText(/ביטול/)[0];
+    await user.click(undoButton);
+
+    await waitFor(() => {
+      const stored = localStorage.getItem('super-kid-app-state');
+      const state = JSON.parse(stored!);
+      expect(state.kids[0].starBank).toBe(0);
+    });
+  });
+
   it('persists state to localStorage', async () => {
     const user = userEvent.setup();
     render(<App />);

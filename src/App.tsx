@@ -71,9 +71,13 @@ function App() {
         if (k.id !== kidId) return k;
 
         const existingStatus = k.status.find((s) => s.taskId === taskId);
+        const toggling = existingStatus ? !existingStatus.done : true;
+        const starDelta = toggling ? 1 : -1;
+
         if (existingStatus) {
           return {
             ...k,
+            starBank: k.starBank + starDelta,
             status: k.status.map((s) =>
               s.taskId === taskId ? { ...s, done: !s.done } : s
             ),
@@ -81,6 +85,7 @@ function App() {
         } else {
           return {
             ...k,
+            starBank: k.starBank + 1,
             status: [...k.status, { taskId, done: true, stars: 0 }],
           };
         }
