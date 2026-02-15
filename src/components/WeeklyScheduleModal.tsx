@@ -90,7 +90,7 @@ export function WeeklyScheduleModal({ kidId, kidHebrewName, kidColor, onClose }:
 
                     {/* Pickup */}
                     <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${kidColor} flex items-center justify-center text-sm shadow-sm`} title={daySchedule.pickup === 'אבא' ? 'אבא אוסף' : 'אמא אוספת'}>
-                      🚗
+                      {daySchedule.pickup === 'אבא' ? '👨' : '👩'}
                     </div>
                   </div>
                 ) : null}
@@ -105,7 +105,6 @@ export function WeeklyScheduleModal({ kidId, kidHebrewName, kidColor, onClose }:
           <span>🏠 צהרון</span>
           <span>🕐 איסוף</span>
           <span>📚 חונכות</span>
-          <span>🚗 חזרה</span>
         </div>
       </div>
     </div>
