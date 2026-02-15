@@ -1,6 +1,24 @@
 import type { Task, TaskStatus } from '../types';
 import { useState } from 'react';
 
+const EMOJI_COLORS: Record<string, string> = {
+  '🌅': 'from-orange-100 to-yellow-100',
+  '🚽': 'from-purple-100 to-violet-100',
+  '👕': 'from-blue-100 to-cyan-100',
+  '🥣': 'from-amber-100 to-yellow-100',
+  '👟': 'from-green-100 to-emerald-100',
+  '🧴': 'from-teal-100 to-cyan-100',
+  '😌': 'from-pink-100 to-rose-100',
+  '🍱': 'from-orange-100 to-amber-100',
+  '👞': 'from-amber-100 to-orange-100',
+  '📚': 'from-indigo-100 to-blue-100',
+  '🧹': 'from-lime-100 to-green-100',
+  '🚿': 'from-sky-100 to-blue-100',
+  '🪥': 'from-emerald-100 to-teal-100',
+  '📖': 'from-fuchsia-100 to-pink-100',
+  '🛏️': 'from-violet-100 to-purple-100',
+};
+
 interface TaskItemProps {
   task: Task;
   status: TaskStatus | undefined;
@@ -13,6 +31,7 @@ interface TaskItemProps {
 export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked, kidColor }: TaskItemProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const isDone = status?.done || false;
+  const emojiColor = EMOJI_COLORS[task.emoji] || 'from-yellow-100 to-orange-100';
 
   const speak = () => {
     if ('speechSynthesis' in window) {
@@ -37,7 +56,7 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
     >
       <div className="flex items-center gap-3">
         {/* Emoji in colored circle */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
+        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${emojiColor} flex items-center justify-center text-2xl flex-shrink-0 shadow-sm`}>
           {task.emoji}
         </div>
 
@@ -79,7 +98,7 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
             className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 ${
               isDone
                 ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                : `bg-gradient-to-r ${kidColor} text-white shadow-md hover:shadow-lg`
+                : `bg-gradient-to-r ${kidColor} text-white shadow-md hover:shadow-lg btn-invite-pulse`
             }`}
           >
             {isDone ? 'ביטול ↩️' : '✅ סיימתי'}

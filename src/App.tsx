@@ -344,28 +344,60 @@ function App() {
     return `יום ${dayName}, ${dayNum} ${month}`;
   };
 
+  const getEncouragementText = (pct: number): string => {
+    if (pct >= 100) return '!מושלם ✨';
+    if (pct >= 75) return '!עוד קצת 🏆';
+    if (pct >= 50) return '!וואו, כמעט שם 🔥';
+    if (pct >= 25) return '!כל הכבוד, ממשיכים 🌟';
+    return '!יאללה, מתחילים 💪';
+  };
+
+  // Floating stars for background decoration
+  const floatingStars = Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    left: `${(i * 8.3) % 100}%`,
+    delay: `${i * 1.5}s`,
+    duration: `${8 + (i % 5) * 2}s`,
+    symbol: i % 3 === 0 ? '⭐' : i % 3 === 1 ? '✨' : '🌟',
+  }));
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-4 md:p-6 relative overflow-hidden">
+      {/* Floating stars background */}
+      {floatingStars.map((star) => (
+        <span
+          key={star.id}
+          className="floating-star"
+          style={{
+            left: star.left,
+            animationDelay: star.delay,
+            animationDuration: star.duration,
+          }}
+        >
+          {star.symbol}
+        </span>
+      ))}
+
+      <div className="max-w-2xl mx-auto relative z-10">
 
         {/* Sticky Header */}
-        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md rounded-2xl shadow-sm px-5 py-3 mb-5 flex items-center justify-between">
+        <div className="sticky top-0 z-30 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 rounded-2xl shadow-lg px-5 py-3 mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🦸</span>
-            <h1 className="text-2xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-              Super Kids
+            <span className="text-2xl twinkle">🌟</span>
+            <h1 className="text-2xl font-extrabold text-white drop-shadow-md">
+              ⭐ Super Kids ⭐
             </h1>
           </div>
 
           <div className="flex items-center gap-2">
             {isUnlocked && (
               <>
-                <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+                <span className="px-3 py-1.5 bg-white/20 text-white rounded-full text-sm font-semibold backdrop-blur-sm">
                   🔓 {formatTime(timeRemaining)}
                 </span>
                 <button
                   onClick={handleLockNow}
-                  className="px-3 py-1.5 bg-red-100 text-red-600 rounded-full text-sm font-semibold hover:bg-red-200 transition-colors"
+                  className="px-3 py-1.5 bg-white/20 text-white rounded-full text-sm font-semibold hover:bg-white/30 transition-colors backdrop-blur-sm"
                 >
                   🔒
                 </button>
@@ -373,7 +405,7 @@ function App() {
             )}
             <button
               onClick={handleOpenAdmin}
-              className="px-4 py-2 bg-purple-100 text-purple-700 rounded-xl font-bold text-sm hover:bg-purple-200 transition-colors"
+              className="px-4 py-2 bg-white/20 text-white rounded-xl font-bold text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
             >
               👨‍👩‍👧‍👦 הורים
             </button>
@@ -382,7 +414,7 @@ function App() {
 
         {/* Date Display */}
         <div className="text-center mb-4" dir="rtl">
-          <span className="text-sm font-medium text-gray-500">
+          <span className="text-sm font-semibold text-purple-600/70">
             {formatHebrewDate()}
           </span>
           {isWeekend && (
@@ -402,12 +434,12 @@ function App() {
                 onClick={() => setSelectedKidIndex(index)}
                 className={`p-4 rounded-2xl transition-all duration-200 text-left ${
                   isSelected
-                    ? `bg-gradient-to-br ${kid.color} text-white shadow-lg scale-[1.02]`
+                    ? `bg-gradient-to-br ${kid.color} text-white shadow-lg scale-[1.02] selected-card-glow`
                     : 'bg-white text-gray-700 shadow-sm hover:shadow-md'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <img src={kid.avatar} alt={kid.name} className="w-16 h-16 rounded-full object-cover border-2 border-white/50 shadow-md" />
+                  <img src={kid.avatar} alt={kid.name} className={`w-16 h-16 rounded-full object-cover border-3 shadow-md ${isSelected ? 'border-white/70' : 'border-white/50'}`} />
                   <div>
                     <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`} dir="rtl">
                       {kid.hebrewName}
@@ -417,13 +449,13 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <div className={`mt-2 flex items-center justify-end gap-2`}>
+                <div className="mt-2 flex items-center justify-end gap-2">
                   {kid.streak.current >= 2 && (
                     <span className={`text-sm font-bold ${isSelected ? 'text-white/90' : 'text-orange-500'}`}>
                       🔥 {kid.streak.current}
                     </span>
                   )}
-                  <span className={`text-lg font-bold ${isSelected ? 'text-white/90' : 'text-yellow-600'}`}>
+                  <span className={`text-2xl font-extrabold ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'}`}>
                     {kid.starBank} ⭐
                   </span>
                 </div>
@@ -433,7 +465,7 @@ function App() {
         </div>
 
         {/* Progress + Tabs Card */}
-        <div className="bg-white rounded-3xl shadow-sm p-5 mb-5">
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-md p-5 mb-5 border border-white/50">
           {/* Progress section */}
           {activeTab !== 'rewards' && (
             <div className="flex items-center gap-4 mb-4">
@@ -442,8 +474,8 @@ function App() {
                 <div className="text-2xl font-bold text-gray-800" dir="rtl">
                   {doneTasks} מתוך {totalTasks} משימות
                 </div>
-                <div className="text-sm text-gray-500">
-                  {progress}% complete
+                <div className="text-sm font-semibold" dir="rtl" style={{ color: selectedKid.accent }}>
+                  {getEncouragementText(progress)}
                 </div>
               </div>
             </div>
@@ -484,7 +516,7 @@ function App() {
         </div>
 
         {/* Content Area */}
-        <div className="bg-white rounded-3xl shadow-sm p-4">
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-md p-4 border border-white/50">
           {activeTab === 'rewards' ? (
             <RewardsShop
               rewards={state.rewards}
