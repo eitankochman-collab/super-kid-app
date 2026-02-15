@@ -7,9 +7,9 @@ const STORAGE_KEY = 'super-kid-app-state';
 function migrateState(stored: Record<string, unknown>): AppState {
   const state = stored as unknown as AppState;
 
-  // Check if migration is needed
+  // Check if migration is needed (missing fields or stale avatar)
   const needsMigration = state.kids?.some(
-    (kid) => !('afternoon' in kid) || !('hebrewName' in kid)
+    (kid, index) => !('afternoon' in kid) || !('hebrewName' in kid) || kid.avatar !== initialKids[index]?.avatar
   );
 
   if (!needsMigration) {
