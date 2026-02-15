@@ -3,7 +3,7 @@ import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConfettiOverlay } from '../components/ConfettiOverlay';
 
-const avatar = '/super-kid-app/lior-avatar.png?v=2';
+const avatar = '/super-kid-app/lior-avatar.png?v=3';
 
 describe('ConfettiOverlay', () => {
   it('renders Super-Kid celebration with kid name', () => {
