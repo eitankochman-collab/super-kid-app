@@ -83,7 +83,7 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
       {rewards.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <p className="text-xl">🎁</p>
-          <p className="mt-2">!אין פרסים עדיין</p>
+          <p className="mt-2">אין פרסים עדיין!</p>
         </div>
       ) : hasGrouped ? (
         <div className="space-y-5">
@@ -133,7 +133,7 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
                       {/* Pinned label */}
                       {isPinned && (
                         <div className="text-xs font-bold text-yellow-600 mb-1" dir="rtl">
-                          📌 !המטרה שלי
+                          📌 המטרה שלי!
                         </div>
                       )}
 
@@ -168,7 +168,7 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
                       {/* Buy button */}
                       {canAfford ? (
                         <div className={`px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold ${isPinned ? 'btn-invite-pulse' : ''}`}>
-                          🎉 !קנה פרס
+                          🎉 קנה פרס!
                         </div>
                       ) : (
                         <div className="px-3 py-1.5 bg-gray-200 text-gray-500 rounded-xl text-xs font-semibold" dir="rtl">
@@ -209,7 +209,7 @@ export function RewardsShop({ rewards, starBank, onRedeemReward, pinnedRewardId,
                 <div className="text-sm font-bold text-purple-600 mb-2">{reward.starCost} ⭐</div>
                 {canAfford ? (
                   <div className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold">
-                    🎉 !קנה פרס
+                    🎉 קנה פרס!
                   </div>
                 ) : (
                   <div className="px-3 py-1.5 bg-gray-200 text-gray-500 rounded-xl text-xs font-semibold" dir="rtl">

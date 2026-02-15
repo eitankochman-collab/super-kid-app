@@ -21,7 +21,7 @@ export function DailyScheduleCard({ kidId, kidHebrewName, kidColor, isWeekend, o
           <div className="flex items-center gap-2">
             <span className="text-2xl">🎉</span>
             <div>
-              <span className="text-lg font-bold text-gray-700">!סוף שבוע</span>
+              <span className="text-lg font-bold text-gray-700">סוף שבוע!</span>
               <div className="text-xs font-semibold text-gray-400">Weekend!</div>
             </div>
           </div>

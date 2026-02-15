@@ -102,7 +102,7 @@ export function ConfettiOverlay({ kidName, avatar, onClose }: ConfettiOverlayPro
         </div>
 
         <h1 className="text-4xl font-extrabold text-white mb-2 drop-shadow-lg" dir="rtl">
-          !לונה גאה בך — {kidName} סופר סיסטר 🐕⭐
+          לונה גאה בך — {kidName} סופר סיסטר! 🐕⭐
         </h1>
         <div className="text-5xl mt-2">🦸‍♀️</div>
       </div>

@@ -33,10 +33,10 @@ function getTimeBackground(): string {
 /** Time-based greeting with Luna — bilingual */
 function getGreeting(): { text: string; textEn: string; emoji: string; luna: string; lunaEn: string } {
   const hour = new Date().getHours();
-  if (hour >= 6 && hour < 12) return { text: 'בוקר טוב', textEn: 'Good morning', emoji: '☀️🐕', luna: '!לונה מחכה לך', lunaEn: 'Luna is waiting for you!' };
-  if (hour >= 12 && hour < 17) return { text: 'צהריים טובים', textEn: 'Good afternoon', emoji: '🌤🐕', luna: '!לונה גאה בך', lunaEn: 'Luna is proud of you!' };
-  if (hour >= 17 && hour < 21) return { text: 'ערב טוב', textEn: 'Good evening', emoji: '🌙🐕', luna: '!לונה אומרת לילה טוב', lunaEn: 'Luna says good night!' };
-  return { text: 'לילה טוב', textEn: 'Good night', emoji: '🌟🐕', luna: '!לונה אומרת לילה טוב', lunaEn: 'Luna says good night!' };
+  if (hour >= 6 && hour < 12) return { text: 'בוקר טוב', textEn: 'Good morning', emoji: '☀️🐕', luna: 'לונה מחכה לך!', lunaEn: 'Luna is waiting for you!' };
+  if (hour >= 12 && hour < 17) return { text: 'צהריים טובים', textEn: 'Good afternoon', emoji: '🌤🐕', luna: 'לונה גאה בך!', lunaEn: 'Luna is proud of you!' };
+  if (hour >= 17 && hour < 21) return { text: 'ערב טוב', textEn: 'Good evening', emoji: '🌙🐕', luna: 'לונה אומרת לילה טוב!', lunaEn: 'Luna says good night!' };
+  return { text: 'לילה טוב', textEn: 'Good night', emoji: '🌟🐕', luna: 'לונה אומרת לילה טוב!', lunaEn: 'Luna says good night!' };
 }
 
 /** English day names */
@@ -207,9 +207,9 @@ function App() {
   const progress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
   const routineMessages: Record<string, string> = {
-    morning: '!סופר בוקר — לונה שמחה 🌅🐕',
-    afternoon: '!כל הכבוד — לונה שמחה 🎒🐕',
-    evening: '!לילה טוב — לונה שמחה 🌙🐕',
+    morning: 'סופר בוקר — לונה שמחה! 🌅🐕',
+    afternoon: 'כל הכבוד — לונה שמחה! 🎒🐕',
+    evening: 'לילה טוב — לונה שמחה! 🌙🐕',
   };
 
   // Check if all tasks in a routine are done (given a status array)
@@ -483,11 +483,11 @@ function App() {
   };
 
   const getEncouragementText = (pct: number): string => {
-    if (pct >= 100) return '!מושלם ✨';
-    if (pct >= 75) return '!עוד קצת 🏆';
-    if (pct >= 50) return '!וואו, כמעט שם 🔥';
-    if (pct >= 25) return '!כל הכבוד, ממשיכים 🌟';
-    return '!יאללה, מתחילים 💪';
+    if (pct >= 100) return 'מושלם! ✨';
+    if (pct >= 75) return 'עוד קצת! 🏆';
+    if (pct >= 50) return 'וואו, כמעט שם! 🔥';
+    if (pct >= 25) return 'כל הכבוד, ממשיכים! 🌟';
+    return 'יאללה, מתחילים! 💪';
   };
 
   return (
@@ -541,14 +541,13 @@ function App() {
 
         {/* Date line — below header, centered, bilingual */}
         <div className="text-center mb-4">
-          <div className="text-sm font-semibold text-gray-600" dir="rtl">
-            {formatHebrewDate()}
-            {isWeekend && <span className="mr-2 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold">🌴 סוף שבוע</span>}
-          </div>
-          <div className="text-xs text-gray-400">
-            {formatEnglishDate()}
-            {isWeekend && <span className="ml-2 text-xs text-green-600 font-semibold">Weekend</span>}
-          </div>
+          <div className="text-sm font-semibold text-gray-600" dir="rtl">{formatHebrewDate()}</div>
+          <div className="text-xs text-gray-400">{formatEnglishDate()}</div>
+          {isWeekend && (
+            <div className="mt-1">
+              <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold">🌴 סוף שבוע / Weekend</span>
+            </div>
+          )}
         </div>
 
         {/* Daily Schedule Card */}
@@ -564,7 +563,7 @@ function App() {
         <div className="text-center mb-3">
           <div dir="rtl">
             <span className="text-2xl font-extrabold text-gray-700">
-              {greeting.emoji} !{greeting.text}, {selectedKid.hebrewName}
+              {greeting.emoji} {greeting.text}, {selectedKid.hebrewName}!
             </span>
           </div>
           <div className="text-sm font-semibold text-gray-400">
@@ -575,17 +574,17 @@ function App() {
         </div>
 
         {/* Kid Selector */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="grid grid-cols-2 gap-3 mb-5 overflow-visible">
           {state.kids.map((kid, index) => {
             const isSelected = index === selectedKidIndex;
             return (
               <button
                 key={kid.id}
                 onClick={() => { playPop(); setSelectedKidIndex(index); }}
-                className={`p-3 rounded-2xl transition-all duration-200 w-full active:scale-[0.98] ${
+                className={`p-3 rounded-2xl transition-all duration-200 w-full overflow-visible active:scale-[0.98] ${
                   isSelected
-                    ? `bg-gradient-to-br ${kid.color} text-white shadow-lg scale-[1.02] selected-card-glow`
-                    : 'bg-white/80 text-gray-700 shadow-md hover:shadow-lg hover:scale-[1.01] border-2 border-white/60'
+                    ? `bg-gradient-to-br ${kid.color} text-white shadow-lg selected-card-glow`
+                    : 'bg-white/80 text-gray-700 shadow-md hover:shadow-lg border-2 border-white/60'
                 }`}
               >
                 <div className="flex items-center gap-3">

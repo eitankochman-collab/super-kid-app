@@ -61,8 +61,8 @@ export function RewardModal({ reward, starBank, onConfirm, onCancel }: RewardMod
         {isRedeeming ? (
           <div className="text-center py-8">
             <div className="text-6xl mb-4 animate-bounce">{reward.emoji}</div>
-            <h2 className="text-3xl font-bold text-green-600 mb-2">!מדהים</h2>
-            <p className="text-xl text-gray-700">!הפרס נפדה בהצלחה</p>
+            <h2 className="text-3xl font-bold text-green-600 mb-2">מדהים!</h2>
+            <p className="text-xl text-gray-700">הפרס נפדה בהצלחה!</p>
           </div>
         ) : (
           <>
@@ -71,7 +71,7 @@ export function RewardModal({ reward, starBank, onConfirm, onCancel }: RewardMod
                 {reward.emoji}
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-1" dir="rtl">
-                ?לפדות פרס
+                לפדות פרס?
               </h2>
             </div>
 
@@ -107,12 +107,12 @@ export function RewardModal({ reward, starBank, onConfirm, onCancel }: RewardMod
                 onClick={handleConfirm}
                 className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all active:scale-95 shadow-lg"
               >
-                🎉 !כן, לפדות
+                🎉 כן, לפדות!
               </button>
             </div>
 
             <p className="text-center text-sm text-gray-500 mt-4" dir="rtl">
-              !בקשו מהורה לתת לכם את הפרס
+              בקשו מהורה לתת לכם את הפרס!
             </p>
           </>
         )}

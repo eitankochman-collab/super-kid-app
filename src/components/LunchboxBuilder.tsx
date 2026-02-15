@@ -271,7 +271,7 @@ export function LunchboxBuilder({ kidId, kidHebrewName, kidColor, foodItems }: L
               : `bg-gradient-to-r ${kidColor} text-white hover:shadow-xl`
         }`}
       >
-        {isSaved ? '!נשמר ✅' : '!הקופסה מוכנה ✅'}
+        {isSaved ? 'נשמר! ✅' : 'הקופסה מוכנה! ✅'}
       </button>
     </div>
   );
