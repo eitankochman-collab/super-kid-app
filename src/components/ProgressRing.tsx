@@ -5,7 +5,7 @@ interface ProgressRingProps {
 }
 
 export function ProgressRing({ percent, color, size = 56 }: ProgressRingProps) {
-  const strokeWidth = 5;
+  const strokeWidth = 6;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percent / 100) * circumference;

@@ -50,23 +50,23 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
     <div
       className={`p-3 rounded-2xl transition-all duration-200 ${
         isDone
-          ? 'bg-green-50 scale-[0.98]'
-          : 'bg-white hover:shadow-md'
+          ? 'bg-green-100 border-2 border-green-300'
+          : 'bg-white hover:shadow-md border border-gray-100'
       }`}
     >
       <div className="flex items-center gap-3">
         {/* Emoji in colored circle */}
-        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${emojiColor} flex items-center justify-center text-2xl flex-shrink-0 shadow-sm`}>
-          {task.emoji}
+        <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${emojiColor} flex items-center justify-center text-3xl flex-shrink-0 shadow-md`}>
+          {isDone ? '✅' : task.emoji}
         </div>
 
         {/* Text content */}
         <div className="flex-1 min-w-0">
-          <div className={`text-lg font-bold text-gray-800 ${isDone ? 'line-through opacity-60' : ''}`} dir="rtl">
+          <div className={`text-xl font-extrabold ${isDone ? 'text-green-700' : 'text-gray-800'}`} dir="rtl">
             {task.hebrew}
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-sm text-gray-500 ${isDone ? 'line-through opacity-60' : ''}`}>{task.english}</span>
+            <span className={`text-xs ${isDone ? 'text-green-500' : 'text-gray-400'}`}>{task.english}</span>
             {'speechSynthesis' in window && (
               <button
                 onClick={speak}
@@ -95,11 +95,12 @@ export function TaskItem({ task, status, onToggleDone, onRemoveStar, isUnlocked,
 
           <button
             onClick={onToggleDone}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 ${
+            className={`px-6 rounded-2xl font-bold text-base transition-all active:scale-95 ${
               isDone
-                ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                : `bg-gradient-to-r ${kidColor} text-white shadow-md hover:shadow-lg btn-invite-pulse`
+                ? 'py-3 bg-gray-200 text-gray-600 hover:bg-gray-300'
+                : `py-3.5 bg-gradient-to-r ${kidColor} text-white shadow-lg hover:shadow-xl btn-invite-pulse`
             }`}
+            style={{ minHeight: '56px' }}
           >
             {isDone ? 'ביטול ↩️' : '✅ סיימתי'}
           </button>

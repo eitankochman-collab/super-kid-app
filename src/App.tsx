@@ -354,52 +354,36 @@ function App() {
     return '!יאללה, מתחילים 💪';
   };
 
-  // Floating stars for background decoration
-  const floatingStars = Array.from({ length: 12 }, (_, i) => ({
-    id: i,
-    left: `${(i * 8.3) % 100}%`,
-    delay: `${i * 1.5}s`,
-    duration: `${8 + (i % 5) * 2}s`,
-    symbol: i % 3 === 0 ? '⭐' : i % 3 === 1 ? '✨' : '🌟',
-  }));
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-4 md:p-6 relative overflow-hidden">
-      {/* Floating stars background */}
-      {floatingStars.map((star) => (
-        <span
-          key={star.id}
-          className="floating-star"
-          style={{
-            left: star.left,
-            animationDelay: star.delay,
-            animationDuration: star.duration,
-          }}
-        >
-          {star.symbol}
-        </span>
-      ))}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-4 md:p-6 relative">
 
-      <div className="max-w-2xl mx-auto relative z-10">
+      <div className="max-w-2xl mx-auto">
 
         {/* Sticky Header */}
-        <div className="sticky top-0 z-30 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 rounded-2xl shadow-lg px-5 py-3 mb-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl twinkle">🌟</span>
-            <h1 className="text-2xl font-extrabold text-white drop-shadow-md">
-              ⭐ Super Kids ⭐
+        <div className="sticky top-0 z-30 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 rounded-2xl shadow-lg px-4 py-2 mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-extrabold text-white drop-shadow-md">
+              Super Kids
             </h1>
+            <span className="text-xs font-semibold text-white/70" dir="rtl">
+              {formatHebrewDate()}
+            </span>
+            {isWeekend && (
+              <span className="px-2 py-0.5 bg-white/20 text-white rounded-full text-xs font-semibold">
+                🌴 סוף שבוע
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
             {isUnlocked && (
               <>
-                <span className="px-3 py-1.5 bg-white/20 text-white rounded-full text-sm font-semibold backdrop-blur-sm">
+                <span className="px-2 py-1 bg-white/20 text-white rounded-full text-xs font-semibold backdrop-blur-sm">
                   🔓 {formatTime(timeRemaining)}
                 </span>
                 <button
                   onClick={handleLockNow}
-                  className="px-3 py-1.5 bg-white/20 text-white rounded-full text-sm font-semibold hover:bg-white/30 transition-colors backdrop-blur-sm"
+                  className="px-2 py-1 bg-white/20 text-white rounded-full text-xs font-semibold hover:bg-white/30 transition-colors backdrop-blur-sm"
                 >
                   🔒
                 </button>
@@ -407,23 +391,11 @@ function App() {
             )}
             <button
               onClick={handleOpenAdmin}
-              className="px-4 py-2 bg-white/20 text-white rounded-xl font-bold text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
+              className="px-3 py-1.5 bg-white/20 text-white rounded-xl font-bold text-sm hover:bg-white/30 transition-colors backdrop-blur-sm"
             >
               👨‍👩‍👧‍👦 הורים
             </button>
           </div>
-        </div>
-
-        {/* Date Display */}
-        <div className="text-center mb-4" dir="rtl">
-          <span className="text-sm font-semibold text-purple-600/70">
-            {formatHebrewDate()}
-          </span>
-          {isWeekend && (
-            <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">
-              🌴 סוף שבוע
-            </span>
-          )}
         </div>
 
         {/* Kid Selector */}
@@ -434,31 +406,36 @@ function App() {
               <button
                 key={kid.id}
                 onClick={() => setSelectedKidIndex(index)}
-                className={`p-4 rounded-2xl transition-all duration-200 text-left ${
+                className={`p-4 rounded-2xl transition-all duration-200 ${
                   isSelected
                     ? `bg-gradient-to-br ${kid.color} text-white shadow-lg scale-[1.02] selected-card-glow`
-                    : 'bg-white text-gray-700 shadow-sm hover:shadow-md'
+                    : 'bg-white/80 text-gray-700 shadow-md hover:shadow-lg hover:scale-[1.01] border-2 border-white/60'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <img src={kid.avatar} alt={kid.name} className={`w-16 h-16 rounded-full object-cover border-3 shadow-md ${isSelected ? 'border-white/70' : 'border-white/50'}`} />
-                  <div>
+                <div className="flex flex-col items-center gap-2">
+                  <img
+                    src={kid.avatar}
+                    alt={kid.name}
+                    className="w-16 h-16 rounded-full object-cover shadow-lg"
+                    style={{ border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+                  />
+                  <div className="text-center">
                     <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`} dir="rtl">
                       {kid.hebrewName}
                     </div>
-                    <div className={`text-sm ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
+                    <div className={`text-xs ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
                       {kid.name}
                     </div>
                   </div>
                 </div>
-                <div className="mt-2 flex items-center justify-end gap-2">
+                <div className="mt-2 flex items-center justify-center gap-2">
                   {kid.streak.current >= 2 && (
                     <span className={`text-sm font-bold ${isSelected ? 'text-white/90' : 'text-orange-500'}`}>
                       🔥 {kid.streak.current}
                     </span>
                   )}
                   <span className={`text-2xl font-extrabold ${isSelected ? 'text-white star-glow' : 'text-yellow-500 star-glow'}`}>
-                    {kid.starBank} ⭐
+                    {kid.starBank === 0 ? '✨ !מתחילים' : `${kid.starBank} ⭐`}
                   </span>
                 </div>
               </button>
@@ -470,13 +447,13 @@ function App() {
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-md p-5 mb-5 border border-white/50">
           {/* Progress section */}
           {activeTab !== 'rewards' && (
-            <div className="flex items-center gap-4 mb-4">
-              <ProgressRing percent={progress} color={selectedKid.accent} size={56} />
+            <div className="flex items-center gap-5 mb-4">
+              <ProgressRing percent={progress} color={selectedKid.accent} size={80} />
               <div>
                 <div className="text-2xl font-bold text-gray-800" dir="rtl">
                   {doneTasks} מתוך {totalTasks} משימות
                 </div>
-                <div className="text-sm font-semibold" dir="rtl" style={{ color: selectedKid.accent }}>
+                <div className="text-lg font-bold" dir="rtl" style={{ color: selectedKid.accent }}>
                   {getEncouragementText(progress)}
                 </div>
               </div>
