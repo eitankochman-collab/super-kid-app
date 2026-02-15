@@ -76,8 +76,14 @@ export const BONUS_LOG_KEY = 'super-kid-app-bonus-log';
 /** localStorage key for daily completion history */
 export const DAILY_LOG_KEY = 'super-kid-app-daily-log';
 
-/** localStorage key for pickup schedule (Mon-Fri → אבא/אמא) */
-export const PICKUP_KEY = 'super-kid-app-pickup';
+/** localStorage key for weekly schedule */
+export const SCHEDULE_KEY = 'super-kid-app-schedule';
+
+/** localStorage key for schedule date overrides */
+export const SCHEDULE_OVERRIDES_KEY = 'super-kid-app-schedule-overrides';
+
+/** Preset pickup times for schedule editor */
+export const PICKUP_TIME_PRESETS = ['13:00', '13:25', '14:00', '14:30', '15:00', '16:00'] as const;
 
 /** localStorage key for lunchbox food catalog */
 export const LUNCHBOX_CATALOG_KEY = 'super-kid-app-lunchbox-catalog';

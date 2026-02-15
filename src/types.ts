@@ -68,3 +68,23 @@ export interface AppState {
   rewards: Reward[];
   pinUnlockedUntil: number | null;
 }
+
+export type ParentRole = 'אבא' | 'אמא';
+export type AfterSchoolMode = 'tzaharon' | 'pickup';
+
+export interface DaySchedule {
+  dropoff: ParentRole;
+  pickup: ParentRole;
+  afterSchool: AfterSchoolMode;
+  pickupTimes: Record<string, string>; // kid id → time (e.g. { lior: '14:30', roni: '13:25' })
+  tutoring: string;                     // tutor name or ''
+  specialEvent: string;                 // event text or ''
+  specialEventEmoji: string;            // default '🎉'
+}
+
+export type WeeklySchedule = Record<string, DaySchedule>; // keys '0'..'6'
+
+export interface ScheduleOverride {
+  date: string;           // YYYY-MM-DD
+  schedule: DaySchedule;
+}

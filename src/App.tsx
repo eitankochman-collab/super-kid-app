@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { AppState, RoutineType, Reward, FoodItem } from './types';
 import { loadState, saveState, resetTaskStatus, getTodayKey, getStoredDate, saveDate, saveYesterdaySummary, loadYesterdaySummary, isWeekendDay, isYesterday, saveTodaySnapshot, saveDailyRecord } from './storage';
 import type { YesterdaySummary } from './storage';
-import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES, PICKUP_KEY } from './constants';
+import { TABS, type TabId, WEEKEND_EXCLUDED_MORNING, HEBREW_DAYS, HEBREW_MONTHS, YESTERDAY_SUMMARY_MS, STREAK_MILESTONES } from './constants';
 import { loadFoodCatalog, saveFoodCatalog } from './lunchboxStorage';
 import { isMuted, setMuted, playDing, playBoop, playFanfare, playChaChing, playClick, playPop } from './sounds';
 import { ProgressRing } from './components/ProgressRing';
@@ -13,6 +13,8 @@ import { ConfettiOverlay } from './components/ConfettiOverlay';
 import { MiniCelebration } from './components/MiniCelebration';
 import { PinModal } from './components/PinModal';
 import { AdminPanel } from './components/AdminPanel';
+import { DailyScheduleCard } from './components/DailyScheduleCard';
+import { WeeklyScheduleModal } from './components/WeeklyScheduleModal';
 
 /** Time-based background gradient — lavender tint for Luna's Super Sisters */
 function getTimeBackground(): string {
@@ -71,6 +73,7 @@ function App() {
   const [foodCatalog, setFoodCatalog] = useState<FoodItem[]>(loadFoodCatalog);
   const [muted, setMutedState] = useState(isMuted);
   const [timeBg, setTimeBg] = useState(getTimeBackground);
+  const [showWeeklyModal, setShowWeeklyModal] = useState(false);
   const isWeekend = weekendOverride !== null ? weekendOverride : isWeekendAuto;
 
   const handleToggleMute = () => {
@@ -482,7 +485,7 @@ function App() {
       <div className="max-w-2xl mx-auto">
 
         {/* Sticky Header */}
-        <div className="sticky top-0 z-30 bg-gradient-to-r from-[#5B2C8E] via-purple-600 to-[#E8832A] rounded-2xl shadow-lg px-4 py-2 mb-5 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#5B2C8E] via-purple-600 to-[#E8832A] rounded-2xl shadow-lg px-4 py-2 mb-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/super-kid-app/logo.png" alt="Luna's Super Sisters"
                  className="w-10 h-10 rounded-full object-cover border-2 border-white/30 shadow-md" />
@@ -529,25 +532,14 @@ function App() {
           </div>
         </div>
 
-        {/* Who picks up today — weekdays only */}
-        {!isWeekend && (() => {
-          const day = new Date().getDay(); // 1=Mon..5=Fri
-          if (day < 1 || day > 5) return null;
-          try {
-            const stored = localStorage.getItem(PICKUP_KEY);
-            if (!stored) return null;
-            const schedule: Record<string, string> = JSON.parse(stored);
-            const picker = schedule[String(day)];
-            if (!picker) return null;
-            const isAbba = picker === 'אבא';
-            return (
-              <div className="mb-3 px-3 py-2 bg-white/80 rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm" dir="rtl">
-                <span className="text-lg">{isAbba ? '👨' : '👩'}</span>
-                <span className="font-bold text-gray-700">היום {isAbba ? 'אוסף' : 'אוספת'}: {picker}</span>
-              </div>
-            );
-          } catch { return null; }
-        })()}
+        {/* Daily Schedule Card */}
+        <DailyScheduleCard
+          kidId={selectedKid.id}
+          kidHebrewName={selectedKid.hebrewName}
+          kidColor={selectedKid.color}
+          isWeekend={isWeekend}
+          onShowWeekly={() => setShowWeeklyModal(true)}
+        />
 
         {/* Greeting */}
         <div className="text-center mb-3" dir="rtl">
@@ -753,6 +745,16 @@ function App() {
         }}
         onSuccess={handlePinSuccess}
       />
+
+      {/* Weekly Schedule Modal */}
+      {showWeeklyModal && (
+        <WeeklyScheduleModal
+          kidId={selectedKid.id}
+          kidHebrewName={selectedKid.hebrewName}
+          kidColor={selectedKid.color}
+          onClose={() => setShowWeeklyModal(false)}
+        />
+      )}
 
       {/* Admin Panel */}
       {showAdmin && (

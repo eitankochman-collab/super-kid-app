@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import type { KidData, Reward, RewardTier, FoodItem } from '../types';
-import { BONUS_LOG_KEY, PICKUP_KEY } from '../constants';
+import type { KidData, Reward, RewardTier, FoodItem, DaySchedule, ParentRole, AfterSchoolMode, ScheduleOverride } from '../types';
+import { BONUS_LOG_KEY, PICKUP_TIME_PRESETS, HEBREW_DAYS } from '../constants';
+import { loadSchedule, saveSchedule, loadScheduleOverrides, saveScheduleOverride, deleteScheduleOverride } from '../scheduleStorage';
 import { loadDailyLog } from '../storage';
 import type { DailyRecord } from '../storage';
 import { LunchboxAdmin } from './LunchboxAdmin';
@@ -126,13 +127,10 @@ export function AdminPanel({
   const [weeklyKidId, setWeeklyKidId] = useState(kids[0]?.id || '');
   const [weekOffset, setWeekOffset] = useState(0);
   const [dailyLog] = useState<DailyRecord[]>(loadDailyLog);
-  const [pickupSchedule, setPickupSchedule] = useState<Record<string, string>>(() => {
-    try {
-      const stored = localStorage.getItem(PICKUP_KEY);
-      if (stored) return JSON.parse(stored);
-    } catch { /* ignore */ }
-    return { '1': 'אבא', '2': 'אמא', '3': 'אבא', '4': 'אמא', '5': 'אבא' };
-  });
+  const [weeklySchedule, setWeeklySchedule] = useState(loadSchedule);
+  const [scheduleOverrides, setScheduleOverrides] = useState(loadScheduleOverrides);
+  const [overrideDate, setOverrideDate] = useState('');
+  const [editingOverride, setEditingOverride] = useState<DaySchedule | null>(null);
 
   // Accordion state — all collapsed by default
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['stars']));
@@ -721,34 +719,344 @@ export function AdminPanel({
           </div>
         )}
 
-        {/* Pickup Schedule */}
-        <SectionHeader id="pickup" title="🚗 מי אוסף/ת" isOpen={openSections.has('pickup')} onToggle={toggleSection} />
-        {openSections.has('pickup') && (
+        {/* Weekly Schedule */}
+        <SectionHeader id="schedule" title="📅 לוח זמנים שבועי" isOpen={openSections.has('schedule')} onToggle={toggleSection} />
+        {openSections.has('schedule') && (
           <div className="mb-8">
-            <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-2xl border-2 border-teal-200">
-              <div className="grid grid-cols-5 gap-2">
-                {(['1', '2', '3', '4', '5'] as const).map((day) => {
-                  const labels: Record<string, string> = { '1': 'ב׳', '2': 'ג׳', '3': 'ד׳', '4': 'ה׳', '5': 'ו׳' };
-                  const isAbba = pickupSchedule[day] === 'אבא';
-                  return (
-                    <button
-                      key={day}
-                      onClick={() => {
-                        const updated = { ...pickupSchedule, [day]: isAbba ? 'אמא' : 'אבא' };
-                        setPickupSchedule(updated);
-                        localStorage.setItem(PICKUP_KEY, JSON.stringify(updated));
-                      }}
-                      className={`flex flex-col items-center p-2 rounded-xl border-2 transition-all active:scale-95 ${
-                        isAbba ? 'bg-blue-100 border-blue-300' : 'bg-pink-100 border-pink-300'
-                      }`}
-                    >
-                      <span className="text-xs font-bold text-gray-600">{labels[day]}</span>
-                      <span className="text-lg">{isAbba ? '👨' : '👩'}</span>
-                      <span className="text-xs font-semibold text-gray-700">{pickupSchedule[day]}</span>
-                    </button>
-                  );
-                })}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {(['1', '2', '3', '4', '5'] as const).map((dayKey) => {
+                const day = weeklySchedule[dayKey];
+                if (!day) return null;
+                const dayLabel = HEBREW_DAYS[Number(dayKey)];
+                return (
+                  <div key={dayKey} className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-2xl border-2 border-teal-200">
+                    <h4 className="text-base font-bold text-gray-700 mb-3" dir="rtl">יום {dayLabel}</h4>
+
+                    {/* מי מפזר/ת */}
+                    <div className="mb-2" dir="rtl">
+                      <span className="text-xs font-semibold text-gray-500">מי מפזר/ת:</span>
+                      <div className="flex gap-2 mt-1">
+                        {(['אמא', 'אבא'] as ParentRole[]).map((role) => (
+                          <button
+                            key={role}
+                            onClick={() => {
+                              const updated = { ...weeklySchedule, [dayKey]: { ...day, dropoff: role } };
+                              setWeeklySchedule(updated);
+                              saveSchedule(updated);
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                              day.dropoff === role
+                                ? role === 'אבא' ? 'bg-blue-200 border-2 border-blue-400 text-blue-700' : 'bg-pink-200 border-2 border-pink-400 text-pink-700'
+                                : 'bg-gray-100 border-2 border-gray-200 text-gray-500'
+                            }`}
+                          >
+                            {role === 'אבא' ? '👨' : '👩'} {role}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* צהרון */}
+                    <div className="mb-2" dir="rtl">
+                      <span className="text-xs font-semibold text-gray-500">צהרון:</span>
+                      <div className="flex gap-2 mt-1">
+                        {([['tzaharon', 'כן 🏠'], ['pickup', 'לא 🕐']] as [AfterSchoolMode, string][]).map(([mode, label]) => (
+                          <button
+                            key={mode}
+                            onClick={() => {
+                              const updated = { ...weeklySchedule, [dayKey]: { ...day, afterSchool: mode } };
+                              setWeeklySchedule(updated);
+                              saveSchedule(updated);
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                              day.afterSchool === mode
+                                ? 'bg-teal-200 border-2 border-teal-400 text-teal-700'
+                                : 'bg-gray-100 border-2 border-gray-200 text-gray-500'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* שעת איסוף — only if no צהרון */}
+                    {day.afterSchool === 'pickup' && (
+                      <div className="mb-2" dir="rtl">
+                        <span className="text-xs font-semibold text-gray-500">שעת איסוף:</span>
+                        {kids.map((kid) => (
+                          <div key={kid.id} className="flex items-center gap-1.5 mt-1">
+                            <img src={kid.avatar} alt={kid.name} className="w-5 h-5 rounded-full object-cover" />
+                            <span className="text-xs font-semibold text-gray-600 min-w-[40px]">{kid.hebrewName}:</span>
+                            <div className="flex gap-1 flex-wrap">
+                              {PICKUP_TIME_PRESETS.map((time) => (
+                                <button
+                                  key={time}
+                                  onClick={() => {
+                                    const updated = {
+                                      ...weeklySchedule,
+                                      [dayKey]: {
+                                        ...day,
+                                        pickupTimes: { ...day.pickupTimes, [kid.id]: time },
+                                      },
+                                    };
+                                    setWeeklySchedule(updated);
+                                    saveSchedule(updated);
+                                  }}
+                                  className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all active:scale-95 ${
+                                    day.pickupTimes[kid.id] === time
+                                      ? 'bg-teal-300 border border-teal-500 text-teal-800'
+                                      : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  {time}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* מי אוסף/ת */}
+                    <div className="mb-2" dir="rtl">
+                      <span className="text-xs font-semibold text-gray-500">מי אוסף/ת:</span>
+                      <div className="flex gap-2 mt-1">
+                        {(['אמא', 'אבא'] as ParentRole[]).map((role) => (
+                          <button
+                            key={role}
+                            onClick={() => {
+                              const updated = { ...weeklySchedule, [dayKey]: { ...day, pickup: role } };
+                              setWeeklySchedule(updated);
+                              saveSchedule(updated);
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                              day.pickup === role
+                                ? role === 'אבא' ? 'bg-blue-200 border-2 border-blue-400 text-blue-700' : 'bg-pink-200 border-2 border-pink-400 text-pink-700'
+                                : 'bg-gray-100 border-2 border-gray-200 text-gray-500'
+                            }`}
+                          >
+                            {role === 'אבא' ? '👨' : '👩'} {role}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* חונכות */}
+                    <div className="mb-2" dir="rtl">
+                      <span className="text-xs font-semibold text-gray-500">חונכות:</span>
+                      <input
+                        type="text"
+                        value={day.tutoring}
+                        onChange={(e) => {
+                          const updated = { ...weeklySchedule, [dayKey]: { ...day, tutoring: e.target.value } };
+                          setWeeklySchedule(updated);
+                          saveSchedule(updated);
+                        }}
+                        placeholder="שם המורה..."
+                        className="w-full mt-1 px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-teal-400"
+                      />
+                    </div>
+
+                    {/* אירוע מיוחד */}
+                    <div dir="rtl">
+                      <span className="text-xs font-semibold text-gray-500">אירוע מיוחד:</span>
+                      <div className="flex gap-2 mt-1">
+                        <input
+                          type="text"
+                          value={day.specialEventEmoji}
+                          onChange={(e) => {
+                            const updated = { ...weeklySchedule, [dayKey]: { ...day, specialEventEmoji: e.target.value } };
+                            setWeeklySchedule(updated);
+                            saveSchedule(updated);
+                          }}
+                          className="w-12 px-2 py-1.5 rounded-xl border border-gray-200 bg-white text-center text-lg focus:outline-none focus:border-teal-400"
+                        />
+                        <input
+                          type="text"
+                          value={day.specialEvent}
+                          onChange={(e) => {
+                            const updated = { ...weeklySchedule, [dayKey]: { ...day, specialEvent: e.target.value } };
+                            setWeeklySchedule(updated);
+                            saveSchedule(updated);
+                          }}
+                          placeholder="תיאור אירוע..."
+                          className="flex-1 px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-teal-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Override subsection */}
+            <div className="mt-4 bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-2xl border-2 border-amber-200">
+              <h4 className="text-base font-bold text-gray-700 mb-3" dir="rtl">📌 דריסה לתאריך ספציפי</h4>
+              <div className="flex gap-2 items-center mb-3" dir="rtl">
+                <input
+                  type="date"
+                  value={overrideDate}
+                  onChange={(e) => {
+                    setOverrideDate(e.target.value);
+                    // Load existing override or create from weekly template
+                    const existing = scheduleOverrides.find((o) => o.date === e.target.value);
+                    if (existing) {
+                      setEditingOverride(existing.schedule);
+                    } else {
+                      const dayOfWeek = new Date(e.target.value + 'T00:00:00').getDay();
+                      const template = weeklySchedule[String(dayOfWeek)];
+                      setEditingOverride(template ? { ...template } : null);
+                    }
+                  }}
+                  className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:border-amber-400"
+                />
+                {overrideDate && editingOverride && (
+                  <button
+                    onClick={() => {
+                      const override: ScheduleOverride = { date: overrideDate, schedule: editingOverride };
+                      saveScheduleOverride(override);
+                      setScheduleOverrides(loadScheduleOverrides());
+                      setOverrideDate('');
+                      setEditingOverride(null);
+                    }}
+                    className="px-4 py-2 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 transition-colors active:scale-95 shadow-md"
+                  >
+                    💾 שמור דריסה
+                  </button>
+                )}
               </div>
+
+              {/* Override editor */}
+              {overrideDate && editingOverride && (
+                <div className="bg-white/80 p-3 rounded-xl mb-3 space-y-2" dir="rtl">
+                  {/* Dropoff */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-500 min-w-[70px]">מי מפזר/ת:</span>
+                    {(['אמא', 'אבא'] as ParentRole[]).map((role) => (
+                      <button
+                        key={role}
+                        onClick={() => setEditingOverride({ ...editingOverride, dropoff: role })}
+                        className={`px-2 py-1 rounded-lg text-xs font-bold transition-all active:scale-95 ${
+                          editingOverride.dropoff === role
+                            ? role === 'אבא' ? 'bg-blue-200 text-blue-700' : 'bg-pink-200 text-pink-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {role === 'אבא' ? '👨' : '👩'} {role}
+                      </button>
+                    ))}
+                  </div>
+                  {/* After school */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-500 min-w-[70px]">צהרון:</span>
+                    {([['tzaharon', 'כן'], ['pickup', 'לא']] as [AfterSchoolMode, string][]).map(([mode, label]) => (
+                      <button
+                        key={mode}
+                        onClick={() => setEditingOverride({ ...editingOverride, afterSchool: mode })}
+                        className={`px-2 py-1 rounded-lg text-xs font-bold transition-all active:scale-95 ${
+                          editingOverride.afterSchool === mode ? 'bg-teal-200 text-teal-700' : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Pickup times */}
+                  {editingOverride.afterSchool === 'pickup' && kids.map((kid) => (
+                    <div key={kid.id} className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-gray-500 min-w-[70px]">{kid.hebrewName}:</span>
+                      <div className="flex gap-1 flex-wrap">
+                        {PICKUP_TIME_PRESETS.map((time) => (
+                          <button
+                            key={time}
+                            onClick={() => setEditingOverride({
+                              ...editingOverride,
+                              pickupTimes: { ...editingOverride.pickupTimes, [kid.id]: time },
+                            })}
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 ${
+                              editingOverride.pickupTimes[kid.id] === time
+                                ? 'bg-teal-300 text-teal-800' : 'bg-white border border-gray-200 text-gray-500'
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  {/* Pickup parent */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-500 min-w-[70px]">מי אוסף/ת:</span>
+                    {(['אמא', 'אבא'] as ParentRole[]).map((role) => (
+                      <button
+                        key={role}
+                        onClick={() => setEditingOverride({ ...editingOverride, pickup: role })}
+                        className={`px-2 py-1 rounded-lg text-xs font-bold transition-all active:scale-95 ${
+                          editingOverride.pickup === role
+                            ? role === 'אבא' ? 'bg-blue-200 text-blue-700' : 'bg-pink-200 text-pink-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {role === 'אבא' ? '👨' : '👩'} {role}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Tutoring */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-500 min-w-[70px]">חונכות:</span>
+                    <input
+                      type="text"
+                      value={editingOverride.tutoring}
+                      onChange={(e) => setEditingOverride({ ...editingOverride, tutoring: e.target.value })}
+                      className="flex-1 px-2 py-1 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:border-amber-400"
+                      placeholder="שם..."
+                    />
+                  </div>
+                  {/* Special event */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-500 min-w-[70px]">אירוע:</span>
+                    <input
+                      type="text"
+                      value={editingOverride.specialEventEmoji}
+                      onChange={(e) => setEditingOverride({ ...editingOverride, specialEventEmoji: e.target.value })}
+                      className="w-10 px-1 py-1 rounded-lg border border-gray-200 bg-white text-center text-lg focus:outline-none focus:border-amber-400"
+                    />
+                    <input
+                      type="text"
+                      value={editingOverride.specialEvent}
+                      onChange={(e) => setEditingOverride({ ...editingOverride, specialEvent: e.target.value })}
+                      className="flex-1 px-2 py-1 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:border-amber-400"
+                      placeholder="תיאור..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Existing overrides list */}
+              {scheduleOverrides.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-gray-400" dir="rtl">דריסות קיימות:</p>
+                  {scheduleOverrides.map((o) => (
+                    <div key={o.date} className="flex items-center justify-between bg-white/80 px-3 py-2 rounded-xl" dir="rtl">
+                      <span className="text-sm font-semibold text-gray-700">
+                        {o.date} — {o.schedule.dropoff === 'אבא' ? '👨' : '👩'} מפזר
+                        {o.schedule.afterSchool === 'tzaharon' ? ' | 🏠 צהרון' : ' | 🕐 איסוף'}
+                        {o.schedule.tutoring ? ` | 📚 ${o.schedule.tutoring}` : ''}
+                      </span>
+                      <button
+                        onClick={() => {
+                          deleteScheduleOverride(o.date);
+                          setScheduleOverrides(loadScheduleOverrides());
+                        }}
+                        className="w-7 h-7 rounded-full bg-red-100 text-red-500 flex items-center justify-center hover:bg-red-200 transition-colors active:scale-95 text-xs"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
