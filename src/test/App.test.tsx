@@ -84,7 +84,7 @@ describe('App', () => {
     expect(screen.getByText(/הכנס קוד/)).toBeInTheDocument();
   });
 
-  it('opens admin panel after correct PIN', async () => {
+  it('stays on current view after correct PIN (unlocks parent mode)', async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -96,7 +96,9 @@ describe('App', () => {
     await user.click(screen.getByText('4'));
 
     await waitFor(() => {
-      expect(screen.getByText(/ניהול הורים/)).toBeInTheDocument();
+      // Should show unlock indicator, NOT admin panel
+      expect(screen.getByText(/🔓/)).toBeInTheDocument();
+      expect(screen.queryByText(/ניהול הורים/)).not.toBeInTheDocument();
     });
   });
 

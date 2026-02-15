@@ -136,7 +136,6 @@ function App() {
     if (isUnlocked) {
       setShowAdmin(true);
     } else {
-      setPendingAction(() => () => setShowAdmin(true));
       setShowPinModal(true);
     }
   };
