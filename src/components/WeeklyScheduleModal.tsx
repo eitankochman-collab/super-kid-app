@@ -4,11 +4,12 @@ import { HEBREW_DAYS } from '../constants';
 interface WeeklyScheduleModalProps {
   kidId: string;
   kidHebrewName: string;
+  kidEnglishName: string;
   kidColor: string;
   onClose: () => void;
 }
 
-export function WeeklyScheduleModal({ kidId, kidHebrewName, kidColor, onClose }: WeeklyScheduleModalProps) {
+export function WeeklyScheduleModal({ kidId, kidHebrewName, kidEnglishName, kidColor, onClose }: WeeklyScheduleModalProps) {
   const today = new Date().getDay();
 
   // Day labels: Sun(0)..Sat(6) but display Mon-Fri with Sat/Sun as weekend
@@ -25,7 +26,7 @@ export function WeeklyScheduleModal({ kidId, kidHebrewName, kidColor, onClose }:
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-xl font-bold text-gray-800">📅 השבוע של {kidHebrewName}</h2>
-            <p className="text-xs text-gray-400">{kidHebrewName}'s Week</p>
+            <p className="text-xs text-gray-400">{kidEnglishName}'s Week</p>
           </div>
           <button
             onClick={onClose}
@@ -103,11 +104,12 @@ export function WeeklyScheduleModal({ kidId, kidHebrewName, kidColor, onClose }:
         </div>
 
         {/* Legend */}
-        <div className="mt-4 flex flex-wrap gap-3 justify-center text-xs text-gray-500">
-          <span>👨/👩 הסעה <span className="text-gray-400">Ride</span></span>
-          <span>🏠 צהרון <span className="text-gray-400">After-school</span></span>
-          <span>🕐 איסוף <span className="text-gray-400">Pickup</span></span>
-          <span>📚 חונכות <span className="text-gray-400">Tutoring</span></span>
+        <div className="mt-4 flex flex-wrap gap-3 justify-center text-xs">
+          <div className="text-center"><span className="font-bold text-gray-600">👩 אמא</span><div className="text-gray-400">Mom</div></div>
+          <div className="text-center"><span className="font-bold text-gray-600">👨 אבא</span><div className="text-gray-400">Dad</div></div>
+          <div className="text-center"><span className="font-bold text-gray-600">🏫 צהרון</span><div className="text-gray-400">After-school</div></div>
+          <div className="text-center"><span className="font-bold text-gray-600">📚 חונכות</span><div className="text-gray-400">Tutoring</div></div>
+          <div className="text-center"><span className="font-bold text-gray-600">🎉 אירוע</span><div className="text-gray-400">Event</div></div>
         </div>
       </div>
     </div>

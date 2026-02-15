@@ -807,6 +807,7 @@ function App() {
         <WeeklyScheduleModal
           kidId={selectedKid.id}
           kidHebrewName={selectedKid.hebrewName}
+          kidEnglishName={selectedKid.name}
           kidColor={selectedKid.color}
           onClose={() => setShowWeeklyModal(false)}
         />
